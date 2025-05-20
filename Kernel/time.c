@@ -1,6 +1,5 @@
-#include <time.h>
-#include <times.h>
-#include <libasm.h>
+#include "time.h"
+#include "libasm.h"
 
 static unsigned long ticks = 0;
 
@@ -26,17 +25,4 @@ void sleep(int ticksToWait) {
     while (ticks - start < ticksToWait){
         _hlt();
     };
-}
-
-
-static time t;
-
-time * getTime(){
-    t.day = getSystemDayOfMonth();
-    t.month = getSystemMonth();
-    t.year = getSystemYear();
-    t.hour =getSystemHour(); 
-    t.min = getSystemMin();
-    t.sec = getSystemSec();
-    return &t;
 }

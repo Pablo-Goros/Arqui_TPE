@@ -1,4 +1,8 @@
 GLOBAL cpuVendor
+GLOBAL _hlt
+GLOBAL _cli
+GLOBAL _sti
+
 
 section .text
 	
@@ -24,4 +28,19 @@ cpuVendor:
 
 	mov rsp, rbp
 	pop rbp
+	ret
+
+	
+_hlt:
+	sti
+	hlt
+	ret
+
+_cli:
+	cli
+	ret
+
+
+_sti:
+	sti
 	ret

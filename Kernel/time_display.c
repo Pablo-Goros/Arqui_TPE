@@ -4,7 +4,9 @@
 
 static void format(uint8_t v, char *dst);
 
-static uint8_t bcd2bin(uint8_t bcd);
+static char bcd2char(uint8_t bcd);
+
+static time t;
 
 time* getTime(void) {
     time t;
@@ -19,32 +21,32 @@ time* getTime(void) {
 
 uint8_t get_secs(void) {
     uint8_t seconds = read_RTC(0);
-    return bcd2bin(seconds);
+    return seconds;
 }
 
 uint8_t get_mins(void) {
     uint8_t minutes = read_RTC(2);
-    return bcd2bin(minutes);
+    return minutes;
 }
 
 uint8_t get_hours(void) {
     uint8_t hours = read_RTC(4);
-    return bcd2bin(hours);
+    return hours;
 }
 
 uint8_t get_day(void) {
     uint8_t day = read_RTC(7);
-    return bcd2bin(day);
+    return day;
 }
 
 uint8_t get_month(void) {
     uint8_t day = read_RTC(8);
-    return bcd2bin(day);
+    return day;
 }
 
 uint8_t get_year(void) {
     uint8_t year = read_RTC(9);
-    return bcd2bin(year);
+    return year;
 }
 
 // Converts BCD to binary

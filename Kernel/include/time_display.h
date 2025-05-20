@@ -3,14 +3,14 @@
 
 #include <stdint.h>
 
-typedef struct time{
+typedef struct time {
     char day;
     char month;
     char year;
     char hour;
     char min;
     char sec;
-}time;
+} time;
 
 /**
  * @brief Retrieves the current system time.
@@ -19,7 +19,7 @@ typedef struct time{
  *
  * @return A time structure containing the current system time.
  */
-time * getTime();
+time* getTime();
 
 extern uint8_t read_RTC(uint8_t reg);
 
@@ -35,7 +35,7 @@ uint8_t get_month(void);
 
 uint8_t get_year(void);
 
-
-void time(void);
+//? necesaria?
+void time_display(void);
 
 #endif 

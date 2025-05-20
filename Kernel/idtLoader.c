@@ -33,9 +33,9 @@ void load_idt() {
   setup_IDT_entry(0x21, (uint64_t)&_irq01Handler);       // Teclado (IRQ1)
 
   // Syscall
-  setup_IDT_entry(0x80, (uint64_t)&_syscallHandler);     // int 0x80
+  setup_IDT_entry(0x80, (uint64_t)&_int80Handler);     // int 0x80
 
-
+/*
   // --- Cargamos la IDT ---
   struct { 
     uint16_t limit; 
@@ -48,7 +48,7 @@ void load_idt() {
   };
 
   load_idtr(&idtr);
-
+*/
 	// Solo interrupcion timer tick y teclado habilitadas
 	// Solo habilito IRQ0 e IRQ1 en el PIC maestro
   picMasterMask(0xFC); // 11111100b  
