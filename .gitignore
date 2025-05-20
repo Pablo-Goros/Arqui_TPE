@@ -8,5 +8,5 @@
 *.vmdk
 
 #Object files
-*.o.bash_history
+*.o
 .bash_history
