@@ -154,24 +154,19 @@ _irq04Handler:
 _irq05Handler:
 	irqHandlerMaster 5
 
-_irqWriteHandler:
+
+_int80Handler:
 	pushState
-
-	call int_write
-
-	; signal pic EOI (End of Interrupt)
-	mov al, 20h
-	out 20h, al
-
+	mov r9, r8
+	mov r8, r10
+	mov rcx, rdx
+	mov rdx, rsi
+	mov rsi, rdi 
+	mov rdi, rax
+	
+	call sysCallDispatcher
 	popState
 	iretq
-
-_syscallHandler:
-    pushState
-    call    syscallDispatcher
-    popState
-    iretq
-
 
 	;Zero Division Exception
 _exception0Handler:
