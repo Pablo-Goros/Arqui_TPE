@@ -2,6 +2,7 @@
 #include "time.h"
 #include <stdint.h>
 #include <stdarg.h>
+#include <naiveConsole.h>
 
 
 #define SYSCALL_READ                        0
@@ -35,7 +36,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
         }
 
         case SYSCALL_WRITE: {
-            FDS fd = va_arg(args, FDS);
+            FileDescriptor fd = va_arg(args, FileDescriptor);
             const char *buf   = va_arg(args, const char *);
             uint64_t     count = va_arg(args, uint64_t);
             sys_write(fd, buf, count);
@@ -130,3 +131,13 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
     va_end(args);
     return ret;
 }
+
+/* toca implementar aca todos los syscalls posibles*/
+
+void sys_write(FileDescriptor fd, const char *buf, size_t count){  /*MUY RUSTICO*/
+    if(fd == STDOUT || fd == STDERR) {
+        ncPrint(buf);
+    }
+}
+
+
