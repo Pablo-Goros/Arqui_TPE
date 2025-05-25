@@ -27,6 +27,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
     uint64_t ret = 0;
 
     switch (rax) {
+        /*
         case SYSCALL_READ: {
             uint64_t fd    = va_arg(args, uint64_t);
             uint64_t buf   = va_arg(args, uint64_t);
@@ -34,7 +35,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = sys_read(fd, buf, count);
             break;
         }
-
+        */
         case SYSCALL_WRITE: {
             FileDescriptor fd = va_arg(args, FileDescriptor);
             const char *buf   = va_arg(args, const char *);

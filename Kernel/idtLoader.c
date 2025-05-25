@@ -33,7 +33,7 @@ void load_idt() {
   setup_IDT_entry(0x21, (uint64_t)&_irq01Handler);       // Teclado (IRQ1)
 
   // Syscall
-  setup_IDT_entry(0x80, (uint64_t)&_int80Handler);     // int 0x80
+  // setup_IDT_entry(0x80, (uint64_t)&_int80Handler);     // int 0x80
 
 /*
   // --- Cargamos la IDT ---

@@ -25,7 +25,7 @@ GLOBAL _exception6Handler ; Invalid Opcode Exception
 EXTERN int_write
 EXTERN irqDispatcher
 EXTERN exceptionDispatcher
-EXTERN syscallDispatcher
+EXTERN sysCallDispatcher
 
 SECTION .text
 

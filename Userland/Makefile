@@ -1,18 +1,23 @@
 include Makefile.inc
 
-SAMPLE_DATA=0001-sampleDataModule.bin
+MODULE    := ../0000-sampleCodeModule.bin
+C_SRCS    := $(wildcard [^_]*.c)
+ASM_SRCS  := $(wildcard assembly/*.asm)
+OBJS      := $(C_SRCS:%.c=%.o) $(ASM_SRCS:assembly/%.asm=assembly/%.o)
 
-all: sampleCodeModule sampleDataModule
+CFLAGS    := $(GCCFLAGS) -std=gnu11 -ffreestanding -O2 -Iinclude
+ASFLAGS   := $(ASMFLAGS) -felf64
 
-sampleCodeModule:
-	cd SampleCodeModule; make
+all: $(MODULE)
 
-sampleDataModule:
-	printf "This is sample data." >> $(SAMPLE_DATA) && dd if=/dev/zero bs=1 count=1 >> $(SAMPLE_DATA)
+$(MODULE): $(OBJS)
+	$(GCC) $(CFLAGS) -nostdlib -T userCodeModule.ld _loader.c -o $(MODULE) $(OBJS)
+
+%.o: %.c
+	$(GCC) $(CFLAGS) -c $< -o $@
+
+assembly/%.o: assembly/%.asm
+	$(ASM) $(ASFLAGS) $< -o $@
 
 clean:
-	cd SampleCodeModule; make clean
-	rm -rf *.bin
-
-
-.PHONY: sampleCodeModule all clean
+	rm -f $(OBJS) $(MODULE)

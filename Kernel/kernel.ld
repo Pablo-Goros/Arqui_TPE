@@ -1,5 +1,5 @@
 OUTPUT_FORMAT("binary")
-ENTRY(loader)
+ENTRY(kernel_loader)
 SECTIONS
 {
 	.text 0x100000 :
@@ -25,3 +25,4 @@ SECTIONS
 	. = ALIGN(0x1000);
 	endOfKernel = .;
 }
+
