@@ -1,9 +1,10 @@
 #include "shell.h"
+#include "commands.h"
 
-#define MAX_CMD_LENGTH 128
+
+#define MAX_CMD_LENGTH 256 
 
 
-static int 
 void shell(void) {
 
     while (1) {
@@ -11,7 +12,7 @@ void shell(void) {
         int len = 0;
 
         // Prompt for input
-        putString("shell> ");
+        putString("\\> ");
 
         // Read command
         while (len < MAX_CMD_LENGTH - 1) {
@@ -20,12 +21,25 @@ void shell(void) {
                 break; // End of command
             } else if ((c == 0x7F || c == 0x08) && len > 0) { // Handle backspace
                 putChar(' ');  // Clear the character
-            } else {
+            } else if (len < MAX_CMD_LENGTH-1 && c >= ' ') {
                 command[len++] = c;
-                putChar(c); // Echo the character
+                putChar(c);
+            } else if (len >= MAX_CMD_LENGTH - 1) {
+                putString("\nCommand too long, try again.\n");
+                len = 0; // Reset length for new command
+                break; // Exit the input loop
             }
         }
-        command[len] = '\0';         
+        command[len] = '\0';        
+        
+        if      (strcmp(command, "help")==0)            cmd_help();
+        else if (strcmp(command, "time")==0)            cmd_time();
+        else if (strcmp(command, "regs")==0)            cmd_registers();
+        else if (strcmp(command, "pong")==0)            cmd_pong();
+        else if (strcmp(command, "div0")==0)            cmd_div0();
+        else if (strcmp(command, "ud2")==0)             cmd_invalid_opcode();
+        else                                        putString("Unknown command\n");
+
     }
     return;
 }

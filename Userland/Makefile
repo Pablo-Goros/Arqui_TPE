@@ -2,8 +2,8 @@ include Makefile.inc
 
 MODULE    := ../0000-sampleCodeModule.bin
 C_SRCS    := $(wildcard [^_]*.c)
-ASM_SRCS  := $(wildcard assembly/*.asm)
-OBJS      := $(C_SRCS:%.c=%.o) $(ASM_SRCS:assembly/%.asm=assembly/%.o)
+ASM_SRCS  := $(wildcard asm/*.asm)
+OBJS      := $(C_SRCS:%.c=%.o) $(ASM_SRCS:asm/%.asm=asm/%.o)
 
 CFLAGS    := $(GCCFLAGS) -std=gnu11 -ffreestanding -O2 -Iinclude
 ASFLAGS   := $(ASMFLAGS) -felf64
@@ -16,7 +16,7 @@ $(MODULE): $(OBJS)
 %.o: %.c
 	$(GCC) $(CFLAGS) -c $< -o $@
 
-assembly/%.o: assembly/%.asm
+asm/%.o: asm/%.asm
 	$(ASM) $(ASFLAGS) $< -o $@
 
 clean:
