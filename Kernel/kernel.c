@@ -53,6 +53,6 @@ void * initializeKernelBinary()
 int main()
 {	
 	load_idt();
-	
+	((EntryPoint)sampleCodeModuleAddress)();
 	return 0;
 }
