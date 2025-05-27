@@ -49,10 +49,10 @@ static uint32_t text_color = COLOR_WHITE;
 static uint32_t background_color = COLOR_BLACK;
 static int zoom = 1;   
 
-static const uint8_t font_bitmap[256 * CHAR_HEIGHT];
+static uint8_t font_bitmap[256 * CHAR_HEIGHT];
 
 static void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
-    uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
+    uint8_t * framebuffer = (uint8_t *)(uintptr_t) VBE_mode_info->framebuffer;
     uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch);
     framebuffer[offset]     =  (hexColor) & 0xFF;
     framebuffer[offset+1]   =  (hexColor >> 8) & 0xFF;
@@ -139,7 +139,7 @@ void vd_clear_screen(void) {
     cursorY = 0;
 }
 
-static const uint8_t font_bitmap[256 * CHAR_HEIGHT] = {
+static uint8_t font_bitmap[256 * CHAR_HEIGHT] = {
         // Relleno para las primeras letras (Espacio, símbolos, etc.)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

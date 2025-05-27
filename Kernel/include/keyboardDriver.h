@@ -4,6 +4,9 @@
 #include <stdint.h>
 
 extern unsigned int get_key_asm(void);
+
+void kbd_get_key(void);
+
 /** Non-blocking: true if a character is waiting */
 uint8_t kbd_has_char(void);
 

@@ -14,7 +14,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
     switch (rax) {
         case SYS_READ: {
             uint64_t fd    = va_arg(args, uint64_t);
-            const char * buf   = va_arg(args, const char *);
+            char * buf   = va_arg(args,  char *);
             uint64_t count = va_arg(args, uint64_t);
             ret = sys_read(fd, buf, count);
             break;

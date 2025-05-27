@@ -17,5 +17,5 @@ void int_20() {
 }
 
 void int_21() {
-	kbd_get_char();
+	kbd_get_key();
 }

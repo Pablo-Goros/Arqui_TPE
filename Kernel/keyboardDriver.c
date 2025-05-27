@@ -71,7 +71,8 @@ static const char tbl_shift[128] = {
     [0x39] = ' ', // Space
     /* others left as 0 */
 };
-static void kbd_get_key(void) {
+
+void kbd_get_key(void) {
     uint8_t sc = get_key_asm();
 
     uint8_t make_flag = !(sc & 0x80);

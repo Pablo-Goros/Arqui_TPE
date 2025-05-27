@@ -2,14 +2,13 @@
 #include "naiveConsole.h"
 #include "time_display.h"
 
-static void format(uint8_t v, char *dst);
+// static void format(uint8_t v, char *dst);
 
 static char bcd2char(uint8_t bcd);
 
 static time t;
 
 time* getTime(void) {
-    time t;
     t.sec   = bcd2char( read_RTC(0) );  // seconds
     t.min   = bcd2char( read_RTC(2) );  // minutes
     t.hour  = bcd2char( read_RTC(4) );  // hours
@@ -54,8 +53,10 @@ static char bcd2char(uint8_t bcd) {
     return (char)(((bcd >> 4) * 10) + (bcd & 0x0F));
 }
 
-//! QUIZAS SIRVA QUIZAS NO, REVISAR
+/*
+! QUIZAS SIRVA QUIZAS NO, REVISAR
 static void format(uint8_t v, char *dst) {
   dst[0] = '0' + v/10;
   dst[1] = '0' + v%10;
 }
+*/
