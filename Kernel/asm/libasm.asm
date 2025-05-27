@@ -1,5 +1,5 @@
 GLOBAL cpuVendor
-
+GLOBAL getKeyPressed
 section .text
 	
 cpuVendor:
@@ -25,3 +25,21 @@ cpuVendor:
 	mov rsp, rbp
 	pop rbp
 	ret
+
+getKeyPressed:
+	push rbp
+    mov rbp, rsp
+
+.wait:
+    in al, 0x64 ; read from keyboard controller
+    test al, 0x01    ; ¿OBF = 1?    (al & 0x01)
+    jz .wait ; if OB = 0, keep waiting
+    ; else, get char
+
+    xor rax, rax ; clear rax
+
+    in al, 0x60 ; read from keyboard controller
+
+    mov rsp, rbp
+    pop rbp
+    ret

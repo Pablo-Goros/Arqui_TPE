@@ -1,6 +1,7 @@
 #include "commands.h"
 
 void cmd_help() {
+
 }
 
 void cmd_time() {

@@ -1,18 +1,17 @@
-/* /*
 #include <keyboard.h>
-#include "video.h"
 #include <lib.h>
+#include "videoDriver.h"
 
 extern uint8_t getKeyPressed(void);
 
-/* scancode de Shift 
+// scancode de Shift 
 #define SC_LSHIFT_MAKE   0x2A
 #define SC_LSHIFT_BREAK  0xAA
 #define SC_RSHIFT_MAKE   0x36
 #define SC_RSHIFT_BREAK  0xB6
 #define SC_EXTENDED      0xE0
 
-/* Tabla scancode→ASCII: [no-shift, shift] 
+/* Tabla scancode→ASCII: [no-shift, shift] */
 static const char sc_to_ascii[58][2] = {
     {0,0}, {27,27}, {'1','!'}, {'2','@'}, {'3','#'}, {'4','$'},
     {'5','%'}, {'6','^'}, {'7','&'}, {'8','*'}, {'9','('}, {'0',')'},
@@ -28,25 +27,29 @@ static const char sc_to_ascii[58][2] = {
     {0,0},{' ',' '}
 };
 
-/**
+/*
  * Lee un scancode y devuelve:
  *  - SC_LSHIFT_MAKE / SC_LSHIFT_BREAK para Shift
  *  - 0 para break de otras teclas o códigos fuera de rango
  *  - el ASCII traducido (según shift) para un make válido
+ */
+
  
-char getPressed(char shift) {
+char getSpecialPressed() {
     uint8_t sc = getKeyPressed();
+
+    int shift = 0;
 
     // 1) Shift make/break de ambos lados
     if (sc == SC_LSHIFT_MAKE || sc == SC_RSHIFT_MAKE) 
-        return SC_LSHIFT_MAKE;     // unificamos ambos como “make”
+        shift = 1;    // unificamos ambos como “make”
     if (sc == SC_LSHIFT_BREAK || sc == SC_RSHIFT_BREAK) 
-        return SC_LSHIFT_BREAK;    // idem “break”
+        shift = 0;    // idem “break”
 
-    // 2) Ignorar prefijo de scancode extendido
-    if (sc == SC_EXTENDED)  
-        return 0;
 
+    if (sc == SC_CAPS_LOCK) {
+
+    }
     // Scancode fuera de la tabla
     if (sc >= 58)  
         return 0;
@@ -77,10 +80,15 @@ void pressKey() {
 
         // Ya es un carácter imprimible o especial
         switch (c) {
-            case 8:   vga_delete();   break;   // Backspace
+            case 8:   k_delete();   break;   // Backspace
             case 13:  vga_new_line();  break;   // Enter
-            default:  vga_putc(c);         // Letra, número, símbolo
+            default:  vga_put(c);         // Letra, número, símbolo
         }
     }
 }
-*/
+
+void  k_put(char c){
+vd_put
+}
+
+

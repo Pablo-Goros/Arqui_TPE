@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "videodriver.h": "c",
+        "stdint.h": "c"
+    }
+}

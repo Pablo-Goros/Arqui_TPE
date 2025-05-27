@@ -2,23 +2,9 @@
 #include "time.h"
 #include <stdint.h>
 #include <stdarg.h>
-#include <naiveConsole.h>
+#include "videoDriver.h"
 
 
-#define SYSCALL_READ                        0
-#define SYSCALL_WRITE                       1
-#define SYSCALL_REGISTERS                   2
-#define SYSCALL_GET_TIME                    4
-#define SYSCALL_SET_CURSOR                  5
-#define SYSCALL_SET_FONT_COLOR              7
-#define SYSCALL_SET_ZOOM                    8
-#define SYSCALL_DRAW_RECTANGLE              9
-#define SYSCALL_SET_BACKGROUND_FONT_COLOR  10
-#define SYSCALL_DRAW_SPRAY                 11
-#define SYSCALL_PLAY_SOUND                 12
-#define SYSCALL_STOP_SOUND                 13
-#define SYSCALL_GET_TICKS                  14
-#define SYSCALL_SLEEP                      35
 
 uint64_t sysCallDispatcher(uint64_t rax, ...) {
     va_list args;
@@ -27,16 +13,14 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
     uint64_t ret = 0;
 
     switch (rax) {
-        /*
-        case SYSCALL_READ: {
+        case SYS_READ: {
             uint64_t fd    = va_arg(args, uint64_t);
             uint64_t buf   = va_arg(args, uint64_t);
             uint64_t count = va_arg(args, uint64_t);
             ret = sys_read(fd, buf, count);
             break;
         }
-        */
-        case SYSCALL_WRITE: {
+        case SYS_WRITE: {
             FileDescriptor fd = va_arg(args, FileDescriptor);
             const char *buf   = va_arg(args, const char *);
             uint64_t     count = va_arg(args, uint64_t);
@@ -44,88 +28,44 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
-/*
-        case SYSCALL_REGISTERS:
+        case SYS_REGISTERS:
             ret = getRegisters();
             break;
 
-        case SYSCALL_GET_TIME:
+        case SYS_GET_TIME:
             ret = (uint64_t)getTime();
             break;
 
-        case SYSCALL_SET_CURSOR: {
+        case SYS_SET_CURSOR: {
             int x = (int)va_arg(args, uint64_t);
             int y = (int)va_arg(args, uint64_t);
-            sys_setCursor(x, y);
+            vd_set_cursor(x, y);
             ret = 0;
             break;
         }
-
-        case SYSCALL_SET_FONT_COLOR: {
+        
+        /*
+        case SYS_SET_FONT_COLOR: {
             uint32_t hexColor = va_arg(args, uint32_t);
             setFontColor(hexColor);
             ret = 0;
             break;
-        }
+        } */
 
-        case SYSCALL_SET_ZOOM: {
-            uint64_t new_zoom = va_arg(args, uint64_t);
-            sys_setZoom(new_zoom);
-            ret = 0;
-            break;
-        }
-
-        case SYSCALL_DRAW_RECTANGLE: {
-            Point   *p1 = va_arg(args, Point *);
-            Point   *p2 = va_arg(args, Point *);
-            uint32_t  c  = va_arg(args, uint32_t);
-            drawRectangle(p1, p2, c);
-            ret = 0;
-            break;
-        }
-
-        case SYSCALL_SET_BACKGROUND_FONT_COLOR: {
-            uint32_t hexColor = va_arg(args, uint32_t);
-            changeBackgroundColor(hexColor);
-            ret = 0;
-            break;
-        }
-
-        case SYSCALL_DRAW_SPRAY: {
-            uint64_t spray  = va_arg(args, uint64_t);
-            uint64_t size_x = va_arg(args, uint64_t);
-            uint64_t size_y = va_arg(args, uint64_t);
-            drawSpray(size_x, size_y, spray, cursorX, cursorY);
-            ret = 0;
-            break;
-        }
-
-        case SYSCALL_PLAY_SOUND: {
-            uint64_t frequency = va_arg(args, uint64_t);
-            playSound(frequency);
-            ret = 0;
-            break;
-        }
-
-        case SYSCALL_STOP_SOUND:
-            stopSound();
-            ret = 0;
-            break;
-
-        case SYSCALL_GET_TICKS:
+        case SYS_GET_TICKS:
             ret = getTicks();
             break;
 
-        case SYSCALL_SLEEP: {
+        case SYS_SLEEP: {
             int seconds = (int)va_arg(args, uint64_t);
             sys_sleep(seconds);
             ret = 0;
             break;
         }
-*/
+
         default:
-            // syscall no reconocido
-            ret = (uint64_t)-1;
+            // syscall not recognized
+            ret = SYS_ERR;
             break;
     }
 
@@ -133,12 +73,28 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
     return ret;
 }
 
-/* toca implementar aca todos los syscalls posibles*/
-
-void sys_write(FileDescriptor fd, const char *buf, size_t count){  /*MUY RUSTICO*/
-    if(fd == STDOUT || fd == STDERR) {
-        ncPrint(buf);
+void sys_write(FileDescriptor fd, const char *buf, size_t count){  
+    if (fd != STDOUT && fd != STDERR) {
+        return;
     }
+    
+    for (int i = 0; i < count; i++) {
+        vd_put_char(buf[i], fd);
+    }      
+    return;
+}
+
+uint64_t sys_read(FileDescriptor fd, char *buf, size_t count) {
+    if (fd == STDIN) {
+        int i = 0;
+        while (i < count) {
+        char c = getPressed();
+        buf[i++] = c;
+        }   
+    return i;          
+    }
+
+    return 0;
 }
 
 
