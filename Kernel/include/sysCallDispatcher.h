@@ -2,7 +2,9 @@
 #define _SYSCALLS_H_
 
 #include <stdint.h> 
-#include <stdlib.h>
+#include <stdarg.h>
+
+typedef unsigned long size_t;
 
 typedef enum {
     STDIN = 0,

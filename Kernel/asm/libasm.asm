@@ -1,5 +1,5 @@
 GLOBAL cpuVendor
-GLOBAL getKeyPressed
+GLOBAL get_key_asm
 section .text
 	
 cpuVendor:
@@ -26,7 +26,7 @@ cpuVendor:
 	pop rbp
 	ret
 
-getKeyPressed:
+get_key_asm:
 	push rbp
     mov rbp, rsp
 

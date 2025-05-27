@@ -2,10 +2,11 @@
 #define _LIBC_H_
 
 #include <stdint.h>
-
+#include "libasm.h"
+#include "syscallDefs.h"
+#include <stdint.h>
 
 typedef uint64_t size_t;
-typedef int64_t  ssize_t;
 
 /* Time structure */
 typedef struct {
@@ -23,7 +24,7 @@ typedef struct {
 void     putChar(char c);
 char     getChar(void);
 void     putString(const char *s);
-int      getLine(char *buf, size_t maxlen);   /* read up to maxlen–1 chars + '\0' */ 
+// int      getLine(char *buf, size_t maxlen);   /* read up to maxlen–1 chars + '\0' */ 
 
 /* ------------------------------------------------------------------------- */
 /* String and memory routines                                                */
@@ -56,8 +57,8 @@ void     sleep(uint64_t seconds);
 /* ------------------------------------------------------------------------- */
 /* Cursor control & screen clearing                                          */
 /* ------------------------------------------------------------------------- */
-void     setCursor(uint32_t x, uint32_t y);
-void     cleanFullScreen(void);
+void     set_cursor(uint32_t x, uint32_t y);
+void     clear_screen(void);
 
 /* ------------------------------------------------------------------------- */
 /* Exception / halt helper                                                    */
@@ -69,5 +70,6 @@ void     hltUntilQ(void);
 /* ------------------------------------------------------------------------- */
 uint64_t *getRegisters(void);
 void      showRegisters(void);    /* print regs to stdout */ 
+
 
 #endif /* _LIBC_H_ */

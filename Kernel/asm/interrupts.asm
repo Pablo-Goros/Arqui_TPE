@@ -19,6 +19,8 @@ GLOBAL _irq05Handler
 GLOBAL _irqWriteHandler
 GLOBAL _syscallHandler
 
+GLOBAL _int80Handler
+
 GLOBAL _exception0Handler ; Zero Division Exception
 GLOBAL _exception6Handler ; Invalid Opcode Exception
 

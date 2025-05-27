@@ -1,12 +1,12 @@
 #include "shell.h"
-#include "commands.h"
-
 
 #define MAX_CMD_LENGTH 256 
 
-
 void shell(void) {
-
+    clear_screen();
+    set_cursor(0, 0);   
+    putString("Welcome to the shell!\n");
+    putString("Type 'help' for a list of commands.\n");
     while (1) {
         char command[MAX_CMD_LENGTH];
         int len = 0;

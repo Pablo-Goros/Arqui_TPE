@@ -13,6 +13,7 @@ void cmd_registers() {
 }
 
 void cmd_pong() {
+    
 }
 
 void cmd_div0() {

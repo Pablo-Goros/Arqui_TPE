@@ -1,9 +1,4 @@
 #include "libc.h"
-#include "libasm.h"
-#include "syscallDefs.h"
-#include <stdint.h>
-
-
 
 static int scan(char * buf, uint32_t count) {
     return sys_call((uint64_t) SYS_READ, (uint64_t) STDIN,(uint64_t) buf,(uint64_t) count, 0);
@@ -26,16 +21,16 @@ char getChar(void) {
 }
 
 void putString(const char *str) {
-    while (*str) {
-        putChar(*str++);
-    }
+    sys_call(SYS_WRITE, STDOUT, (uint64_t)str, strlen(str), 0);
 }
 
+//? la vamos a usar? 
+/*
 int getLine(char *buf, size_t maxlen) {
     scan(buf, maxlen);
     return buf;   
 }
-
+*/
 /* ------------------------------------------------------------------------- */
 /* String and memory routines                                                */
 /* ------------------------------------------------------------------------- */
@@ -177,6 +172,15 @@ void sleep(uint64_t seconds) {
 /* Cursor control & screen clearing                                          */
 /* ------------------------------------------------------------------------- */
 
+void clear_screen(void) {
+    // invoke SYS_CLEAR_SCREEN (no args)
+    sys_call(SYS_CLEAR_SCREEN, 0, 0, 0, 0);
+}
+
+void set_cursor(uint32_t col, uint32_t row) {
+    // invoke SYS_SET_CURSOR with (col, row)
+    sys_call(SYS_SET_CURSOR, (uint64_t)col, (uint64_t)row, 0, 0);
+}
 
 /* ------------------------------------------------------------------------- */
 /* Exception / halt helper                                                    */

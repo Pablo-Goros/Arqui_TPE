@@ -14,11 +14,13 @@ sys_call:
     mov r10, r8         ; arg4
     int 0x80
     ret
+
 ; wait for interrupt
 _hlt:
 	sti
 	hlt
 	ret
+
 ; disable interrupts
 _cli:
 	cli

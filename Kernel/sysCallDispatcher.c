@@ -1,8 +1,7 @@
 #include "sysCallDispatcher.h"
 #include "time.h"
-#include <stdint.h>
-#include <stdarg.h>
 #include "videoDriver.h"
+#include "keyboardDriver.h"
 
 
 
@@ -15,7 +14,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
     switch (rax) {
         case SYS_READ: {
             uint64_t fd    = va_arg(args, uint64_t);
-            uint64_t buf   = va_arg(args, uint64_t);
+            const char * buf   = va_arg(args, const char *);
             uint64_t count = va_arg(args, uint64_t);
             ret = sys_read(fd, buf, count);
             break;
@@ -29,11 +28,11 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
         }
         case SYS_REGISTERS:
-            ret = getRegisters();
+            //ret = getRegisters();
             break;
 
         case SYS_GET_TIME:
-            ret = (uint64_t)getTime();
+            //ret = (uint64_t)getTime();
             break;
 
         case SYS_SET_CURSOR: {
@@ -43,7 +42,10 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
-        
+        case SYS_CLEAR_SCREEN:
+            vd_clear_screen();
+            ret = 0;
+            break;
         /*
         case SYS_SET_FONT_COLOR: {
             uint32_t hexColor = va_arg(args, uint32_t);
@@ -58,7 +60,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
 
         case SYS_SLEEP: {
             int seconds = (int)va_arg(args, uint64_t);
-            sys_sleep(seconds);
+            sleep(seconds * 18); // Assuming 18 ticks per second
             ret = 0;
             break;
         }
@@ -87,12 +89,15 @@ void sys_write(FileDescriptor fd, const char *buf, size_t count){
 uint64_t sys_read(FileDescriptor fd, char *buf, size_t count) {
     if (fd == STDIN) {
         int i = 0;
-        while (i < count) {
-        char c = getPressed();
-        buf[i++] = c;
-        }   
-    return i;          
-    }
+        while (i < count && kbd_has_char()) {
+            char c = kbd_get_char();
+            buf[i++] = c;
+            if (buf[i - 1] == '\n') {
+                break;
+            }
+        }
+        return i;
+    }   
 
     return 0;
 }
