@@ -208,6 +208,7 @@ uint64_t *getRegisters(void) {
     return (uint64_t *) sys_call(SYS_REGISTERS, 0, 0, 0, 0);
 }
 
+//! ESTO NO TIENE Q IR ACA, LO MANDARIA AL VIDEO DRIVER O ALGO ASI
 void showRegisters(void) {
     static const char *names[16] = {
         "RAX","RBX","RCX","RDX",

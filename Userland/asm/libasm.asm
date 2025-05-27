@@ -3,6 +3,9 @@ GLOBAL _hlt
 GLOBAL _cli
 GLOBAL _sti
 
+GLOBAL _div0
+GLOBAL _ioc
+
 section .text
 
 ; syscall handler
@@ -30,3 +33,16 @@ _cli:
 _sti:
 	sti
 	ret
+
+    ; divide by zero
+_div0:
+    mov rax, 0
+    mov rdx, 0
+    div rax
+    ret
+
+
+; invalid opcode 
+_ioc:
+    ud2
+    ret

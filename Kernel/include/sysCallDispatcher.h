@@ -3,6 +3,10 @@
 
 #include <stdint.h> 
 #include <stdarg.h>
+#include "time_display.h"
+#include "time.h"
+#include "keyboardDriver.h"
+#include "interrupts.h"
 
 typedef unsigned long size_t;
 

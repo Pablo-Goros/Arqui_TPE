@@ -32,6 +32,13 @@ void vd_init(void);
 void vd_put_char(unsigned char c, FileDescriptor fd);
 
 /**
+ * @brief Draw a string at the current cursor, advance, wrap & scroll.
+ * @args c:  String to draw
+ *       fd: FileDescriptor (STDOUT or STDERR) to select text color
+ */
+void vd_put_string(const char *str, FileDescriptor fd);
+
+/**
  * @brief Clear the entire screen and reset the cursor to the top‐left.
  */
 void vd_clear_screen(void);
@@ -42,5 +49,12 @@ void vd_clear_screen(void);
  *       row: Row index (0..)
  */
 void vd_set_cursor(int col, int row);
+
+/**
+ * @brief Set the zoom level for the text.
+ *        The zoom level affects the size of characters drawn on the screen.
+ * @args new_zoom: New zoom level (1 to 10)
+ */
+void vd_set_zoom(int new_zoom);
 
 #endif 

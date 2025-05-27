@@ -1,9 +1,5 @@
 #include "sysCallDispatcher.h"
-#include "time.h"
 #include "videoDriver.h"
-#include "keyboardDriver.h"
-
-
 
 uint64_t sysCallDispatcher(uint64_t rax, ...) {
     va_list args;
@@ -80,9 +76,9 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
 
         case SYS_EXIT:
             // disable further interrupts and halt forever
-            cli();
-            for (;;) {
-                hlt();
+            _cli();
+            while(1) {
+                _hlt();
             }
 
         default:
@@ -99,10 +95,8 @@ void sys_write(FileDescriptor fd, const char *buf, size_t count){
     if (fd != STDOUT && fd != STDERR) {
         return;
     }
-    
-    for (int i = 0; i < count; i++) {
-        vd_put_char(buf[i], fd);
-    }      
+    vd_put_string(buf, fd);
+
     return;
 }
 

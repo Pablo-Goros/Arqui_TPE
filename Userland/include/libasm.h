@@ -51,4 +51,18 @@ extern void _cli(void);
  */
 extern void _sti(void);
 
+/**
+ * @brief Force a divide-by-zero exception.
+ *
+ * Clears RAX/RDX then does DIV RAX.
+ */
+extern void _div(void);
+
+/**
+ * @brief Force an invalid-opcode exception.
+ *
+ * Executes UD2.
+ */
+extern void _ioe(void);
+
 #endif // LIBASM_H

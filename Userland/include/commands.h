@@ -2,6 +2,7 @@
 #define COMMANDS_H
 
 #include "libc.h"  
+#include "libasm.h"
 
 /**
  * @file commands.h
@@ -33,10 +34,14 @@ void cmd_pong(void);
  */
 void cmd_div0(void);
 
+extern void _div0(void); // Defined in assembly, triggers a divide-by-zero exception
+
 /**
  * @brief Trigger an invalid-opcode exception for testing.
  */
 void cmd_invalid_opcode(void);
+
+extern void _ioc(void); // Defined in assembly, triggers an invalid-opcode exception
 
 /**
  * @brief Clear the terminal screen.
@@ -51,6 +56,6 @@ void cmd_shutdown(void);
 /**
  * @brief Adjust the text zoom level.
  */
-void cmd_zoom(void);
+void cmd_zoom(int zoom_level);
 
 #endif // COMMANDS_H

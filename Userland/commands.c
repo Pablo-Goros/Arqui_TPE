@@ -1,9 +1,7 @@
 #include "commands.h"
-#include <libc.h>
 
 void cmd_help() {
     clear_screen(); //funcion para limpiar pantalla
-    help();//imprime los mensajes
 
     set_zoom(2);
     set_cursor(0, 0);
@@ -21,7 +19,6 @@ void cmd_help() {
     putChar('\n');
     putString("\t Press 'q' to quit");
     hltUntilQ();
-
 }
 
 void cmd_time() {
@@ -52,11 +49,11 @@ void cmd_pong() {
 }
 
 void cmd_div0() {
-
+    _div0();
 }
 
 void cmd_invalid_opcode() {
-
+    _ioc();
 }
 
 void cmd_clear(void) {
@@ -68,5 +65,5 @@ void cmd_zoom(int zoom_level) {
 }
 
 void cmd_exit(void) {
-    syscall(SYS_EXIT, 0, 0, 0, 0);
+    sys_call(SYS_EXIT, 0, 0, 0, 0);
 }

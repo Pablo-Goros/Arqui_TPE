@@ -78,8 +78,6 @@ static void draw_char(char c) {
     }
 }
 
-
-
 void vd_put_char(unsigned char c, FileDescriptor fd) {
     text_color = (fd == STDOUT) ? COLOR_WHITE : COLOR_RED;
 
@@ -115,12 +113,18 @@ void vd_put_char(unsigned char c, FileDescriptor fd) {
     }
 }
 
+void vd_put_string(const char *str, FileDescriptor fd) {
+    while (*str) {
+        vd_put_char(*str++, fd);
+    }
+}
+
 void vd_init(void) {
     cursorX = cursorY = 0;
     vd_clear_screen();
 }
 
-void vd_set_zoom(int new_zoom){
+void vd_set_zoom(int new_zoom) {
     zoom = new_zoom;
 }
 

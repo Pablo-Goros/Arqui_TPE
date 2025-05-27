@@ -61,6 +61,7 @@ void     sleep(uint64_t seconds);
 /* ------------------------------------------------------------------------- */
 void     set_cursor(uint32_t x, uint32_t y);
 void     clear_screen(void);
+void     set_zoom(int level);
 
 /* ------------------------------------------------------------------------- */
 /* Exception / halt helper                                                    */
