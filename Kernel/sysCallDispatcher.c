@@ -32,7 +32,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
 
         case SYS_GET_TIME:
-            //ret = (uint64_t)getTime();
+            ret = (uint64_t)getTime();
             break;
 
         case SYS_SET_CURSOR: {
@@ -42,10 +42,11 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
-        case SYS_CLEAR_SCREEN:
+        case SYS_CLEAR_SCREEN: {
             vd_clear_screen();
             ret = 0;
             break;
+        }
         /*
         case SYS_SET_FONT_COLOR: {
             uint32_t hexColor = va_arg(args, uint32_t);
@@ -54,9 +55,10 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
         } */
 
-        case SYS_GET_TICKS:
+        case SYS_GET_TICKS: {
             ret = getTicks();
             break;
+        }
 
         case SYS_SLEEP: {
             int seconds = (int)va_arg(args, uint64_t);
@@ -64,6 +66,24 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
+
+        case SYS_SET_ZOOM: {
+            int zoom_level = (int)va_arg(args, uint64_t);
+            if (zoom_level >= ZOOM_MIN && zoom_level <= ZOOM_MAX) {
+                vd_set_zoom(zoom_level);
+                ret = 0;
+            } else {
+                ret = SYS_ERR; // Invalid zoom level
+            }
+            break;
+        }
+
+        case SYS_EXIT:
+            // disable further interrupts and halt forever
+            cli();
+            for (;;) {
+                hlt();
+            }
 
         default:
             // syscall not recognized

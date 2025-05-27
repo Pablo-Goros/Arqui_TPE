@@ -182,6 +182,14 @@ void set_cursor(uint32_t col, uint32_t row) {
     sys_call(SYS_SET_CURSOR, (uint64_t)col, (uint64_t)row, 0, 0);
 }
 
+void set_zoom(int level) {
+    if (level < ZOOM_MIN || level > ZOOM_MAX) {
+        putString("Invalid zoom level. Must be between 1 and 10\n");
+        return;
+    }
+    sys_call(SYS_SET_ZOOM, (uint64_t)level, 0, 0, 0);
+}
+
 /* ------------------------------------------------------------------------- */
 /* Exception / halt helper                                                    */
 /* ------------------------------------------------------------------------- */
@@ -223,3 +231,6 @@ void showRegisters(void) {
         putChar('\n');
     }
 }
+
+
+

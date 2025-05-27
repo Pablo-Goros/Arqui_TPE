@@ -120,6 +120,10 @@ void vd_init(void) {
     vd_clear_screen();
 }
 
+void vd_set_zoom(int new_zoom){
+    zoom = new_zoom;
+}
+
 void vd_set_cursor(int col, int row) {
     cursorX = col * CHAR_WIDTH * zoom;
     cursorY = row * CHAR_HEIGHT * zoom;

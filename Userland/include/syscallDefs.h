@@ -14,6 +14,9 @@ typedef enum {
 #define SYS_GET_TIME        4
 #define SYS_SET_CURSOR      5
 #define SYS_CLEAR_SCREEN    6
+#define SYS_SET_ZOOM        7
+
+#define SYS_EXIT            8
 #define SYS_GET_TICKS       14
 #define SYS_SLEEP           35
 

@@ -11,6 +11,8 @@
 #define COLOR_BLACK 0x000000
 #define COLOR_RED 0xFF0000
 
+#define ZOOM_MAX 10  // Maximum zoom level
+#define ZOOM_MIN 1   // Minimum zoom level
 
 /** Character cell dimensions (in pixels) */ 
 #define CHAR_WIDTH   8

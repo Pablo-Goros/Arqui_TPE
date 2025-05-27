@@ -18,6 +18,8 @@ typedef struct {
     uint8_t sec;
 } Time;
 
+static const int ZOOM_MAX = 10; // Maximum zoom level
+static const int ZOOM_MIN = 1; // Minimum zoom level
 /* ------------------------------------------------------------------------- */
 /* Basic character I/O (built on sys_read/write)                             */
 /* ------------------------------------------------------------------------- */
