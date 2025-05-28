@@ -5,6 +5,7 @@ set(CMAKE_C_STANDARD 11)
 
 # Incluye headers
 include_directories(${CMAKE_SOURCE_DIR}/Kernel/include)
+include_directories(${CMAKE_SOURCE_DIR}/Userland/include)
 
 # Archivos fuente C
 set(SOURCES
@@ -12,7 +13,6 @@ set(SOURCES
         Kernel/idtLoader.c
         Kernel/irqDispatcher.c
         Kernel/kernel.c
-        Kernel/keyboard.c
         Kernel/lib.c
         Kernel/moduleLoader.c
         Kernel/naiveConsole.c
@@ -20,11 +20,15 @@ set(SOURCES
         Kernel/time.c
         Kernel/time_display.c
 )
+# Archivos fuente C de Userland (todos los .c)
+file(GLOB USERLAND_SOURCES Userland/*.c)
+
 
 # Archivos ASM
 enable_language(ASM)
 set(ASM_SOURCES
-        Kernel/loader.asm
+        Kernel/asm/interrupts.asm
+        Kernel/asm/libasm.asm
 )
 
 # Crea un ejecutable falso para análisis
