@@ -41,7 +41,11 @@ void cmd_time() {
 }
 
 void cmd_registers() {
-    
+    clear_screen();
+    showRegisters();
+    putChar('\n');
+    putString("\t Press 'q' to quit");
+    hltUntilQ();
 }
 
 void cmd_pong() {

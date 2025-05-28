@@ -18,6 +18,8 @@ typedef struct {
     uint8_t sec;
 } Time;
 
+#define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
+
 static const int ZOOM_MAX = 10; // Maximum zoom level
 static const int ZOOM_MIN = 1; // Minimum zoom level
 /* ------------------------------------------------------------------------- */
