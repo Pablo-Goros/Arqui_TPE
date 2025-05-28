@@ -173,12 +173,10 @@ void sleep(uint64_t seconds) {
 /* ------------------------------------------------------------------------- */
 
 void clear_screen(void) {
-    // invoke SYS_CLEAR_SCREEN (no args)
     sys_call(SYS_CLEAR_SCREEN, 0, 0, 0, 0);
 }
 
 void set_cursor(uint32_t col, uint32_t row) {
-    // invoke SYS_SET_CURSOR with (col, row)
     sys_call(SYS_SET_CURSOR, (uint64_t)col, (uint64_t)row, 0, 0);
 }
 
