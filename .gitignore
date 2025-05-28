@@ -8,4 +8,5 @@
 
 #Object files
 *.o
+*.bin
 .bash_history

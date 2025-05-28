@@ -1,6 +1,6 @@
 include Makefile.inc
 
-MODULE    := ../0000-sampleCodeModule.bin
+MODULE    := ./0000-sampleCodeModule.bin
 C_SRCS    := $(wildcard [^_]*.c)
 ASM_SRCS  := $(wildcard asm/*.asm)
 OBJS      := $(C_SRCS:%.c=%.o) $(ASM_SRCS:asm/%.asm=asm/%.o)
@@ -19,5 +19,8 @@ $(MODULE): $(OBJS)
 asm/%.o: asm/%.asm
 	$(ASM) $(ASFLAGS) $< -o $@
 
+# clean:
+# 	rm -f $(OBJS) $(MODULE)
+
 clean:
-	rm -f $(OBJS) $(MODULE)
+	rm -rf asm/*.o *.o *.bin

@@ -5,7 +5,7 @@
 void shell(void) {
     clear_screen();
     set_cursor(0, 0);   
-    putString("Welcome to miami!\n");
+    putString("Welcome to the shell!\n");
     putString("Type 'help' for a list of commands.\n");
     while (1) {
         char command[MAX_CMD_LENGTH];
