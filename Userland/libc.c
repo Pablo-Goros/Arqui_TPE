@@ -1,10 +1,5 @@
 #include "libc.h"
 
-static int scan(char * buf, uint32_t count) {
-    return sys_call((uint64_t) SYS_READ, (uint64_t) STDIN,(uint64_t) buf,(uint64_t) count, 0);
-}
-
-
 /* ------------------------------------------------------------------------- */
 /* Basic character I/O (built on sys_read/write)                             */
 /* ------------------------------------------------------------------------- */
@@ -13,10 +8,9 @@ void putChar(char c) {
     sys_call(SYS_WRITE, STDOUT, (uint64_t)&c, 1, 0);
 }
 
-
 char getChar(void) {
     char c;
-    scan(&c, 1);
+    sys_call((uint64_t) SYS_READ, (uint64_t) STDIN,(uint64_t) &c,(uint64_t) 1, 0);
     return c;
 }
 

@@ -11,6 +11,7 @@ static uint8_t        shift = 0;
 static uint8_t        caps = 0;
 
 
+
 /* Partial scancode→ASCII tables (fill out the rest as needed) */
 static const char tbl_no_shift[128] = {
     [0x01] = 27,    // ESC
@@ -72,24 +73,71 @@ static const char tbl_shift[128] = {
     /* others left as 0 */
 };
 
+/* Scancode→ASCII tables as before... */
+
 void kbd_get_key(void) {
+    static int last_code = -1;        // “currently pressed” scancode
+    uint8_t sc      = get_key_asm();  // now reads from port 0x60
+    uint8_t make    = !(sc & 0x80);
+    uint8_t code    = sc & 0x7F;
+
+    /* shift & caps logic */
+    if (code == 0x2A || code == 0x36) {
+        shift = make;
+        return;
+    }
+    if (code == 0x3A && make) {
+        caps = !caps;
+        return;
+    }
+
+    /* break code → clear last_code so next make is accepted */
+    if (!make) {
+        if (code == last_code) last_code = -1;
+        return;
+    }
+
+    /* make code → only accept if it isn’t a repeat */
+    if (code == last_code) {
+        // ignore auto-repeat
+        return;
+    }
+    last_code = code;
+
+    /* convert to ASCII and push into buf */
+    char ch = shift ? tbl_shift[code] : tbl_no_shift[code];
+    if (caps && ch >= 'a' && ch <= 'z') {
+        ch = ch - 'a' + 'A';
+    }
+    if (ch) {
+        buf[head] = ch;
+        head = (head + 1) % BUF_SIZE;
+        if (head == tail)  // overrun → drop oldest
+            tail = (tail + 1) % BUF_SIZE;
+    }
+}
+
+
+/*
+void kbd_get_key(void) {
+    
     uint8_t sc = get_key_asm();
 
     uint8_t make_flag = !(sc & 0x80);
     uint8_t code = sc & 0x7F;
 
-    /* Shift keys */
+    /* Shift keys 
     if (code == 0x2A || code == 0x36) {
         shift = make_flag;
     }
-    /* Caps Lock */
+    /* Caps Lock 
     else if (code == 0x3A && make_flag) {
         caps = !caps;
     }
-    /* Key press → convert & buffer */
+    /* Key press → convert & buffer 
     else if (make_flag) {
         char ch = shift ? tbl_shift[code] : tbl_no_shift[code];
-        /* apply CapsLock for letters */
+        /* apply CapsLock for letters 
         if (caps && ch >= 'a' && ch <= 'z') {
             ch = ch - 'a' + 'A';
         }
@@ -102,7 +150,7 @@ void kbd_get_key(void) {
     }
 
 }
-
+*/
 
 uint8_t kbd_has_char(void) {
     return head != tail;

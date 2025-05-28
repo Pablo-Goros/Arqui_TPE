@@ -104,7 +104,11 @@ void sys_write(FileDescriptor fd, const char *buf, size_t count){
 uint64_t sys_read(FileDescriptor fd, char *buf, size_t count) {
     if (fd == STDIN) {
         int i = 0;
-        while (i < count && kbd_has_char()) {
+        while (i < count) {
+            while (!kbd_has_char()) {
+                _sti(); // Enable interrupts to allow keyboard input
+                _hlt(); // Wait for an interrupt
+            }
             char c = kbd_get_char();
             buf[i++] = c;
             if (buf[i - 1] == '\n') {

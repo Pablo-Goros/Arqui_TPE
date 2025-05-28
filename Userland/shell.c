@@ -5,7 +5,7 @@
 void shell(void) {
     clear_screen();
     set_cursor(0, 0);   
-    putString("Welcome to the shell!\n");
+    putString("Welcome to the!\n");
     putString("Type 'help' for a list of commands.\n");
     while (1) {
         char command[MAX_CMD_LENGTH];
@@ -26,6 +26,7 @@ void shell(void) {
                 len--;
             } else if (len < MAX_CMD_LENGTH-1 && c >= ' ') {
                 command[len++] = c;
+                
                 putChar(c);
             } else if (len >= MAX_CMD_LENGTH - 1) {
                 putString("\nCommand too long, try again.\n");

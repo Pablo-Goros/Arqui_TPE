@@ -47,7 +47,7 @@ VBEInfoPtr VBE_mode_info = (VBEInfoPtr) 0x0000000000005C00;
 static int cursorX, cursorY;     // (Pixels)
 static uint32_t text_color = COLOR_WHITE;
 static uint32_t background_color = COLOR_BLACK;
-static int zoom = 1;   
+static int zoom = 2;   
 
 static uint8_t font_bitmap[256 * CHAR_HEIGHT];
 
