@@ -13,30 +13,15 @@ void cmd_help() {
     putString("  div0          - Trigger a divide-by-zero exception\n");
     putString("  ud2           - Trigger an invalid-opcode exception\n");
     putString("  zoom <NUMBER> - Set text zoom level (1-10)\n");
-    putString("  zoom in       - Increase text zoom level\n");
-    putString("  zoom out      - Decrease text zoom level\n");
     putString("  exit          - Exit the shell\n");
     putChar('\n');
-    putString("\t Press 'q' to quit");
-    hltUntilQ();
+    putString("\t Press 'c' to exit window");
+    hltUntil_c();
 }
 
 void cmd_time() {
-    Time *t = getTime();
-    char buf[9];          // "hh:mm:ss\0"
-
-    buf[0] = '0' + t->hour / 10;
-    buf[1] = '0' + t->hour % 10;
-    buf[2] = ':';
-    buf[3] = '0' + t->min  / 10;
-    buf[4] = '0' + t->min  % 10;
-    buf[5] = ':';
-    buf[6] = '0' + t->sec  / 10;
-    buf[7] = '0' + t->sec  % 10;
-    buf[8] = '\0';
-
-    putString("Current system time: ");
-    putString(buf);
+    putString("\nCurrent system time: ");
+    getTime(); // Assuming getTime() prints the time directly
     putChar('\n');
 }
 
@@ -44,8 +29,8 @@ void cmd_registers() {
     clear_screen();
     showRegisters();
     putChar('\n');
-    putString("\t Press 'q' to quit");
-    hltUntilQ();
+    putString("\t Press 'c' to quit");
+    hltUntil_c();
 }
 
 void cmd_pong() {
@@ -66,6 +51,7 @@ void cmd_clear(void) {
 
 void cmd_zoom(int zoom_level) {
     set_zoom(zoom_level);
+    putChar('\n');
 }
 
 void cmd_exit(void) {

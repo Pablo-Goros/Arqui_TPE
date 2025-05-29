@@ -7,6 +7,7 @@
 #include "time.h"
 #include "keyboardDriver.h"
 #include "interrupts.h"
+#include "libasm.h"
 
 typedef unsigned long size_t;
 

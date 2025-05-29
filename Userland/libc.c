@@ -39,7 +39,7 @@ char    *strcpy(char *dest, const char *src) {
     return dest;
 }
 
-char    *strncpy(char *dest, const char *src, size_t n) {
+char   *strncpy(char *dest, const char *src, size_t n) {
     size_t i;
 
     // Copy up to n chars or until '\0'
@@ -62,6 +62,16 @@ int strcmp(const char *s1, const char *s2) {
     return (unsigned char)*s1 - (unsigned char)*s2;
 }
 
+int strncmp(const char *s1, const char *s2, size_t n) {
+    while (n-- && *s1 && (*s1 == *s2)) {
+        s1++;
+        s2++;
+    }
+    if (n == (size_t)-1) return 0; // If n was 0, they are equal
+    return (unsigned char)*s1 - (unsigned char)*s2;
+}
+
+
 // Case-insensitive compare 
 int strcasecmp(const char *s1, const char *s2) {
     unsigned char a, b;
@@ -75,6 +85,7 @@ int strcasecmp(const char *s1, const char *s2) {
     } while (a == b && a);
     return a - b;
 }
+
 
 // Returns non-zero if c is A–Z or a–z
 int isalpha(int c) {
@@ -96,8 +107,8 @@ int tolower(int c) {
 }
 
 
-void    *memset(void *s, int c, size_t n);
-void    *memcpy(void *dest, const void *src, size_t n);
+//void    *memset(void *s, int c, size_t n);
+//void    *memcpy(void *dest, const void *src, size_t n);
 
 /* ------------------------------------------------------------------------- */
 /* Numeric conversions                                                       */
@@ -148,8 +159,8 @@ int atoi(const char *s) {
 /* Timing and delays                                                         */
 /* ------------------------------------------------------------------------- */
 
-Time* getTime() {
-	return (Time*) sys_call(SYS_GET_TIME, 0, 0, 0, 0);
+void getTime() {
+	sys_call(SYS_GET_TIME, 0, 0, 0, 0);
 }
 
 uint64_t getTicks(){
@@ -175,10 +186,6 @@ void set_cursor(uint32_t col, uint32_t row) {
 }
 
 void set_zoom(int level) {
-    if (level < ZOOM_MIN || level > ZOOM_MAX) {
-        putString("Invalid zoom level. Must be between 1 and 10\n");
-        return;
-    }
     sys_call(SYS_SET_ZOOM, (uint64_t)level, 0, 0, 0);
 }
 
@@ -186,10 +193,11 @@ void set_zoom(int level) {
 /* Exception / halt helper                                                    */
 /* ------------------------------------------------------------------------- */
 
-void hltUntilQ() {
-    while (getChar() != 'q') {
+void hltUntil_c() {
+    while (getChar() != 'c') {
         _hlt();
     }
+    clear_screen();
 }
 
 /* ------------------------------------------------------------------------- */

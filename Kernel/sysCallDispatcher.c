@@ -28,10 +28,12 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             sys_get_registers(regs);
             break;
 
-        case SYS_GET_TIME:
-            ret = (uint64_t)getTime();
+        case SYS_GET_TIME: {
+            char* time_str = getTime();
+            vd_put_string(time_str, STDOUT);
+            ret = 0;
             break;
-
+        }
         case SYS_SET_CURSOR: {
             int x = (int)va_arg(args, uint64_t);
             int y = (int)va_arg(args, uint64_t);
@@ -70,17 +72,16 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
                 vd_set_zoom(zoom_level);
                 ret = 0;
             } else {
-                ret = SYS_ERR; // Invalid zoom level
+                vd_put_string("\nInvalid zoom level. Must be between 1 and 10", STDOUT);
+                return SYS_ERR;
             }
             break;
         }
 
         case SYS_EXIT:
-            // disable further interrupts and halt forever
-            _cli();
-            while(1) {
-                _hlt();
-            }
+            
+            outw(0x604, 0x2000);  // QEMU ACPI shutdown
+        
 
         default:
             // syscall not recognized

@@ -19,7 +19,7 @@ typedef struct time {
  *
  * @return A time structure containing the current system time.
  */
-time* getTime();
+char* getTime();
 
 extern uint8_t read_RTC(uint8_t reg);
 

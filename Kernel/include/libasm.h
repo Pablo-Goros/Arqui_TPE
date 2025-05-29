@@ -1,11 +1,29 @@
+#ifndef LIBASM_H
+#define LIBASM_H
 
-void _hlt(void);
+#include <stdint.h>
 
-void _sti(void);
-void _cli(void);
+extern void _hlt(void);
+
+extern void _sti(void);
+extern void _cli(void);
 /**
  * @brief Retrieves the CPU vendor string.
  *
  * @param vendor A buffer to store the CPU vendor string.
  */
-void cpuVendor(char *vendor);
+extern void cpuVendor(char *vendor);
+
+// Send a byte to an I/O port
+extern void outb(uint16_t port, uint8_t val);
+
+// Send a word (2 bytes) to an I/O port
+extern void outw(uint16_t port, uint16_t val);
+
+// Receive a byte from an I/O port
+extern uint8_t inb(uint16_t port);
+
+// Receive a word (2 bytes) from an I/O port
+extern uint16_t inw(uint16_t port);
+
+#endif

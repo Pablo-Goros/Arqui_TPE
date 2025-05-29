@@ -78,6 +78,20 @@ static void draw_char(char c) {
     }
 }
 
+static void scroll_screen(void) {
+    uint8_t *fb    = (uint8_t*)(uintptr_t)VBE_mode_info->framebuffer;
+    uint32_t pitch = VBE_mode_info->pitch;
+    uint32_t h     = VBE_mode_info->height;
+    uint32_t lines = CHAR_HEIGHT * zoom;
+    uint64_t move_bytes = (uint64_t)(h - lines) * pitch;
+
+    // 1) slide every scanline up by “lines”
+    _memcpy(fb, fb + (uint64_t)lines * pitch, move_bytes);
+
+    // 2) clear the new bottom “lines” of pixels
+    _memset(fb + move_bytes, 0, (uint64_t)lines * pitch);
+}
+
 void vd_put_char(unsigned char c, FileDescriptor fd) {
     text_color = (fd == STDOUT) ? COLOR_WHITE : COLOR_RED;
 
@@ -108,28 +122,13 @@ void vd_put_char(unsigned char c, FileDescriptor fd) {
 
     // check if cursorY exceeds screen height
     if (cursorY + CHAR_HEIGHT * zoom > VBE_mode_info->height) { //! IMPLEMENTAR DESP
-        //scroll_screen();
-        //cursorY -= CHAR_HEIGHT * zoom;
+        scroll_screen();
+        cursorY -= CHAR_HEIGHT * zoom;
     }
 }
-/*
-static void scroll_screen(void) {
-    uint8_t *fb    = (uint8_t*)(uintptr_t)VBE_mode_info->framebuffer;
-    uint32_t pitch = VBE_mode_info->pitch;
-    uint32_t h     = VBE_mode_info->height;
-    uint32_t lines = CHAR_HEIGHT * zoom;
-    uint64_t move_bytes = (uint64_t)(h - lines) * pitch;
 
-    // 1) slide every scanline up by “lines”
-    memmove(fb, fb + (uint64_t)lines * pitch, move_bytes);
 
-    // 2) clear the new bottom “lines” of pixels
-    memset(fb + move_bytes, 0, (uint64_t)lines * pitch);
 
-    // 3) bump cursor back up one text‐row
-    cursorY -= lines;
-}
-*/
 void vd_put_string(const char *str, FileDescriptor fd) {
     while (*str) {
         vd_put_char(*str++, fd);

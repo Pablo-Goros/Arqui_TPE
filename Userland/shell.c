@@ -7,6 +7,7 @@ void shell(void) {
     set_cursor(0, 0);   
     putString("Welcome to the!\n");
     putString("Type 'help' for a list of commands.\n");
+
     while (1) {
         char command[MAX_CMD_LENGTH];
         int len = 0;
@@ -38,11 +39,39 @@ void shell(void) {
              
         if      (strcmp(command, "help")==0)            cmd_help();
         else if (strcmp(command, "time")==0)            cmd_time();
+        else if (strcmp(command, "clear")==0)           cmd_clear();
         else if (strcmp(command, "regs")==0)            cmd_registers();
         else if (strcmp(command, "pong")==0)            cmd_pong();
         else if (strcmp(command, "div0")==0)            cmd_div0();
         else if (strcmp(command, "ud2")==0)             cmd_invalid_opcode();
-        else                                            putString("Unknown command\n");
+        else if (strcmp(command, "exit")==0)            cmd_exit();
+        else if (strncmp(command, "zoom ", 5)==0) {     // Check if command starts with "zoom "
+            char* arg = command + 4;                    // Point to the argument after "zoom "
+            int valid = 1;      
+            int zoom_level = 0;         
+            if (*arg == ' ') {
+                arg++;                                  // Skip the space after "zoom "
+            
+                // Validate and convert the numeric argument
+                while (*arg != '\0') {
+                    if (*arg >= '0' && *arg <= '9') {
+                        zoom_level = zoom_level * 10 + (*arg - '0');
+                    } else {
+                        valid = 0;
+                        break;
+                    }
+                    arg++;
+                }
+                
+                
+            } 
+            if (valid) {
+                cmd_zoom(zoom_level);
+            } else {
+                putString("\nInvalid zoom level. Usage: zoom <number (Between 1 and 10)>\n");
+            }
+        }
+        else                                            putString("\nUnknown command\n");
 
     }
     return;

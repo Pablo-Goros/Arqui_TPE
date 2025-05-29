@@ -172,11 +172,32 @@ _int80Handler:
 
 	;Zero Division Exception
 _exception0Handler:
+	pushState
+
+	mov rdi, 0
+
 	exceptionHandler 0
+
+	popState
+
+
+	add     qword [rsp + 16], 2
+
+	iretq
 
 	; Invalid Opcode Exception
 _exception6Handler:
-    exceptionHandler 6   
+    pushState
+
+    mov   rdi, 6
+
+    call  exceptionDispatcher
+
+    popState
+	
+    add   qword [rsp + 16], 2
+	
+    iretq
 
 
 haltcpu:

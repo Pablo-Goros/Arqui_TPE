@@ -58,4 +58,9 @@ void cmd_shutdown(void);
  */
 void cmd_zoom(int zoom_level);
 
+/**
+ * @brief Exit the shell.
+ */
+void cmd_exit(void);
+
 #endif // COMMANDS_H

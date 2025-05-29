@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "sysCallDispatcher.h"  // for FileDescriptor Enum
+#include "libc.h"
 
 #define CHAR_WIDTH 8
 #define CHAR_HEIGHT 16

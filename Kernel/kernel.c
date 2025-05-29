@@ -1,8 +1,6 @@
 #include <stdint.h>
-//#include <string.h>
-#include <lib.h>
+#include <libc.h>
 #include "moduleLoader.h"
-#include "naiveConsole.h"
 #include "idtLoader.h"
 
 extern uint8_t text;
@@ -22,7 +20,7 @@ typedef int (*EntryPoint)();
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
 {
-	memset(bssAddress, 0, bssSize);
+	_memset(bssAddress, 0, bssSize);
 }
 
 void * getStackBase()

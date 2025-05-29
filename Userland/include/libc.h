@@ -20,8 +20,6 @@ typedef struct {
 
 #define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
 
-static const int ZOOM_MAX = 10; // Maximum zoom level
-static const int ZOOM_MIN = 1; // Minimum zoom level
 /* ------------------------------------------------------------------------- */
 /* Basic character I/O (built on sys_read/write)                             */
 /* ------------------------------------------------------------------------- */
@@ -37,6 +35,7 @@ size_t   strlen(const char *s);
 char    *strcpy(char *dest, const char *src);
 char    *strncpy(char *dest, const char *src, size_t n);
 int      strcmp(const char *s1, const char *s2);
+int      strncmp(const char *s1, const char *s2, size_t n);
 int      strcasecmp(const char *s1, const char *s2);
 int      isalpha(int c);
 int      toupper(int c);
@@ -54,7 +53,7 @@ int      atoi(const char *s);
 /* ------------------------------------------------------------------------- */
 /* Timing and delays                                                         */
 /* ------------------------------------------------------------------------- */
-Time*     getTime(void);            /* fetch system time */ 
+void     getTime(void);            /* fetch system time */ 
 uint64_t getTicks(void);           /* ticks since boot */ 
 void     sleep(uint64_t seconds);
 
@@ -68,7 +67,7 @@ void     set_zoom(int level);
 /* ------------------------------------------------------------------------- */
 /* Exception / halt helper                                                    */
 /* ------------------------------------------------------------------------- */
-void     hltUntilQ(void);
+void hltUntil_c();
 
 /* ------------------------------------------------------------------------- */
 /* CPU register inspection                                                   */

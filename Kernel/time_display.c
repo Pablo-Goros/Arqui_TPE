@@ -6,9 +6,39 @@
 
 static char bcd2char(uint8_t bcd);
 
-static time t;
+//static time t;
 
-time* getTime(void) {
+char* getTime(void) {
+    static char timeStr[9]; 
+    
+    uint8_t sec = bcd2char(read_RTC(0));
+    uint8_t min = bcd2char(read_RTC(2));
+    uint8_t hour = bcd2char(read_RTC(4));
+    
+    // Apply timezone correction (subtract 3 hours)
+    if (hour < 3) {
+        hour = hour + 24 - 3;  // Handle edge cases
+    } else {
+        hour = hour - 3;
+    }
+
+    // Format the time string
+    timeStr[0] = '0' + hour/10;
+    timeStr[1] = '0' + hour%10 ;
+    timeStr[2] = ':';
+    timeStr[3] = '0' + min/10;
+    timeStr[4] = '0' + min%10;
+    timeStr[5] = ':';
+    timeStr[6] = '0' + sec/10;
+    timeStr[7] = '0' + sec%10;
+    timeStr[8] = ' ';
+    // Add date if needed...
+    timeStr[9] = '\0';
+    
+    return timeStr;
+}
+/*
+Time* getTime(void) {
     t.sec   = bcd2char( read_RTC(0) );  // seconds
     t.min   = bcd2char( read_RTC(2) );  // minutes
     t.hour  = bcd2char( read_RTC(4) );  // hours
@@ -17,7 +47,7 @@ time* getTime(void) {
     t.year  = bcd2char( read_RTC(9) );  // year (00–99)
     return &t;
 }
-
+*/
 uint8_t get_secs(void) {
     uint8_t seconds = read_RTC(0);
     return seconds;
