@@ -68,6 +68,24 @@ static void putMultPixel(uint32_t hexColor, uint64_t x, uint64_t y, int mult) {
     }
 }
 
+void vd_draw_rect(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t color) {
+    for (uint64_t i = 0; i < width; i++) {
+        for (uint64_t j = 0; j < height; j++) {
+            putPixel(color, x + i, y + j);
+        }
+    }
+}
+
+void vd_draw_circle(int cx, int cy, int radius, uint32_t color) {//Nota: posibles errores si los tipos no coinciden
+    for(int dy = -radius; dy <= radius; dy++) {
+        for(int dx = -radius; dx <= radius; dx++) {
+            if(dx*dx + dy*dy <= radius*radius) {
+                putPixel(color, cx + dx, cy + dy);
+            }
+        }
+    }
+}
+
 static void draw_char(char c) {
     int mask[8]={0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01}; //mascara para cada bit
     unsigned char * glyph=font_bitmap+(int)c*16; // se posiciona en la letra correspondiente

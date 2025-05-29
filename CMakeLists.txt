@@ -18,6 +18,8 @@ set(SOURCES
         Kernel/sysCallDispatcher.c
         Kernel/time.c
         Kernel/time_display.c
+        Kernel/pongis.c
+        Kernel/include/pongis.h
 )
 # Archivos fuente C de Userland (todos los .c)
 file(GLOB USERLAND_SOURCES Userland/*.c)
@@ -28,6 +30,8 @@ enable_language(ASM)
 set(ASM_SOURCES
         Kernel/asm/interrupts.asm
         Kernel/asm/libasm.asm
+        Kernel/trig.c
+        Kernel/include/trig.h
 )
 
 # Crea un ejecutable falso para análisis
