@@ -4,6 +4,8 @@
 #include "libc.h"
 #include "commands.h"
 
+void shell_init(void);
+
 void shell(void);
 
 #endif

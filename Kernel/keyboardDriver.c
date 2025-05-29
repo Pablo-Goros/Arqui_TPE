@@ -102,7 +102,6 @@ void kbd_get_key(void) {
                 tail = (tail + 1) % BUF_SIZE;
         }
     }
-
 }
 
 

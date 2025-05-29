@@ -2,6 +2,7 @@
     "files.associations": {
         "videodriver.h": "c",
         "stdint.h": "c",
-        "syscalldispatcher.h": "c"
+        "syscalldispatcher.h": "c",
+        "exceptiondispatcher.h": "c"
     }
 }

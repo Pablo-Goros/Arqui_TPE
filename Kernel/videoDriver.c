@@ -1,7 +1,6 @@
 
 #include <videoDriver.h>
 #include "sysCallDispatcher.h"
-#include "libasm.h"
 
 struct vbe_mode_info_structure {
     uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
@@ -68,24 +67,6 @@ static void putMultPixel(uint32_t hexColor, uint64_t x, uint64_t y, int mult) {
     }
 }
 
-void vd_draw_rect(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t color) {
-    for (uint64_t i = 0; i < width; i++) {
-        for (uint64_t j = 0; j < height; j++) {
-            putPixel(color, x + i, y + j);
-        }
-    }
-}
-
-void vd_draw_circle(int cx, int cy, int radius, uint32_t color) {//Nota: posibles errores si los tipos no coinciden
-    for(int dy = -radius; dy <= radius; dy++) {
-        for(int dx = -radius; dx <= radius; dx++) {
-            if(dx*dx + dy*dy <= radius*radius) {
-                putPixel(color, cx + dx, cy + dy);
-            }
-        }
-    }
-}
-
 static void draw_char(char c) {
     int mask[8]={0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01}; //mascara para cada bit
     unsigned char * glyph=font_bitmap+(int)c*16; // se posiciona en la letra correspondiente
@@ -140,9 +121,15 @@ void vd_put_char(unsigned char c, FileDescriptor fd) {
     }
 
     // check if cursorY exceeds screen height
-    if (cursorY + CHAR_HEIGHT * zoom > VBE_mode_info->height) { //! IMPLEMENTAR DESP
+    if (cursorY + CHAR_HEIGHT * zoom > VBE_mode_info->height) { 
         scroll_screen();
         cursorY -= CHAR_HEIGHT * zoom;
+    }
+}
+
+void vd_put_string(const char *str, FileDescriptor fd) {
+    while (*str) {
+        vd_put_char(*str++, fd);
     }
 }
 
@@ -190,7 +177,7 @@ int itoa(int64_t value, char *buf, int base) {
 }
 
 
-void vd_show_registers(){
+void vd_show_registers(FileDescriptor fd){
     static const char *names[NUMBER_OF_REGISTERS] = {
             "RAX","RBX","RCX","RDX",
             "RSI","RDI","RBP","RSP",
@@ -204,19 +191,14 @@ void vd_show_registers(){
 
     char buf[NUMBER_OF_REGISTERS *2]; // Enough space for 18 registers in hex + ": 0x" + '\n'
     for (int i = 0; i < NUMBER_OF_REGISTERS; i++) {
-        vd_put_string(names[i], STDOUT);
-        vd_put_string(": 0x",STDOUT);
+        vd_put_string(names[i], fd);
+        vd_put_string(": 0x",fd);
         itoa(regs[i], buf, 16);
-        vd_put_string(buf,STDOUT);
-        vd_put_string("\n", STDOUT);
+        vd_put_string(buf,fd);
+        vd_put_string("\n", fd);
     }
 }
 
-void vd_put_string(const char *str, FileDescriptor fd) {
-    while (*str) {
-        vd_put_char(*str++, fd);
-    }
-}
 
 void vd_init(void) {
     cursorX = cursorY = 0;
@@ -224,7 +206,8 @@ void vd_init(void) {
 }
 
 void vd_set_zoom(int new_zoom) {
-    zoom = new_zoom;
+    zoom = new_zoom; // Set the new zoom value
+    vd_clear_screen(); // Clear the screen to apply the new zoom level and avoid weird interactions
 }
 
 void vd_set_cursor(int col, int row) {

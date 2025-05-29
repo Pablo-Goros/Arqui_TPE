@@ -51,7 +51,6 @@ void cmd_clear(void) {
 
 void cmd_zoom(int zoom_level) {
     set_zoom(zoom_level);
-    putChar('\n');
 }
 
 void cmd_exit(void) {

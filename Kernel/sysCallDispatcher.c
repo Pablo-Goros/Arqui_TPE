@@ -24,7 +24,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
         }
         case SYS_REGISTERS:
-            vd_show_registers();
+            vd_show_registers(STDOUT);
             break;
 
         case SYS_GET_TIME: {
@@ -45,18 +45,6 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
-        /*
-        case SYS_SET_FONT_COLOR: {
-            uint32_t hexColor = va_arg(args, uint32_t);
-            setFontColor(hexColor);
-            ret = 0;
-            break;
-        } */
-
-        case SYS_GET_TICKS: {
-            ret = getTicks();
-            break;
-        }
 
         case SYS_SLEEP: {
             int seconds = (int)va_arg(args, uint64_t);
@@ -71,7 +59,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
                 vd_set_zoom(zoom_level);
                 ret = 0;
             } else {
-                vd_put_string("\nInvalid zoom level. Must be between 1 and 10", STDOUT);
+                vd_put_string("\nInvalid zoom level. Usage: zoom <number (Between 1 and 10)>", STDOUT);
                 return SYS_ERR;
             }
             break;

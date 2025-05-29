@@ -56,7 +56,7 @@ void vd_set_cursor(int col, int row);
  * @brief Show the CPU registers in a human‐readable format.
  *        This function will print the register names and their values to the console.
  */
-void vd_show_registers(void);
+void vd_show_registers(FileDescriptor fd);
 /**
  * @brief Set the zoom level for the text.
  *        The zoom level affects the size of characters drawn on the screen.

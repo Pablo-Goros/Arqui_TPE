@@ -2,12 +2,15 @@
 
 #define MAX_CMD_LENGTH 256 
 
-void shell(void) {
+void shell_init(void) {
     clear_screen();
-    set_cursor(0, 0);   
     putString("Welcome to the!\n");
     putString("Type 'help' for a list of commands.\n");
 
+    shell();
+}
+
+void shell(void) {
     while (1) {
         char command[MAX_CMD_LENGTH];
         int len = 0;
@@ -21,8 +24,6 @@ void shell(void) {
             if (c == '\n' || c == '\r') {
                 break; // End of command
             } else if ((c == 0x7F || c == 0x08) && len > 0) { // Handle backspace
-                putChar('\b');
-                putChar(' ');  // Clear the character
                 putChar('\b');
                 len--;
             } else if (len < MAX_CMD_LENGTH-1 && c >= ' ') {
@@ -69,10 +70,12 @@ void shell(void) {
                 cmd_zoom(zoom_level);
             } else {
                 putString("\nInvalid zoom level. Usage: zoom <number (Between 1 and 10)>\n");
+                
             }
         }
-        else                                            putString("\nUnknown command\n");
-
+        else {
+            putString("\nUnknown command\n");
+        }
     }
     return;
 }

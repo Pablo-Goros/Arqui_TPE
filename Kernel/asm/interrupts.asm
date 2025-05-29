@@ -28,6 +28,7 @@ EXTERN int_write
 EXTERN irqDispatcher
 EXTERN exceptionDispatcher
 EXTERN sysCallDispatcher
+EXTERN getStackBase  
 
 SECTION .text
 
@@ -84,13 +85,23 @@ SECTION .text
 
 
 %macro exceptionHandler 1
-	pushState
+    pushState
 
-	mov rdi, %1 ; pasaje de parametro
-	call exceptionDispatcher
+    mov rdi, %1 ; pasaje de parametro
+    call exceptionDispatcher
 
-	popState
-	iretq
+    popState
+    
+    ; Now set up a proper iretq frame to return to userland/shell
+    push qword 0x0      ; SS
+    call getStackBase
+    push rax            ; RSP - stack base address
+    pushf               ; RFLAGS
+    push qword 0x8      ; CS - assuming code segment is 0x8
+    mov rax, userland
+    push rax            ; RIP - return to userland/shell entry point
+    
+    iretq
 %endmacro
 
 
@@ -172,31 +183,14 @@ _int80Handler:
 
 	;Zero Division Exception
 _exception0Handler:
-	pushState
-
 	mov rdi, 0
-
 	exceptionHandler 0
-
-	popState
-
-
-	add     qword [rsp + 16], 2
-
 	iretq
 
 	; Invalid Opcode Exception
 _exception6Handler:
-    pushState
-
     mov   rdi, 6
-
-    call  exceptionDispatcher
-
-    popState
-	
-    add   qword [rsp + 16], 2
-	
+    exceptionHandler 6
     iretq
 
 
@@ -234,5 +228,8 @@ get_registers:
     ret
 
 
-SECTION .bss
+section .bss
 	aux resq 1
+
+section .rodata
+    userland equ 0x400000
