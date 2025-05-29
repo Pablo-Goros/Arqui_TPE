@@ -19,6 +19,8 @@
 #define CHAR_WIDTH   8
 #define CHAR_HEIGHT 16
 
+#define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
+
 /**
  * @brief Initialize the graphics‐mode console.
  *        Must be called once after switching into a VBE linear‐framebuffer mode.
@@ -50,7 +52,11 @@ void vd_clear_screen(void);
  *       row: Row index (0..)
  */
 void vd_set_cursor(int col, int row);
-
+/**
+ * @brief Show the CPU registers in a human‐readable format.
+ *        This function will print the register names and their values to the console.
+ */
+void vd_show_registers(void);
 /**
  * @brief Set the zoom level for the text.
  *        The zoom level affects the size of characters drawn on the screen.

@@ -42,6 +42,4 @@ void     sys_setCursor(int col, int row);
 
 void     sys_setZoom(int level);
 
-void sys_get_registers(uint64_t* regs);
-
 #endif

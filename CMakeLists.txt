@@ -13,9 +13,8 @@ set(SOURCES
         Kernel/idtLoader.c
         Kernel/irqDispatcher.c
         Kernel/kernel.c
-        Kernel/lib.c
+        Kernel/libc.c
         Kernel/moduleLoader.c
-        Kernel/naiveConsole.c
         Kernel/sysCallDispatcher.c
         Kernel/time.c
         Kernel/time_display.c
@@ -32,4 +31,4 @@ set(ASM_SOURCES
 )
 
 # Crea un ejecutable falso para análisis
-add_executable(dummy ${SOURCES} ${ASM_SOURCES})
+add_executable(dummy ${SOURCES} ${USERLAND_SOURCES} ${ASM_SOURCES})

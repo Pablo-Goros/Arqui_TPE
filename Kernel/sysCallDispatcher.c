@@ -24,8 +24,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
         }
         case SYS_REGISTERS:
-            uint64_t * regs = va_arg(args, uint64_t *);
-            sys_get_registers(regs);
+            vd_show_registers();
             break;
 
         case SYS_GET_TIME: {
@@ -120,12 +119,6 @@ uint64_t sys_read(FileDescriptor fd, char *buf, size_t count) {
     }   
 
     return 0;
-}
-
-void sys_get_registers(uint64_t * regs){
-
-    get_registers(regs);
-    // The registers are now stored in the provided array
 }
 
 

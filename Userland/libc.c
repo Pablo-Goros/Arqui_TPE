@@ -204,34 +204,8 @@ void hltUntil_c() {
 /* CPU register inspection                                                   */
 /* ------------------------------------------------------------------------- */
 
-uint64_t *getRegisters(void) {
-    return (uint64_t *) sys_call(SYS_REGISTERS, 0, 0, 0, 0);
-}
-
-
 void showRegisters(void) {
-    static const char *names[NUMBER_OF_REGISTERS] = {
-        "RAX","RBX","RCX","RDX",
-        "RSI","RDI","RBP","RSP",
-        "R8", "R9", "R10","R11",
-        "R12","R13","R14","R15",
-        "RIP", "RFLAGS"
-    };
-
-    uint64_t *regs = getRegisters();
-    if (!regs) {
-        putString("Error: could not fetch registers\n");
-        return;
-    }
-
-    char buf[NUMBER_OF_REGISTERS*2]; // Enough space for 18 registers in hex + ": 0x" + '\n'
-    for (int i = 0; i < NUMBER_OF_REGISTERS; i++) {
-        putString(names[i]);
-        putString(": 0x");
-        itoa(regs[i], buf, 16);
-        putString(buf);
-        putChar('\n');
-    }
+    sys_call(SYS_REGISTERS, 0, 0, 0, 0);
 }
 
 

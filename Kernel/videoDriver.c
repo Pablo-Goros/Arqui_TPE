@@ -1,6 +1,7 @@
 
 #include <videoDriver.h>
 #include "sysCallDispatcher.h"
+#include "libasm.h"
 
 struct vbe_mode_info_structure {
     uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
@@ -127,7 +128,71 @@ void vd_put_char(unsigned char c, FileDescriptor fd) {
     }
 }
 
+// Convert a non‐negative value to a string in buf using the given base (2–36).q2   1
+int itoa(int64_t value, char *buf, int base) {
+    if (base < 2 || base > 36) {
+        *buf = '\0';
+        return 0;
+    }
 
+    char *p = buf;
+    uint64_t u = (uint64_t)value;  // assume value >= 0
+    int min_len = 0;
+
+    if (base == 16)
+        min_len = 16;
+
+    // Generar dígitos en orden inverso
+    int digit_count = 0;
+    do {
+        int digit = u % base;
+        *p++ = (digit < 10 ? '0' + digit : 'A' + (digit - 10));
+        u /= base;
+        digit_count++;
+    } while (u);
+
+    // Rellenar con ceros a la izquierda si es necesario
+    while (digit_count < min_len) {
+        *p++ = '0';
+        digit_count++;
+    }
+
+    int len = p - buf;
+    *p = '\0';
+
+    // Invertir el buffer in-place
+    char *start = buf, *end = p - 1;
+    while (start < end) {
+        char tmp = *start;
+        *start++ = *end;
+        *end-- = tmp;
+    }
+
+    return len;
+}
+
+
+void vd_show_registers(){
+    static const char *names[NUMBER_OF_REGISTERS] = {
+            "RAX","RBX","RCX","RDX",
+            "RSI","RDI","RBP","RSP",
+            "R8 ", "R9 ", "R10","R11",
+            "R12","R13","R14","R15",
+            "RIP", "RFLAGS"
+    };
+    uint64_t regs[NUMBER_OF_REGISTERS];
+    get_registers(regs);
+
+
+    char buf[NUMBER_OF_REGISTERS *2]; // Enough space for 18 registers in hex + ": 0x" + '\n'
+    for (int i = 0; i < NUMBER_OF_REGISTERS; i++) {
+        vd_put_string(names[i], STDOUT);
+        vd_put_string(": 0x",STDOUT);
+        itoa(regs[i], buf, 16);
+        vd_put_string(buf,STDOUT);
+        vd_put_string("\n", STDOUT);
+    }
+}
 
 void vd_put_string(const char *str, FileDescriptor fd) {
     while (*str) {
