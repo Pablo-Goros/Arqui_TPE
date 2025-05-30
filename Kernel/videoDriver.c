@@ -206,8 +206,8 @@ void vd_init(void) {
 }
 
 void vd_set_zoom(int new_zoom) {
+    vd_put_char('\n', STDOUT); // Print a space to trigger the screen update
     zoom = new_zoom; // Set the new zoom value
-    vd_clear_screen(); // Clear the screen to apply the new zoom level and avoid weird interactions
 }
 
 void vd_set_cursor(int col, int row) {
@@ -216,19 +216,55 @@ void vd_set_cursor(int col, int row) {
 }
 
 void vd_clear_screen(void) {
-    uint64_t width = VBE_mode_info->width;
-    uint64_t height = VBE_mode_info->height;
-
-    for (uint64_t y = 0; y < height; y++) {
-        for (uint64_t x = 0; x < width; x++) {
-            putPixel(background_color, x, y);
-        }
-    }
-
+    vd_draw_rectangle(0, 0, VBE_mode_info->width, VBE_mode_info->height, background_color);
     cursorX = 0;
     cursorY = 0;
 }
 
+
+void vd_draw_rectangle(int x, int y, int width, int height, uint32_t color) {
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            putPixel(color, x + j, y + i);
+        }
+    }
+}
+
+void vd_draw_circle(int x, int y, int radius, uint32_t color) {
+    int x0 = radius;
+    int y0 = 0;
+    int err = 0;
+
+    while (x0 >= y0) {
+        putPixel(color, x + x0, y + y0);
+        putPixel(color, x + y0, y + x0);
+        putPixel(color, x - y0, y + x0);
+        putPixel(color, x - x0, y + y0);
+        putPixel(color, x - x0, y - y0);
+        putPixel(color, x - y0, y - x0);
+        putPixel(color, x + y0, y - x0);
+        putPixel(color, x + x0, y - y0);
+
+        if (err <= 0) {
+            y0 += 1;
+            err += 2 * y0 + 1;
+        }
+        if (err > 0) {
+            x0 -= 1;
+            err -= 2 * x0 + 1;
+        }
+    }
+
+}
+
+void vd_draw_bitmap(int x, int y, int width, int height, const uint32_t *pixels) {
+     for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            uint32_t color = pixels[row * width + col];
+            putPixel(color, x + col, y + row);
+        }
+    }
+}
 static uint8_t font_bitmap[256 * CHAR_HEIGHT] = {
         // Relleno para las primeras letras (Espacio, símbolos, etc.)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

@@ -21,6 +21,7 @@
 
 #define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
 
+void putPixel()
 /**
  * @brief Initialize the graphics‐mode console.
  *        Must be called once after switching into a VBE linear‐framebuffer mode.

@@ -24,9 +24,16 @@ typedef enum {
 #define SYS_SET_CURSOR      5
 #define SYS_CLEAR_SCREEN    6
 #define SYS_SET_ZOOM        7
-
 #define SYS_EXIT            8
+#define SYS_GET_MODE_INFO   9
+#define SYS_WAIT_NEXT_TICK  10
+#define SYS_BLIT            11
+#define SYS_KEY_READY       12
+#define SYS_READ_KEY        13
 #define SYS_GET_TICKS       14
+#define SYS_PUT_PIXEL       15
+#define SYS_DRAW_RECT       16
+#define SYS_DRAW_CIRCLE     17
 #define SYS_SLEEP           35
 #define SYS_ERR   ((uint64_t)-1)
 

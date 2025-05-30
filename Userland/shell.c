@@ -4,7 +4,7 @@
 
 void shell_init(void) {
     clear_screen();
-    putString("Welcome to the!\n");
+    putString("Welcome to the shell!\n");
     putString("Type 'help' for a list of commands.\n");
 
     shell();

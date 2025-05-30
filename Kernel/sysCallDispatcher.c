@@ -70,6 +70,9 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             outw(0x604, 0x2000);  // QEMU ACPI shutdown
         
 
+        case SYS_PUT_PIXEL: {
+            putPixel()
+        }
         default:
             // syscall not recognized
             ret = SYS_ERR;
