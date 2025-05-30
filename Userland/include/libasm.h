@@ -22,13 +22,15 @@
  * @param rsi Second argument (e.g. buffer pointer).
  * @param r10 Third argument.
  * @param r8  Fourth argument.
+ * @param r9  Fifth argument 
  * @return Value returned in RAX by the kernel syscall handler.
  */
 extern uint64_t sys_call(uint64_t rax,
                          uint64_t rdi,
                          uint64_t rsi,
                          uint64_t r10,
-                         uint64_t r8);
+                         uint64_t r8,
+                         uint64_t r9);
 
 /**
  * @brief Execute the HLT instruction.

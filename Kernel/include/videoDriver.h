@@ -21,7 +21,13 @@
 
 #define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
 
-void putPixel()
+
+void vd_put_pixel( uint32_t color, uint64_t x, uint64_t y);
+
+void vd_put_multpixel(uint32_t hexColor, uint64_t x, uint64_t y, int mult);
+
+void draw_char(char c);
+
 /**
  * @brief Initialize the graphics‐mode console.
  *        Must be called once after switching into a VBE linear‐framebuffer mode.
@@ -64,5 +70,11 @@ void vd_show_registers(FileDescriptor fd);
  * @args new_zoom: New zoom level (1 to 10)
  */
 void vd_set_zoom(int new_zoom);
+
+void vd_draw_rectangle(int x, int y, int width, int height, uint32_t color);
+
+void vd_draw_circle(int x, int y, int radius, uint32_t color);
+
+void vd_draw_bitmap(int x, int y, int width, int height, const uint32_t *pixels);
 
 #endif 

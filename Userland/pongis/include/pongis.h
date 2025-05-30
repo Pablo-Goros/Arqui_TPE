@@ -4,6 +4,7 @@
 #define PONGIS_H
 
 #include <stdint.h>
+#include "libc.h"
 
 /*————————————————————————————————————————————————————————————————————
   Mode info (call once at startup to size buffers, etc.)

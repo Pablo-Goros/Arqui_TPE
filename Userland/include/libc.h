@@ -6,7 +6,6 @@
 #include "syscallDefs.h"
 #include <stdint.h>
 
-typedef uint64_t size_t;
 
 /* Time structure */
 typedef struct {
@@ -18,7 +17,14 @@ typedef struct {
     uint8_t sec;
 } Time;
 
-#define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
+typedef struct ModeInfo {
+    uint32_t width;
+    uint32_t height;
+    uint32_t bpp;
+} ModeInfo;
+
+
+// #define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
 
 /* ------------------------------------------------------------------------- */
 /* Basic character I/O (built on sys_read/write)                             */
@@ -26,23 +32,22 @@ typedef struct {
 void     putChar(char c);
 char     getChar(void);
 void     putString(const char *s);
-// int      getLine(char *buf, size_t maxlen);   /* read up to maxlen–1 chars + '\0' */ 
 
 /* ------------------------------------------------------------------------- */
 /* String and memory routines                                                */
 /* ------------------------------------------------------------------------- */
-size_t   strlen(const char *s);
+uint64_t   strlen(const char *s);
 char    *strcpy(char *dest, const char *src);
-char    *strncpy(char *dest, const char *src, size_t n);
+char    *strncpy(char *dest, const char *src, uint64_t n);
 int      strcmp(const char *s1, const char *s2);
-int      strncmp(const char *s1, const char *s2, size_t n);
+int      strncmp(const char *s1, const char *s2, uint64_t n);
 int      strcasecmp(const char *s1, const char *s2);
 int      isalpha(int c);
 int      toupper(int c);
 int      tolower(int c);
 
-void    *memset(void *s, int c, size_t n);
-void    *memcpy(void *dest, const void *src, size_t n);
+void    *memset(void *s, int c, uint64_t n);
+void    *memcpy(void *dest, const void *src, uint64_t n);
 
 /* ------------------------------------------------------------------------- */
 /* Numeric conversions                                                       */
@@ -75,5 +80,17 @@ void hltUntil_c();
 uint64_t *getRegisters(void);
 void      showRegisters(void);    /* print regs to stdout */ 
 
+/* ------------------------------------------------------------------------- */
+/* Game (Pongis)                                                             */
+/* ------------------------------------------------------------------------- */
+uint64_t get_mode_info(ModeInfo *mode);
+
+uint8_t is_key_ready(void);   /* returns 0 = no key, 1 = key waiting */
+
+void draw_bitmap(int x, int y, int w, int h, const uint32_t *pixels);
+
+void wait_next_tick(void); /* block until next timer IRQ (60 fps target) */
+
+int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
 
 #endif /* _LIBC_H_ */

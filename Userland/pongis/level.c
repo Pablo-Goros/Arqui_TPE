@@ -1,33 +1,35 @@
-// levels.c
 #include "level.h"
 
-/* define obstacles for level 0 */
-static const Obstacle lvl0Obs[] = {
+// level 1 
+static const Obstacle lvl_1[] = {
     { 50,  50, 100,  10 },
     {200,  80,  20, 150 },
-    /* … */
+
 };
 
-/* define obstacles for level 1 */
-static const Obstacle lvl1Obs[] = {
+// level 2 
+static const Obstacle lvl_2[] = {
     { 30, 100,  80,  10 },
-    /* … */
+
 };
 
 /* the master array of levels */
 const Level levels[] = {
-    { .numObstacles = sizeof(lvl0Obs)/sizeof(*lvl0Obs),
-      .obstacles    = lvl0Obs,
+    // level 1
+    { .numObstacles = sizeof(lvl_1)/sizeof(*lvl_1),
+      .obstacles    = lvl_1,
       .ballStartX   = 60,
       .ballStartY   = 60 },
-    { .numObstacles = sizeof(lvl1Obs)/sizeof(*lvl1Obs),
-      .obstacles    = lvl1Obs,
+    // level 2
+    { .numObstacles = sizeof(lvl_2)/sizeof(*lvl_2),
+      .obstacles    = lvl_2,
       .ballStartX   = 40,
       .ballStartY   = 80 },
-    /* add more levels here */
+    // level 3
+
 };
 
-const size_t level_count = sizeof(levels)/sizeof(*levels);
+const uint64_t level_count = sizeof(levels)/sizeof(*levels);
 
 /* optional helper implementation */
 void load_level(int index) {

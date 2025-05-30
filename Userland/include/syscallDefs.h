@@ -25,6 +25,8 @@ typedef enum {
 #define SYS_PUT_PIXEL       15
 #define SYS_DRAW_RECT       16
 #define SYS_DRAW_CIRCLE     17
+#define SYS_DRAW_BITMAP     18
+
 
 
 #endif // _SYSCALLS_H_

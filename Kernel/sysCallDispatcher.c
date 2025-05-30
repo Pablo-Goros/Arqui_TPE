@@ -71,7 +71,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
         
 
         case SYS_PUT_PIXEL: {
-            putPixel()
+            vd_put_pixel();
         }
         default:
             // syscall not recognized

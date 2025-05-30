@@ -1,6 +1,7 @@
 /* main.c */
 
 #include "pongis.h"
+#include "bitmaps.h"
 
 // Physics constants (tweak as you iterate) 
 #define ACCELERATION   0.2f   /* px/tick² */
@@ -9,19 +10,19 @@
 #define BALL_RADIUS    8      /* px */
 
 /* simple clamp */
-static float clampf(float vel, float min, float max) {
+static float limit_vel(float vel, float min, float max) {
     return vel < min ? min : (vel > max ? max : vel);
 }
 
 int main(void) {
     // get screen mode info
     ModeInfo mode;
-    if (sys_get_mode_info(&mode) != 0) {
+    get_mode_info(&mode);
+    if (get_mode_info(&mode) != 0) {
         return 1;
     } 
-
-    size_t bufpx = mode.width * mode.height;
-    size_t bufsz = bufpx * sizeof(uint32_t);
+    uint64_t bufpx = mode.width * mode.height;
+    uint64_t bufsz = bufpx * sizeof(uint32_t);
     uint32_t *buffer = malloc(bufsz);
     if (!buffer) return 1;
 
@@ -36,8 +37,8 @@ int main(void) {
     
     while (running) {
         dir_x = dir_y = 0;
-        while (sys_key_ready()) {
-            char k = sys_read_key();
+        while (key_read()) {
+            char k = key_read();
             switch (k) {
               case 'q': running = 0; break;
               case 'w': dir_y = -1; break;
@@ -51,14 +52,15 @@ int main(void) {
         // velocity update
         vel_x += dir_x * ACCELERATION;
         vel_y += dir_y * ACCELERATION;
-
-        /* clamp speed */
+       
         float speed = sqrtf(vel_x*vel_x + vel_y*vel_y);
-        if (speed > MAX_SPEED) {
-            vel_x = vel_x * (MAX_SPEED / speed);
-            vel_y = vel_y * (MAX_SPEED / speed);
-        }
 
+        // limit speed
+        if (speed > MAX_SPEED) {
+            float scale = MAX_SPEED / speed;
+            vel_x *= scale;
+            vel_y *= scale;
+        }
         // coeficiente de friccion 
         vel_x *= FRICTION;
         vel_y *= FRICTION;
@@ -87,13 +89,13 @@ int main(void) {
         /* clear off-screen buffer */
         memset(buffer, 0, bufsz);
 
-        /* draw ball */
-        sys_draw_circle((int)ball_x, (int)ball_y, BALL_RADIUS, 0xFFFFFFFF);
-
+        // draw ball
+        draw_bitmap();
+        draw_bitmap(buffer, mode.width, (int)ball_x - BALL_RADIUS, (int)ball_y - BALL_RADIUS, ball_sprite, BALL_RADIUS*2);
         /* copy to VRAM */
         sys_blit(buffer, bufsz);
-
-        sys_wait_next_tick();
+        
+        wait_next_tick();
     }
 
     free(buffer);

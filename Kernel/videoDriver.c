@@ -51,7 +51,7 @@ static int zoom = 2;
 
 static uint8_t font_bitmap[256 * CHAR_HEIGHT];
 
-static void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
+void vd_put_pixel(uint32_t hexColor, uint64_t x, uint64_t y) {
     uint8_t * framebuffer = (uint8_t *)(uintptr_t) VBE_mode_info->framebuffer;
     uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch);
     framebuffer[offset]     =  (hexColor) & 0xFF;
@@ -59,21 +59,21 @@ static void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
     framebuffer[offset+2]   =  (hexColor >> 16) & 0xFF;
 }
 
-static void putMultPixel(uint32_t hexColor, uint64_t x, uint64_t y, int mult) {
+void vd_put_multpixel(uint32_t hexColor, uint64_t x, uint64_t y, int mult) {
     for (int i = 0; i < mult; i++) {
         for (int j = 0; j < mult; j++) {
-            putPixel(hexColor, x+i, y+j);
+            vd_put_pixel(hexColor, x+i, y+j);
         }
     }
 }
 
-static void draw_char(char c) {
+void draw_char(char c) {
     int mask[8]={0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01}; //mascara para cada bit
     unsigned char * glyph=font_bitmap+(int)c*16; // se posiciona en la letra correspondiente
 
     for (int cy = 0; cy < CHAR_HEIGHT*zoom; cy+=zoom) {
         for (int cx = 0; cx < CHAR_WIDTH*zoom; cx+=zoom) {
-            putMultPixel(glyph[cy/zoom] & mask[cx/zoom] ? text_color : background_color, (cursorX + cx), (cursorY + cy), zoom);
+            vd_put_multpixel(glyph[cy/zoom] & mask[cx/zoom] ? text_color : background_color, (cursorX + cx), (cursorY + cy), zoom);
         }
     }
 }
@@ -225,7 +225,7 @@ void vd_clear_screen(void) {
 void vd_draw_rectangle(int x, int y, int width, int height, uint32_t color) {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            putPixel(color, x + j, y + i);
+            vd_put_pixel(color, x + j, y + i);
         }
     }
 }
@@ -236,14 +236,14 @@ void vd_draw_circle(int x, int y, int radius, uint32_t color) {
     int err = 0;
 
     while (x0 >= y0) {
-        putPixel(color, x + x0, y + y0);
-        putPixel(color, x + y0, y + x0);
-        putPixel(color, x - y0, y + x0);
-        putPixel(color, x - x0, y + y0);
-        putPixel(color, x - x0, y - y0);
-        putPixel(color, x - y0, y - x0);
-        putPixel(color, x + y0, y - x0);
-        putPixel(color, x + x0, y - y0);
+        vd_put_pixel(color, x + x0, y + y0);
+        vd_put_pixel(color, x + y0, y + x0);
+        vd_put_pixel(color, x - y0, y + x0);
+        vd_put_pixel(color, x - x0, y + y0);
+        vd_put_pixel(color, x - x0, y - y0);
+        vd_put_pixel(color, x - y0, y - x0);
+        vd_put_pixel(color, x + y0, y - x0);
+        vd_put_pixel(color, x + x0, y - y0);
 
         if (err <= 0) {
             y0 += 1;
@@ -261,7 +261,7 @@ void vd_draw_bitmap(int x, int y, int width, int height, const uint32_t *pixels)
      for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
             uint32_t color = pixels[row * width + col];
-            putPixel(color, x + col, y + row);
+            vd_put_pixel(color, x + col, y + row);
         }
     }
 }
