@@ -86,7 +86,12 @@ int pongis(ModeInfo mode) {
 
     float ball_x = mode.width  / 2.0f;
     float ball_y = mode.height / 2.0f;
+    float player_x = mode.width  / 2.0f;
+    float player_y = mode.height - 20.0f; 
+    
     float vel_x  = 0.0f, vel_y = 0.0f;
+
+    float ball_vx = 0.0f, ball_vy = 0.0f;
     int   dir_x  = 0;
     int   dir_y  = 0;
     int   running = 1;
