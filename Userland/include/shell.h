@@ -3,6 +3,7 @@
 
 #include "libc.h"
 #include "commands.h"
+#include "pongis.h"
 
 void shell_init(void);
 

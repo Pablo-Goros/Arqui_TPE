@@ -8,7 +8,6 @@ typedef struct {
     int x, y, w, h;
 } Obstacle;
 
-
 typedef struct {
     int         numObstacles;
     const Obstacle *obstacles;
@@ -23,7 +22,6 @@ typedef struct {
 // y esto?
 extern const Level levels[];
 extern const uint64_t level_count;
-
 
 void load_level(int index);
 

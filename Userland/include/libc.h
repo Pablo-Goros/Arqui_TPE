@@ -23,13 +23,11 @@ typedef struct ModeInfo {
     uint32_t bpp;
 } ModeInfo;
 
-
-// #define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
-
 /* ------------------------------------------------------------------------- */
 /* Basic character I/O (built on sys_read/write)                             */
 /* ------------------------------------------------------------------------- */
 void     putChar(char c);
+uint8_t  isCharReady(void);
 char     getChar(void);
 void     putString(const char *s);
 
@@ -84,8 +82,6 @@ void      showRegisters(void);    /* print regs to stdout */
 /* Game (Pongis)                                                             */
 /* ------------------------------------------------------------------------- */
 uint64_t get_mode_info(ModeInfo *mode);
-
-uint8_t is_key_ready(void);   /* returns 0 = no key, 1 = key waiting */
 
 void draw_bitmap(int x, int y, int w, int h, const uint32_t *pixels);
 

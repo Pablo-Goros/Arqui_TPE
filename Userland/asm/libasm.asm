@@ -15,7 +15,7 @@ sys_call:
     mov rsi, rdx        ; arg2
     mov rdx, rcx        ; arg3
     mov r10, r8         ; arg4
-    mov r8, r9          ; arg5 (new parameter)
+    mov r8, r9          ; arg5 
     int 0x80
     ret
 ; wait for interrupt

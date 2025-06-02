@@ -46,6 +46,7 @@ void shell(void) {
         else if (strcmp(command, "div0")==0)            cmd_div0();
         else if (strcmp(command, "ud2")==0)             cmd_invalid_opcode();
         else if (strcmp(command, "exit")==0)            cmd_exit();
+        else if (strcmp(command, "pongis")==0)          pongis_init();
         else if (strncmp(command, "zoom ", 5)==0) {     // Check if command starts with "zoom "
             char* arg = command + 4;                    // Point to the argument after "zoom "
             int valid = 1;      

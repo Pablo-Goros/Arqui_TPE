@@ -77,4 +77,6 @@ void vd_draw_circle(int x, int y, int radius, uint32_t color);
 
 void vd_draw_bitmap(int x, int y, int width, int height, const uint32_t *pixels);
 
+void vd_get_mode_info(ModeInfo *mode);
+
 #endif 

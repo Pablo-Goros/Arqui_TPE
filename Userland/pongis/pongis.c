@@ -1,69 +1,89 @@
 #include "pongis.h"
-#include "bitmaps.h"
+
+static float limit_vel(float vel, float min, float max) {
+    return vel < min ? min : (vel > max ? max : vel);
+}
 
 void pongis_init() {
     // Initialize the game, if needed
     clear_screen();
+
     ModeInfo mode;
-    if (get_mode_info(&mode) != 0) {
-        putString("Error getting mode info\n");
+
+    // ! PREGUNTARRRRRRRRRRRRRRRRRRRRRRR
+    
+    uint64_t ret = get_mode_info(&mode);
+    /*
+    if (ret != 0) {
+        char buffer[10];
+        itoa(ret, buffer, 10);
+        putString(buffer);
+        char buffer1[10];
+        char buffer2[10];
+        char buffer3[10];
+
+        itoa(mode.width, buffer1, 10);
+        itoa(mode.height, buffer2, 10);
+        itoa(mode.bpp, buffer3, 10);
+        putString(buffer1);
+        putChar('\n');
+        putString(buffer2);
+        putChar('\n');
+        putString(buffer3);
+        putString("\nError getting mode info\n");
         return;
     }
+    */
 
     // Display welcome screen
-    int centerX = mode.width / 2;
-    int centerY = mode.height / 3;
+    // ! PREGUNTARRRRRRRRRRRRRRRRRRRRRRR
+    /*
+    int centerX = mode.width;
+    int centerY = mode.height;
+    char buffer1[10];
+    char buffer2[10];
+    itoa(centerX, buffer1, 10);
+    itoa(centerY, buffer2, 10);
+    putString("Center X: ");
+    putString(buffer1);
+    putChar('\n');
+    putString("Center Y: ");
+    putString(buffer2);
+    putChar('\n');
 
+    /*
     // Create buffer for welcome screen
     uint64_t bufpx = mode.width * mode.height;
     uint64_t bufsz = bufpx * sizeof(uint32_t);
     uint32_t *buffer = malloc(bufsz);
     if (!buffer) return;
-
+    
     // Clear buffer
     memset(buffer, 0, bufsz);
-
-    draw_large_text(buffer, mode.width, centerX - 120, centerY - 30, "PONGIS GOLF", 0xFFFFFFFF);
-    set_zoom(6);
-    set_cursor(centerX - 60, centerY - 20);
-    putString("PONGIS GOLF");
-
-
-    uint8_t start_game = 0;
-    while (!start_game) {
-        char key = key_read();
-        if (key == ' ' || key == '\n' || key == '\r') {
-            start_game = 1;
-        } else if (key == 'q') {
-            // Allow quitting from welcome screen
-            free(buffer);
-            return;
-        }
-    }
-
-    main(mode);
-
-}
-
-// Physics constants (tweak as you iterate) 
-#define ACCELERATION   0.2f   /* px/tick² */
-#define MAX_SPEED      5.0f   /* px/tick */
-#define FRICTION       0.99f  /* velocity scaling per frame */
-#define BALL_RADIUS    8      /* px */
-
-/* simple clamp */
-static float limit_vel(float vel, float min, float max) {
-    return vel < min ? min : (vel > max ? max : vel);
-}
-
-int main(ModeInfo mode) {
-
-    uint64_t bufpx = mode.width * mode.height;
-    uint64_t bufsz = bufpx * sizeof(uint32_t);
-    uint32_t *buffer = malloc(bufsz);
-    if (!buffer) return 1;
-
     
+    set_cursor(centerX/2, centerY/2 );
+    
+    set_zoom(6);
+    putString("PONGIS GOLF\n");
+    set_zoom(4);
+    putString("Press ENTER to start\n");
+    putString("Press 'c' to quit\n");
+    */
+    
+    char key = getChar();
+    if (key == ' ' || key == '\n' || key == '\r') {
+          pongis(mode);
+
+    } else if (key == 'q') {
+       // free(buffer);
+        shell();
+    }
+    
+}
+
+int pongis(ModeInfo mode) {
+    //! TENGO Q HACER LO DE LOS LVLS 
+
     float ball_x = mode.width  / 2.0f;
     float ball_y = mode.height / 2.0f;
     float vel_x  = 0.0f, vel_y = 0.0f;
@@ -71,11 +91,13 @@ int main(ModeInfo mode) {
     int   dir_y  = 0;
     int   running = 1;
 
+    // Umbral al 60% para "caida en el hoyo"
+    // float threshold = hole.radius - 0.6f * ball.radius;
     
     while (running) {
         dir_x = dir_y = 0;
-        while (key_read()) {
-            char k = key_read();
+        while (isCharReady()) {
+            char k = getChar();
             switch (k) {
               case 'q': running = 0; break;
               case 'w': dir_y = -1; break;
@@ -90,7 +112,7 @@ int main(ModeInfo mode) {
         vel_x += dir_x * ACCELERATION;
         vel_y += dir_y * ACCELERATION;
        
-        float speed = sqrtf(vel_x*vel_x + vel_y*vel_y);
+        float speed = _sqrt(vel_x*vel_x + vel_y*vel_y);
 
         // limit speed
         if (speed > MAX_SPEED) {
@@ -107,10 +129,10 @@ int main(ModeInfo mode) {
         ball_y += vel_y;
 
         //limits 
-        if (ball_x < BALL_RADIUS) { // derecha
+        if (ball_x < BALL_RADIUS) { // izq
             ball_x = BALL_RADIUS; 
             vel_x = -vel_x;
-        } else if (ball_x > (mode.width - BALL_RADIUS)) { // izquierda
+        } else if (ball_x > (mode.width - BALL_RADIUS)) { // der
             ball_x = mode.width - BALL_RADIUS; 
             vel_x = -vel_x;
         }
@@ -121,20 +143,12 @@ int main(ModeInfo mode) {
             ball_y = mode.height - BALL_RADIUS; 
             vel_y = -vel_y;
         }
-
-        /* --- render --- */
-        /* clear off-screen buffer */
-        memset(buffer, 0, bufsz);
-
-        // draw ball
-        draw_bitmap();
-        draw_bitmap(buffer, mode.width, (int)ball_x - BALL_RADIUS, (int)ball_y - BALL_RADIUS, ball_sprite, BALL_RADIUS*2);
-        /* copy to VRAM */
-        sys_blit(buffer, bufsz);
         
+
+
+
         wait_next_tick();
     }
 
-    free(buffer);
     return 0;
 }

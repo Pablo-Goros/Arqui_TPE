@@ -14,8 +14,8 @@ char getChar(void) {
     return c;
 }
 
-int is_key_ready(void) {
-    return sys_call(SYS_KEY_READY, 0, 0, 0, 0, 0);
+uint8_t isCharReady(void) {
+    return sys_call(SYS_CHAR_READY, 0, 0, 0, 0, 0);
 }
 
 void putString(const char *str) {
@@ -213,15 +213,11 @@ uint64_t get_mode_info(ModeInfo *mode) {
     return sys_call(SYS_GET_MODE_INFO, (uint64_t)mode, 0, 0, 0, 0);
 }
 
-uint8_t key_read(void) {
-    return sys_call(SYS_KEY_READY, 0, 0, 0, 0, 0);
-}  
-
 void draw_bitmap(int x, int y, int w, int h, const uint32_t *pixels) {
-    sys_call(SYS_DRAW_BITMAP, (uint64_t)x, (uint64_t)y, (uint64_t)w, (uint64_t)h, pixels);
+    sys_call(SYS_DRAW_BITMAP, (uint64_t)x, (uint64_t)y, (uint64_t)w, (uint64_t)h, (uint64_t)pixels);
     
 }
-
-int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
+//! LA VAMOS A USAR DESP SI IMPLEMENTAMOS DOS BUFFERS
+// int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
 
 

@@ -3,6 +3,7 @@
         "videodriver.h": "c",
         "stdint.h": "c",
         "syscalldispatcher.h": "c",
-        "exceptiondispatcher.h": "c"
+        "exceptiondispatcher.h": "c",
+        "libc.h": "c"
     }
 }

@@ -16,7 +16,7 @@ int seconds_elapsed() {
 	return ticks / 18;
 }
 
-unsigned long getTicks(){
+unsigned long get_ticks(){
     return ticks;
 }
 

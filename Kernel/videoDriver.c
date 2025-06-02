@@ -211,8 +211,8 @@ void vd_set_zoom(int new_zoom) {
 }
 
 void vd_set_cursor(int col, int row) {
-    cursorX = col * CHAR_WIDTH * zoom;
-    cursorY = row * CHAR_HEIGHT * zoom;
+    cursorX = col ;
+    cursorY = row;
 }
 
 void vd_clear_screen(void) {
@@ -265,6 +265,13 @@ void vd_draw_bitmap(int x, int y, int width, int height, const uint32_t *pixels)
         }
     }
 }
+
+void vd_get_mode_info(ModeInfo *mode) {
+    mode->width = VBE_mode_info->width;
+    mode->height = VBE_mode_info->height;
+    mode->bpp = VBE_mode_info->bpp;
+}
+
 static uint8_t font_bitmap[256 * CHAR_HEIGHT] = {
         // Relleno para las primeras letras (Espacio, símbolos, etc.)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

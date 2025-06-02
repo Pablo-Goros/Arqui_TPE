@@ -53,6 +53,21 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
         }
 
+        case SYS_GET_TICKS: {
+            ret = get_ticks();
+            break;
+        }
+
+        case SYS_GET_MODE_INFO: {
+                // ! DEBUG, desp cambiar
+                uint64_t raw = va_arg(args, uint64_t);
+                ModeInfo *mode_info = (ModeInfo *) raw;
+                vd_get_mode_info(mode_info);
+                ret = 0;
+                break;
+
+        }
+
         case SYS_SET_ZOOM: {
             int zoom_level = (int)va_arg(args, uint64_t);
             if (zoom_level >= ZOOM_MIN && zoom_level <= ZOOM_MAX) {
@@ -66,13 +81,42 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
         }
 
         case SYS_EXIT:
-            
             outw(0x604, 0x2000);  // QEMU ACPI shutdown
-        
+            break;
 
         case SYS_PUT_PIXEL: {
-            vd_put_pixel();
+             uint32_t color = (uint32_t)va_arg(args, uint32_t);
+            uint64_t x = (uint64_t)va_arg(args, uint64_t);
+            uint64_t y = (uint64_t)va_arg(args, uint64_t);
+            vd_put_pixel(color, x, y);
         }
+
+        case SYS_DRAW_CIRCLE:{
+            int x = va_arg(args, int);
+            int y = va_arg(args, int);
+            int radius = va_arg(args, int);
+            uint32_t color = va_arg(args, uint32_t);
+            vd_draw_circle(x, y, radius, color);
+            ret = 0;
+            break;
+        }
+        
+        case SYS_DRAW_RECT: {
+            int x = va_arg(args, int);
+            int y = va_arg(args, int);
+            int width = va_arg(args, int);
+            int height = va_arg(args, int);
+            uint32_t color = va_arg(args, uint32_t);
+            vd_draw_rectangle(x, y, width, height, color);
+            ret = 0;
+            break;
+        }
+        case SYS_KEY_READY: {
+            ret = kbd_has_char() ? 1 : 0; // Return 1 if a key is ready, otherwise 0
+            break;
+        }
+
+
         default:
             // syscall not recognized
             ret = SYS_ERR;

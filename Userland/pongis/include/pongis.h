@@ -5,32 +5,19 @@
 
 #include <stdint.h>
 #include "libc.h"
+#include "level.h"
+#include "shell.h"
+#include "bitmaps.h"
+#include "math.h"
 
-/*————————————————————————————————————————————————————————————————————
-  Mode info (call once at startup to size buffers, etc.)
-  ------------------------------------------------------------------------------*/
-typedef struct ModeInfo {
-    uint32_t width;
-    uint32_t height;
-    uint32_t bpp;
-} ModeInfo;
+// Physics constants (tweak as you iterate) 
+#define ACCELERATION   0.2f   /* px/tick² */
+#define MAX_SPEED      5.0f   /* px/tick */
+#define FRICTION       0.99f  /* velocity scaling per frame */
+#define BALL_RADIUS    8      /* px */
 
-/*————————————————————————————————————————————————————————————————————
-  New syscalls (implement in your syscall dispatcher)
-  ------------------------------------------------------------------------------*/
-/* fill out current video mode info */
-int    sys_get_mode_info(ModeInfo *info);
-/* block until next timer IRQ (60 fps target) */
-void   sys_wait_next_tick(void);
-/* copy `size` bytes from user‐buffer into VRAM */
-int    sys_blit(const void *user_buffer, uint64_t size);
-/* non‐blocking key check */
-int    sys_key_ready(void);   /* returns 0 = no key, 1 = key waiting */
-/* read one ASCII key (blocking only if you call without ready-check) */
-char   sys_read_key(void);
-/* draw pixel or simple primitives in VRAM via syscall */
-int    sys_put_pixel(int x, int y, uint32_t color);
-int    sys_draw_rect(int x, int y, int w, int h, uint32_t color);
-int    sys_draw_circle(int cx, int cy, int r, uint32_t color);
-int    sys_draw_bitmap(int x, int y, int w, int h, const uint32_t *pixels);
+
+int pongis(ModeInfo mode);
+
+void pongis_init(void);
 #endif /* GAME_H */

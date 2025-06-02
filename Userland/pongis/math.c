@@ -1,10 +1,5 @@
-//
-// Created by UD on 29/5/2025.
-//
-//
-//#include "trig.h"
-//
-//
+#include "math.h"
+
 ////double sin_taylor(double x){
 ////    double term = x; // First term of the series
 ////    double result = term;// Initialize result with the first term
@@ -57,10 +52,12 @@
 //
 
 // metodo de newton (metodos numericos 4 the win)
-double sqrt(double x) {
+
+double _sqrt(double x) {
     if (x < 0) return -1;
     double r = x < 1 ? 1 : x;      // initial guess
     for (int i = 0; i < 6; i++)
         r = 0.5 * (r + x/r);
     return r;
 }
+    

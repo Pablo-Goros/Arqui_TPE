@@ -9,7 +9,7 @@
  */
 void timer_handler();
 
-unsigned long getTicks();
+unsigned long get_ticks();
 
 /**
  * @brief Retrieves the number of ticks elapsed since the system started.

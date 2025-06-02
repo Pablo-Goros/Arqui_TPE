@@ -17,6 +17,12 @@ typedef enum {
     STDERR,
 } FileDescriptor;
 
+typedef struct ModeInfo {
+    uint32_t width;
+    uint32_t height;
+    uint32_t bpp;
+} ModeInfo;
+
 #define SYS_READ            0
 #define SYS_WRITE           1
 #define SYS_REGISTERS       2
@@ -27,7 +33,7 @@ typedef enum {
 #define SYS_EXIT            8
 #define SYS_GET_MODE_INFO   9
 #define SYS_WAIT_NEXT_TICK  10
-#define SYS_BLIT            11
+
 #define SYS_KEY_READY       12
 #define SYS_READ_KEY        13
 #define SYS_GET_TICKS       14

@@ -1,9 +1,5 @@
-//
-// Created by UD on 29/5/2025.
-//
-
-#ifndef ARQUI_TPE_TRIG_H
-#define ARQUI_TPE_TRIG_H
+#ifndef TRIG_H
+#define TRIG_H
 
 #ifndef PI
 #define PI 3.141592653589793
@@ -48,4 +44,4 @@ double sin_deg(double degrees);
 
 double cos_deg(double degrees);
 
-#endif //ARQUI_TPE_TRIG_H
+#endif 

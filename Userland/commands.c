@@ -54,5 +54,5 @@ void cmd_zoom(int zoom_level) {
 }
 
 void cmd_exit(void) {
-    sys_call(SYS_EXIT, 0, 0, 0, 0);
+    sys_call(SYS_EXIT, 0, 0, 0, 0, 0);
 }
