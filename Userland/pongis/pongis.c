@@ -4,9 +4,23 @@ static float limit_vel(float vel, float min, float max) {
     return vel < min ? min : (vel > max ? max : vel);
 }
 
+static void player_velocity_update(int dir_x, int dir_y, GameState *state);
+
+static void player_limit_velocity(GameState *state);
+
+
+static void player_movement_update(GameState *state, ModeInfo *mode);
+
+static void ball_velocity_update(GameState *state);
+
+static void ball_limit_velocity(GameState *state);
+
+static void ball_movement_update(GameState *state, ModeInfo *mode);
+
 void pongis_init() {
     // Initialize the game, if needed
     clear_screen();
+    putString("Pongis Golf\n");
 
     ModeInfo mode;
 
@@ -74,8 +88,9 @@ void pongis_init() {
     if (key == ' ' || key == '\n' || key == '\r') {
           pongis(mode);
 
-    } else if (key == 'q') {
+    } else if (key == 'c') {
        // free(buffer);
+       clear_screen();
         shell();
     }
     
@@ -83,28 +98,22 @@ void pongis_init() {
 
 int pongis(ModeInfo mode) {
     //! TENGO Q HACER LO DE LOS LVLS 
+    putString("Entre\n");
 
-    float ball_x = mode.width  / 2.0f;
-    float ball_y = mode.height / 2.0f;
-    float player_x = mode.width  / 2.0f;
-    float player_y = mode.height - 20.0f; 
-    
-    float vel_x  = 0.0f, vel_y = 0.0f;
-
-    float ball_vx = 0.0f, ball_vy = 0.0f;
-    int   dir_x  = 0;
-    int   dir_y  = 0;
     int   running = 1;
+    GameState state;
+    load_level(&state, 0);  
+    
 
     // Umbral al 60% para "caida en el hoyo"
     // float threshold = hole.radius - 0.6f * ball.radius;
     
     while (running) {
-        dir_x = dir_y = 0;
+        int dir_x = 0, dir_y = 0;
         while (isCharReady()) {
             char k = getChar();
             switch (k) {
-              case 'q': running = 0; break;
+              case 'c': running = 0; break;
               case 'w': dir_y = -1; break;
               case 's': dir_y = +1; break;
               case 'a': dir_x = -1; break;
@@ -113,47 +122,174 @@ int pongis(ModeInfo mode) {
             }
         }
 
-        // velocity update
-        vel_x += dir_x * ACCELERATION;
-        vel_y += dir_y * ACCELERATION;
-       
-        float speed = _sqrt(vel_x*vel_x + vel_y*vel_y);
-
-        // limit speed
-        if (speed > MAX_SPEED) {
-            float scale = MAX_SPEED / speed;
-            vel_x *= scale;
-            vel_y *= scale;
-        }
-        // coeficiente de friccion 
-        vel_x *= FRICTION;
-        vel_y *= FRICTION;
-
-        // movement update 
-        ball_x += vel_x;
-        ball_y += vel_y;
-
-        //limits 
-        if (ball_x < BALL_RADIUS) { // izq
-            ball_x = BALL_RADIUS; 
-            vel_x = -vel_x;
-        } else if (ball_x > (mode.width - BALL_RADIUS)) { // der
-            ball_x = mode.width - BALL_RADIUS; 
-            vel_x = -vel_x;
-        }
-        if (ball_y < BALL_RADIUS) { // arriba
-            ball_y = BALL_RADIUS; 
-            vel_y = -vel_y;
-        } else if (ball_y > (mode.height - BALL_RADIUS)) { // abajo
-            ball_y = mode.height - BALL_RADIUS; 
-            vel_y = -vel_y;
-        }
+    
+        /* PLAYER UPDATES*/
+        player_velocity_update(dir_x, dir_y, &state);
         
+        player_limit_velocity(&state);
+        
+        player_movement_update(&state, &mode);
+        /* PLAYER UPDATES*/
+        
+        /* BALL UPDATES*/
+        ball_velocity_update(&state);
+
+        ball_limit_velocity(&state);
+
+        ball_movement_update(&state, &mode);
+        /* BALL UPDATES*/
+        
+        uint8_t flag = check_ball_in_hole(&state);
 
 
+        //Render
+        /*arreglar_el_juego();*/
+        draw_player(state.player_x,state.player_y, 10);/*player radius arbitrario*/
+        draw_ball(state.ball_x, state.ball_y, state.ball_radius);
+        draw_hole(state.holeX, state.holeY, state.holeRadius);
 
         wait_next_tick();
     }
 
     return 0;
 }
+
+static void player_velocity_update(int dir_x, int dir_y, GameState *state) {
+    state->player_vel_x += dir_x * ACCELERATION;
+    state->player_vel_y += dir_y * ACCELERATION;
+
+    state->player_vel_x *= FRICTION;
+    state->player_vel_y *= FRICTION;
+}
+
+static void player_limit_velocity(GameState *state) {
+    float speed = _sqrt(state->player_vel_x*state->player_vel_x + state->player_vel_y*state->player_vel_y);
+
+    // limit player speed
+    if (speed > MAX_SPEED) {
+        float scale = MAX_SPEED / speed;
+        state->player_vel_x *= scale;
+        state->player_vel_y *= scale;
+    }
+}
+
+static void player_movement_update(GameState *state, ModeInfo *mode) {
+    state->player_x += state->player_vel_x;
+    state->player_y += state->player_vel_y;
+
+    if (state->player_x < PLAYER_RADIUS) {
+        state->player_x = PLAYER_RADIUS;
+        state->player_vel_x = -state->player_vel_x;
+    } else if (state->player_x > mode->width - PLAYER_RADIUS) {
+        state->player_x = mode->width - PLAYER_RADIUS;
+        state->player_vel_x = -state->player_vel_x;
+    }
+
+    if (state->player_y < PLAYER_RADIUS) {
+        state->player_y = PLAYER_RADIUS;
+        state->player_vel_y = -state->player_vel_y;
+    } else if (state->player_y > mode->height - PLAYER_RADIUS) {
+        state->player_y = mode->height - PLAYER_RADIUS;
+        state->player_vel_y = -state->player_vel_y;
+    }
+}
+
+static void ball_velocity_update(GameState *state) {
+    state->ball_vel_x *= FRICTION;
+    state->ball_vel_y *= FRICTION;
+}
+
+static void ball_limit_velocity(GameState *state) {
+    // limit ball speed
+    float speed = _sqrt(state->ball_vel_x*state->ball_vel_x + state->ball_vel_y*state->ball_vel_y);
+    if (speed > MAX_SPEED) {
+        float scale = MAX_SPEED / speed;
+        state->ball_vel_x *= scale;
+        state->ball_vel_y *= scale;
+    }
+}
+
+static void ball_movement_update(GameState *state, ModeInfo *mode) {
+    state->ball_x += state->ball_vel_x;
+    state->ball_y += state->ball_vel_y;
+    
+    // bounce ball off screen edges
+    if (state->ball_x < state->ball_radius) {
+        state->ball_x = state->ball_radius;
+        state->ball_vel_x = -state->ball_vel_x;
+    } else if (state->ball_x > mode->width - state->ball_radius) {
+        state->ball_x = mode->width - state->ball_radius;
+        state->ball_vel_x = -state->ball_vel_x;
+    }
+    if (state->ball_y < state->ball_radius) {
+        state->ball_y = state->ball_radius;
+        state->ball_vel_y = -state->ball_vel_y;
+    } else if (state->ball_y > mode->height - state->ball_radius) {
+        state->ball_y = mode->height - state->ball_radius;
+        state->ball_vel_y = -state->ball_vel_y;
+    }
+}
+
+// 4) Ball–Player collision: treat each as a circle, radii = BALL_RADIUS & PLAYER_RADIUS
+static void check_ball_player_collision(GameState *state) {
+    int dx = state->ball_x - state->player_x;
+    int dy = state->ball_y - state->player_y;
+    int dist = (int) _sqrt(dx*dx + dy*dy);
+    int min_dist = BALL_RADIUS + PLAYER_RADIUS;
+    
+    if (dist <= min_dist) {
+        if (dist < 1) {
+            // extremely rare overlap; pick arbitrary direction
+            dx = 1; dy = 0; dist = 1;
+        }
+        float nx = (float)dx / dist;
+        float ny = (float)dy / dist;
+
+        // relative velocity of player vs. ball
+        float rel_vx = state->player_vel_x - state->ball_vel_x;
+        float rel_vy = state->player_vel_y - state->ball_vel_y;
+        // project relative velocity onto normal
+        float rel_dot = rel_vx * nx + rel_vy * ny;
+        if (rel_dot > 0.0f) {
+            // player is “pushing” into the ball
+            // simply transfer “rel_dot” along normal into ball
+            state->ball_vel_x += rel_dot * nx;
+            state->ball_vel_y += rel_dot * ny;
+        }
+
+        // move ball out so they’re not stuck overlapping
+        float push_back = min_dist - dist + 0.5f;
+        state->ball_x += (int)(nx * push_back);
+        state->ball_y += (int)(ny * push_back);
+    }
+}
+
+static uint8_t check_ball_in_hole(GameState *state) {
+    int dx = state->ball_x - state->holeX;
+    int dy = state->ball_y - state->holeY;
+    
+    int dist = (int) _sqrt(dx*dx + dy*dy);
+    int min_dist = state->holeRadius + state->ball_radius;    
+
+    return dist <= min_dist ? 1 : 0;
+}
+
+
+
+
+
+
+
+//! movelos a libc.c? o hagamos un render.c
+void draw_player(int p_x, int p_y, int p_radius){
+    sys_call(SYS_DRAW_CIRCLE, p_x, p_y, p_radius, 0x0000FF00,0);
+}
+
+void draw_ball(int b_x, int b_y, int b_radius){
+    sys_call(SYS_DRAW_CIRCLE, b_x, b_y, b_radius, 0x00FFFFFF,0);
+}
+
+void draw_hole(int h_x, int h_y, int h_radius){
+    sys_call(SYS_DRAW_CIRCLE, h_x, h_y, h_radius, 0x00808080, 0);
+}
+

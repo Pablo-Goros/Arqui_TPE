@@ -3,26 +3,25 @@
 #define LEVEL_H
 
 #include <stdint.h>
+#include "pongis.h"
 
 typedef struct {
     int x, y, w, h;
 } Obstacle;
 
 typedef struct {
-    int         numObstacles;
-    const Obstacle *obstacles;
-    int         ballStartX, ballStartY;
-    int         playerStartX, playerStartY;
-    int         holeStartX, holeStartY;
-    int         holeRadius;
+    int             ball_start_x, ball_start_y;
+    int             player_start_x, player_start_y;
 
+    int             holeX, holeY;
+    int             holeRadius;
+
+    int             numObstacles;
+    const Obstacle *obstacles;
     // add lo q falte (e.g. terrain flags, etc.)
 } Level;
 
-// y esto?
-extern const Level levels[];
-extern const uint64_t level_count;
 
-void load_level(int index);
+void load_level(GameState *state, int index);
 
 #endif // LEVEL_H

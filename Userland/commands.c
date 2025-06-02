@@ -9,7 +9,7 @@ void cmd_help() {
     putString("  help          - Show this help message\n");
     putString("  time          - Display current system date and time\n");
     putString("  regs          - Show CPU registers\n");
-    putString("  pong          - Launch the Pong-Golf mini-game\n");
+    putString("  pongis        - Launch the Pong-Golf mini-game\n");
     putString("  div0          - Trigger a divide-by-zero exception\n");
     putString("  ud2           - Trigger an invalid-opcode exception\n");
     putString("  zoom <NUMBER> - Set text zoom level (1-10)\n");
