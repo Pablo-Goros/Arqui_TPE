@@ -3,7 +3,9 @@
 #define LEVEL_H
 
 #include <stdint.h>
-#include "pongis.h"
+
+// Forward declaration instead of including pongis.h
+typedef struct GameState GameState;
 
 typedef struct {
     int x, y, w, h;
@@ -11,6 +13,7 @@ typedef struct {
 
 typedef struct {
     int             ball_start_x, ball_start_y;
+
     int             player_start_x, player_start_y;
 
     int             holeX, holeY;
@@ -21,6 +24,8 @@ typedef struct {
     // add lo q falte (e.g. terrain flags, etc.)
 } Level;
 
+extern const Level  levels[];
+extern const uint64_t level_count;
 
 void load_level(GameState *state, int index);
 

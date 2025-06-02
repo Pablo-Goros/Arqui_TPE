@@ -17,6 +17,11 @@ static void ball_limit_velocity(GameState *state);
 
 static void ball_movement_update(GameState *state, ModeInfo *mode);
 
+static uint8_t check_ball_in_hole(GameState *state)
+
+static void check_ball_player_collision(GameState *state);
+
+
 void pongis_init() {
     // Initialize the game, if needed
     clear_screen();
@@ -138,7 +143,8 @@ int pongis(ModeInfo mode) {
 
         ball_movement_update(&state, &mode);
         /* BALL UPDATES*/
-        
+        check_ball_player_collision(&state);
+
         uint8_t flag = check_ball_in_hole(&state);
 
 
@@ -163,7 +169,7 @@ static void player_velocity_update(int dir_x, int dir_y, GameState *state) {
 }
 
 static void player_limit_velocity(GameState *state) {
-    float speed = _sqrt(state->player_vel_x*state->player_vel_x + state->player_vel_y*state->player_vel_y);
+    float speed = _sqrt((float) state->player_vel_x*state->player_vel_x + state->player_vel_y*state->player_vel_y);
 
     // limit player speed
     if (speed > MAX_SPEED) {
@@ -230,7 +236,6 @@ static void ball_movement_update(GameState *state, ModeInfo *mode) {
     }
 }
 
-// 4) Ball–Player collision: treat each as a circle, radii = BALL_RADIUS & PLAYER_RADIUS
 static void check_ball_player_collision(GameState *state) {
     int dx = state->ball_x - state->player_x;
     int dy = state->ball_y - state->player_y;
@@ -253,12 +258,12 @@ static void check_ball_player_collision(GameState *state) {
         if (rel_dot > 0.0f) {
             // player is “pushing” into the ball
             // simply transfer “rel_dot” along normal into ball
-            state->ball_vel_x += rel_dot * nx;
-            state->ball_vel_y += rel_dot * ny;
+            state->ball_vel_x += (int) rel_dot * nx;
+            state->ball_vel_y += (int) rel_dot * ny;
         }
 
         // move ball out so they’re not stuck overlapping
-        float push_back = min_dist - dist + 0.5f;
+        float push_back = min_dist - dist;
         state->ball_x += (int)(nx * push_back);
         state->ball_y += (int)(ny * push_back);
     }

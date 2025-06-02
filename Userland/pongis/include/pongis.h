@@ -17,7 +17,7 @@
 #define BALL_RADIUS    8      /* px */
 #define PLAYER_RADIUS 10     /* px */
 
-typedef struct {
+typedef struct GameState {
     int     currentLevel;
 
     int     ball_x,    ball_y, ball_radius;
@@ -32,6 +32,7 @@ typedef struct {
 
 int pongis(ModeInfo mode);
 
+void pongis_init();
 
 
 #endif 
