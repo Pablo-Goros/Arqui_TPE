@@ -2,6 +2,7 @@
 #include <libc.h>
 #include "moduleLoader.h"
 #include "idtLoader.h"
+#include "videoDriver.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -49,6 +50,7 @@ void * initializeKernelBinary()
 int main()
 {	
 	load_idt();
+	
 	((EntryPoint)sampleCodeModuleAddress)();
 	return 0;
 }

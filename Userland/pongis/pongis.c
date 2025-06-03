@@ -115,10 +115,8 @@ void pongis(ModeInfo mode) {
     // float threshold = hole.radius - 0.6f * ball.radius;
     
     while (running) {
-        putString("pongis loop\n");
         int dir_x = 0, dir_y = 0;
-        while (isCharReady()) {
-            putString("reading input\n");
+        if (isCharReady()) {
             char k = getChar();
             switch (k) {
               case 'c': running = 0; break;
@@ -129,8 +127,6 @@ void pongis(ModeInfo mode) {
               default: break;
             }
         }
-        
-        putString("lei algo");
     
         /* PLAYER UPDATES*/
         player_velocity_update(dir_x, dir_y, &state);
