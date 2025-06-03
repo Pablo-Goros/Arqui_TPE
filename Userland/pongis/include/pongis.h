@@ -17,22 +17,32 @@
 #define BALL_RADIUS    8      /* px */
 #define PLAYER_RADIUS 10     /* px */
 
+
+#define PLAYER_COLOR    0x0000FF00  // Green player
+#define BALL_COLOR      0x00FFFFFF  // White ball
+#define HOLE_COLOR      0x00808080  // Grey hole
+
+
 typedef struct GameState {
     int     currentLevel;
 
     int     ball_x,    ball_y, ball_radius;
-    int     ball_vel_x,    ball_vel_y;
+    float     ball_vel_x,    ball_vel_y;
 
     int     player_x, player_y;
-    int     player_vel_x, player_vel_y;
+    float     player_vel_x, player_vel_y;
 
     int             holeX, holeY;
     int             holeRadius;
 } GameState;
 
-int pongis(ModeInfo mode);
+void pongis(ModeInfo mode);
 
 void pongis_init();
 
+void draw_player(int x, int y, int radius); 
 
+void draw_ball(int x, int y, int radius);
+
+void draw_hole(int x, int y, int radius);
 #endif 

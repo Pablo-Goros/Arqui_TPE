@@ -8,20 +8,9 @@
 #include "keyboardDriver.h"
 #include "interrupts.h"
 #include "libasm.h"
+#include "types.h"  
 
 typedef unsigned long size_t;
-
-typedef enum {
-    STDIN = 0,
-    STDOUT,
-    STDERR,
-} FileDescriptor;
-
-typedef struct ModeInfo {
-    uint32_t width;
-    uint32_t height;
-    uint32_t bpp;
-} ModeInfo;
 
 #define SYS_READ            0
 #define SYS_WRITE           1

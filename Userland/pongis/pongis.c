@@ -8,7 +8,6 @@ static void player_velocity_update(int dir_x, int dir_y, GameState *state);
 
 static void player_limit_velocity(GameState *state);
 
-
 static void player_movement_update(GameState *state, ModeInfo *mode);
 
 static void ball_velocity_update(GameState *state);
@@ -17,7 +16,7 @@ static void ball_limit_velocity(GameState *state);
 
 static void ball_movement_update(GameState *state, ModeInfo *mode);
 
-static uint8_t check_ball_in_hole(GameState *state)
+static uint8_t check_ball_in_hole(GameState *state);
 
 static void check_ball_player_collision(GameState *state);
 
@@ -25,7 +24,6 @@ static void check_ball_player_collision(GameState *state);
 void pongis_init() {
     // Initialize the game, if needed
     clear_screen();
-    putString("Pongis Golf\n");
 
     ModeInfo mode;
 
@@ -81,29 +79,32 @@ void pongis_init() {
     memset(buffer, 0, bufsz);
     
     set_cursor(centerX/2, centerY/2 );
-    
+    */
     set_zoom(6);
     putString("PONGIS GOLF\n");
     set_zoom(4);
     putString("Press ENTER to start\n");
     putString("Press 'c' to quit\n");
-    */
     
-    char key = getChar();
-    if (key == ' ' || key == '\n' || key == '\r') {
-          pongis(mode);
+    while (1) {
+        if (isCharReady()) {
+            char key = getChar();
+            if (key == '\n' || key == '\r') {
+                pongis(mode);
+                break;  // Exit the loop to start the game
+            } else if (key == 'c') {
+                clear_screen();
+                return;  // Exit the game
+            }
+        }
 
-    } else if (key == 'c') {
-       // free(buffer);
-       clear_screen();
-        shell();
     }
-    
+
 }
 
-int pongis(ModeInfo mode) {
+void pongis(ModeInfo mode) {
     //! TENGO Q HACER LO DE LOS LVLS 
-    putString("Entre\n");
+    clear_screen();
 
     int   running = 1;
     GameState state;
@@ -114,8 +115,10 @@ int pongis(ModeInfo mode) {
     // float threshold = hole.radius - 0.6f * ball.radius;
     
     while (running) {
+        putString("pongis loop\n");
         int dir_x = 0, dir_y = 0;
         while (isCharReady()) {
+            putString("reading input\n");
             char k = getChar();
             switch (k) {
               case 'c': running = 0; break;
@@ -126,7 +129,8 @@ int pongis(ModeInfo mode) {
               default: break;
             }
         }
-
+        
+        putString("lei algo");
     
         /* PLAYER UPDATES*/
         player_velocity_update(dir_x, dir_y, &state);
@@ -135,7 +139,8 @@ int pongis(ModeInfo mode) {
         
         player_movement_update(&state, &mode);
         /* PLAYER UPDATES*/
-        
+        putString("actualice player");
+
         /* BALL UPDATES*/
         ball_velocity_update(&state);
 
@@ -145,19 +150,45 @@ int pongis(ModeInfo mode) {
         /* BALL UPDATES*/
         check_ball_player_collision(&state);
 
+        putString("actualice ball");
+        
         uint8_t flag = check_ball_in_hole(&state);
 
+        if (flag) {
+            clear_screen();
+            set_zoom(6);
+            putString("Level Complete!\n");
+            set_zoom(4);
+            if (state.currentLevel + 1 < (int)level_count) {
+                putString("Press ENTER for next level or 'c' to quit\n");
+                char key = getChar();  // Blocking wait for input
+                if (key == '\n' || key == '\r') {
+                    load_level(&state, state.currentLevel + 1);
+                    continue;  // Continue game loop with new level
+                } else if (key == 'c') {
+                    running = 0;  // Exit loop
+                }
+            } else {
+                putString("All levels complete! Press any key to return to shell\n");
+                getChar();  // Wait for any key
+                running = 0;  // Exit loop
+            }
+        }
+
+        clear_screen();
 
         //Render
-        /*arreglar_el_juego();*/
-        draw_player(state.player_x,state.player_y, 10);/*player radius arbitrario*/
-        draw_ball(state.ball_x, state.ball_y, state.ball_radius);
+        draw_player(state.player_x,state.player_y, PLAYER_RADIUS);
+        draw_ball(state.ball_x, state.ball_y, BALL_RADIUS);
         draw_hole(state.holeX, state.holeY, state.holeRadius);
 
+
+        
         wait_next_tick();
     }
+    clear_screen();
 
-    return 0;
+    return;
 }
 
 static void player_velocity_update(int dir_x, int dir_y, GameState *state) {
@@ -169,7 +200,7 @@ static void player_velocity_update(int dir_x, int dir_y, GameState *state) {
 }
 
 static void player_limit_velocity(GameState *state) {
-    float speed = _sqrt((float) state->player_vel_x*state->player_vel_x + state->player_vel_y*state->player_vel_y);
+    float speed = _sqrt(state->player_vel_x*state->player_vel_x + state->player_vel_y*state->player_vel_y);
 
     // limit player speed
     if (speed > MAX_SPEED) {
@@ -180,8 +211,8 @@ static void player_limit_velocity(GameState *state) {
 }
 
 static void player_movement_update(GameState *state, ModeInfo *mode) {
-    state->player_x += state->player_vel_x;
-    state->player_y += state->player_vel_y;
+    state->player_x += (int)state->player_vel_x;
+    state->player_y += (int)state->player_vel_y;
 
     if (state->player_x < PLAYER_RADIUS) {
         state->player_x = PLAYER_RADIUS;
@@ -216,22 +247,22 @@ static void ball_limit_velocity(GameState *state) {
 }
 
 static void ball_movement_update(GameState *state, ModeInfo *mode) {
-    state->ball_x += state->ball_vel_x;
-    state->ball_y += state->ball_vel_y;
+    state->ball_x += (int)state->ball_vel_x;
+    state->ball_y += (int)state->ball_vel_y;
     
     // bounce ball off screen edges
-    if (state->ball_x < state->ball_radius) {
-        state->ball_x = state->ball_radius;
+    if (state->ball_x < BALL_RADIUS) {
+        state->ball_x = BALL_RADIUS;
         state->ball_vel_x = -state->ball_vel_x;
-    } else if (state->ball_x > mode->width - state->ball_radius) {
-        state->ball_x = mode->width - state->ball_radius;
+    } else if (state->ball_x > mode->width - BALL_RADIUS) {
+        state->ball_x = mode->width - BALL_RADIUS;
         state->ball_vel_x = -state->ball_vel_x;
     }
-    if (state->ball_y < state->ball_radius) {
-        state->ball_y = state->ball_radius;
+    if (state->ball_y < BALL_RADIUS) {
+        state->ball_y = BALL_RADIUS;
         state->ball_vel_y = -state->ball_vel_y;
-    } else if (state->ball_y > mode->height - state->ball_radius) {
-        state->ball_y = mode->height - state->ball_radius;
+    } else if (state->ball_y > mode->height - BALL_RADIUS) {
+        state->ball_y = mode->height - BALL_RADIUS;
         state->ball_vel_y = -state->ball_vel_y;
     }
 }
@@ -274,27 +305,26 @@ static uint8_t check_ball_in_hole(GameState *state) {
     int dy = state->ball_y - state->holeY;
     
     int dist = (int) _sqrt(dx*dx + dy*dy);
-    int min_dist = state->holeRadius + state->ball_radius;    
 
-    return dist <= min_dist ? 1 : 0;
+    // Ball falls in when it's mostly inside the hole
+    int threshold = state->holeRadius - (BALL_RADIUS * 0.8f); 
+
+    return dist <= threshold ? 1 : 0;
+}
+
+//? quizas agregar una variable en draw circle q sea con o sin outline, por ejemplo para el hole...
+
+void draw_player(int x, int y, int radius) {
+    sys_call(SYS_DRAW_CIRCLE, x, y, radius, PLAYER_COLOR, 0);
+}
+
+void draw_ball(int x, int y, int radius) {
+    sys_call(SYS_DRAW_CIRCLE, x, y, radius, BALL_COLOR, 0);
+}
+
+void draw_hole(int x, int y, int radius) {
+    sys_call(SYS_DRAW_CIRCLE, x, y, radius, HOLE_COLOR, 0);  
 }
 
 
-
-
-
-
-
-//! movelos a libc.c? o hagamos un render.c
-void draw_player(int p_x, int p_y, int p_radius){
-    sys_call(SYS_DRAW_CIRCLE, p_x, p_y, p_radius, 0x0000FF00,0);
-}
-
-void draw_ball(int b_x, int b_y, int b_radius){
-    sys_call(SYS_DRAW_CIRCLE, b_x, b_y, b_radius, 0x00FFFFFF,0);
-}
-
-void draw_hole(int h_x, int h_y, int h_radius){
-    sys_call(SYS_DRAW_CIRCLE, h_x, h_y, h_radius, 0x00808080, 0);
-}
 

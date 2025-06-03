@@ -61,6 +61,8 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
         case SYS_GET_MODE_INFO: {
                 // ! DEBUG, desp cambiar
                 uint64_t raw = va_arg(args, uint64_t);
+                //! 
+
                 ModeInfo *mode_info = (ModeInfo *) raw;
                 vd_get_mode_info(mode_info);
                 ret = 0;
@@ -70,13 +72,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
 
         case SYS_SET_ZOOM: {
             int zoom_level = (int)va_arg(args, uint64_t);
-            if (zoom_level >= ZOOM_MIN && zoom_level <= ZOOM_MAX) {
-                vd_set_zoom(zoom_level);
-                ret = 0;
-            } else {
-                vd_put_string("\nInvalid zoom level. Usage: zoom <number (Between 1 and 10)>", STDOUT);
-                return SYS_ERR;
-            }
+            vd_set_zoom(zoom_level);
             break;
         }
 
@@ -85,7 +81,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
 
         case SYS_PUT_PIXEL: {
-             uint32_t color = (uint32_t)va_arg(args, uint32_t);
+            uint32_t color = (uint32_t)va_arg(args, uint32_t);
             uint64_t x = (uint64_t)va_arg(args, uint64_t);
             uint64_t y = (uint64_t)va_arg(args, uint64_t);
             vd_put_pixel(color, x, y);

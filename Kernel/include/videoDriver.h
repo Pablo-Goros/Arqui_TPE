@@ -2,7 +2,7 @@
 #define VIDEO_DRIVER_H
 
 #include <stdint.h>
-#include "sysCallDispatcher.h"  // for FileDescriptor Enum
+#include "types.h"  // Include the shared types
 #include "libc.h"
 
 #define CHAR_WIDTH 8
@@ -20,7 +20,6 @@
 #define CHAR_HEIGHT 16
 
 #define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
-
 
 void vd_put_pixel( uint32_t color, uint64_t x, uint64_t y);
 
@@ -55,8 +54,8 @@ void vd_clear_screen(void);
 
 /**
  * @brief Move the console cursor to the given character cell.
- * @args col: Column index (0..)
- *       row: Row index (0..)
+ * @param col: Column index (0..)
+ * @param row: Row index (0..)
  */
 void vd_set_cursor(int col, int row);
 /**
@@ -67,15 +66,30 @@ void vd_show_registers(FileDescriptor fd);
 /**
  * @brief Set the zoom level for the text.
  *        The zoom level affects the size of characters drawn on the screen.
- * @args new_zoom: New zoom level (1 to 10)
+ * @param new_zoom: New zoom level (1 to 10)
  */
 void vd_set_zoom(int new_zoom);
 
+/**
+ * @brief Draws a filled rectangle on the screen
+ * @param x: X coordinate of top-left corner
+ * @param y: Y coordinate of top-left corner  
+ * @param width: Width of the rectangle in pixels
+ * @param height: Height of the rectangle in pixels
+ * @param color: Color in RGB format (0xRRGGBB)
+ */
 void vd_draw_rectangle(int x, int y, int width, int height, uint32_t color);
 
+/**
+ * @brief Draws a filled circle
+ * @param center_x: X coordinate of circle center
+ * @param center_y: Y coordinate of circle center
+ * @param radius: Radius of the circle in pixels
+ * @param color: Color in RGB format (0xRRGGBB)
+ */
 void vd_draw_circle(int x, int y, int radius, uint32_t color);
 
-void vd_draw_bitmap(int x, int y, int width, int height, const uint32_t *pixels);
+//void vd_draw_bitmap(int x, int y, int width, int height, const uint32_t *pixels);
 
 void vd_get_mode_info(ModeInfo *mode);
 

@@ -4,6 +4,8 @@
         "stdint.h": "c",
         "syscalldispatcher.h": "c",
         "exceptiondispatcher.h": "c",
-        "libc.h": "c"
+        "libc.h": "c",
+        "time_display.h": "c",
+        "time.h": "c"
     }
 }

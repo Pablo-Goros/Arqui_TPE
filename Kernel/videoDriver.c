@@ -206,8 +206,12 @@ void vd_init(void) {
 }
 
 void vd_set_zoom(int new_zoom) {
-    vd_put_char('\n', STDOUT); // Print a space to trigger the screen update
-    zoom = new_zoom; // Set the new zoom value
+    if (new_zoom >= ZOOM_MIN && new_zoom <= ZOOM_MAX) {
+        vd_put_char('\n', STDOUT); // Print a space to trigger the screen update
+        zoom = new_zoom;
+    } else {
+        vd_put_string("\nInvalid zoom level. Usage: zoom <number (Between 1 and 10)>\n", STDOUT);
+    }
 }
 
 void vd_set_cursor(int col, int row) {
@@ -221,47 +225,48 @@ void vd_clear_screen(void) {
     cursorY = 0;
 }
 
-
 void vd_draw_rectangle(int x, int y, int width, int height, uint32_t color) {
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            vd_put_pixel(color, x + j, y + i);
-        }
+    // Boundary checks to prevent drawing outside screen
+    if (x < 0 || y < 0 || x >= VBE_mode_info->width || y >= VBE_mode_info->height) {
+        return;
     }
-}
-
-void vd_draw_circle(int x, int y, int radius, uint32_t color) {
-    int x0 = radius;
-    int y0 = 0;
-    int err = 0;
-
-    while (x0 >= y0) {
-        vd_put_pixel(color, x + x0, y + y0);
-        vd_put_pixel(color, x + y0, y + x0);
-        vd_put_pixel(color, x - y0, y + x0);
-        vd_put_pixel(color, x - x0, y + y0);
-        vd_put_pixel(color, x - x0, y - y0);
-        vd_put_pixel(color, x - y0, y - x0);
-        vd_put_pixel(color, x + y0, y - x0);
-        vd_put_pixel(color, x + x0, y - y0);
-
-        if (err <= 0) {
-            y0 += 1;
-            err += 2 * y0 + 1;
-        }
-        if (err > 0) {
-            x0 -= 1;
-            err -= 2 * x0 + 1;
-        }
+    
+    // Clamp width and height to stay within screen bounds
+    if (x + width > VBE_mode_info->width) {
+        width = VBE_mode_info->width - x;
     }
-
-}
-
-void vd_draw_bitmap(int x, int y, int width, int height, const uint32_t *pixels) {
-     for (int row = 0; row < height; row++) {
+    if (y + height > VBE_mode_info->height) {
+        height = VBE_mode_info->height - y;
+    }
+    
+    // Draw the rectangle row by row for better cache performance
+    for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            uint32_t color = pixels[row * width + col];
             vd_put_pixel(color, x + col, y + row);
+        }
+    }
+}
+
+void vd_draw_circle(int center_x, int center_y, int radius, uint32_t color) {
+    // Boundary check
+    if (center_x + radius < 0 || center_x - radius >= VBE_mode_info->width ||
+        center_y + radius < 0 || center_y - radius >= VBE_mode_info->height) {
+        return;
+    }
+    
+    for (int y = -radius; y <= radius; y++) {
+        for (int x = -radius; x <= radius; x++) {
+            // Check if point is inside circle using distance formula
+            if (x * x + y * y <= radius * radius) {
+                int px = center_x + x;
+                int py = center_y + y;
+                
+                // Bounds checking
+                if (px >= 0 && px < VBE_mode_info->width && 
+                    py >= 0 && py < VBE_mode_info->height) {
+                    vd_put_pixel(color, px, py);
+                }
+            }
         }
     }
 }

@@ -53,9 +53,9 @@
 
 // metodo de newton (metodos numericos 4 the win)
 
-double _sqrt(double x) {
+float _sqrt(float x) {
     if (x < 0) return -1;
-    double r = x < 1 ? 1 : x;      // initial guess
+    float r = x < 1 ? 1 : x;      // initial guess
     for (int i = 0; i < 6; i++)
         r = 0.5 * (r + x/r);
     return r;
