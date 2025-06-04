@@ -19,173 +19,149 @@ static uint8_t check_ball_in_hole(GameState *state);
 
 static void check_ball_player_collision(GameState *state);
 
+static void display_welcome_screen();
+
+static void handle_menu_input(ModeInfo mode);
+
 void pongis_init()
 {
-    // Initialize the game, if needed
     clear_screen();
 
     ModeInfo mode;
-
     if (get_mode_info(&mode) != 0)
     {
         putString("\nError getting mode info\n");
+        return;
     }
 
-    // Display welcome screen
-    //! PREGUNTARRRRRRRRRRRRRRRRRRRRRRR
-    /*
-    int centerX = mode.width;
-    int centerY = mode.height;
-    char buffer1[10];
-    char buffer2[10];
-    itoa(centerX, buffer1, 10);
-    itoa(centerY, buffer2, 10);
-    putString("Center X: ");
-    putString(buffer1);
-    putChar('\n');
-    putString("Center Y: ");
-    putString(buffer2);
-    putChar('\n');
+    display_welcome_screen();
+    handle_menu_input(mode);
+}
 
-    /*
-    // Create buffer for welcome screen
-    uint64_t bufpx = mode.width * mode.height;
-    uint64_t bufsz = bufpx * sizeof(uint32_t);
-    uint32_t *buffer = malloc(bufsz);
-    if (!buffer) return;
-
-    // Clear buffer
-    memset(buffer, 0, bufsz);
-
-    set_cursor(centerX/2, centerY/2 );
-    */
+static void display_welcome_screen()
+{
     set_zoom(6);
     putString("PONGIS GOLF\n");
     set_zoom(4);
     putString("Press ENTER to start\n");
     putString("Press 'c' to quit\n");
+}
 
+static void handle_menu_input(ModeInfo mode)
+{
     while (1)
     {
         if (isCharReady())
         {
             char key = getChar();
-            if (key == '\n' || key == '\r')
+            switch (key)
             {
-                pongis(mode);
-                break; // Exit the loop to start the game
-            }
-            else if (key == 'c')
-            {
-                clear_screen();
-                return; // Exit the game
+                case '\n':
+                case '\r':
+                    pongis(mode);
+                    return; // Exit after game ends
+                case 'c':
+                    clear_screen();
+                    return; // Exit to shell
+                default:
+                    break; // Ignore other keys
             }
         }
     }
 }
-
-void pongis(ModeInfo mode)
-{
-    //! TENGO Q HACER LO DE LOS LVLS
-    clear_screen();
-
-    int running = 1;
-    GameState state;
-    load_level(&state, 0);
-
     // Umbral al 60% para "caida en el hoyo"
     // float threshold = hole.radius - 0.6f * ball.radius;
 
-    while (running)
-    {
-        int dir_x = 0, dir_y = 0;
-        if (isCharReady())
-        {
+// Add a game state enum at the top of the file
+
+void pongis(ModeInfo mode) {
+    clear_screen();
+    int running = 1;
+    GameState state;
+    GamePhase phase = GAME_PLAYING;
+    load_level(&state, 0);
+    
+    while (running) {
+        // Handle input based on current phase
+        if (isCharReady()) {
             char k = getChar();
-            switch (k)
-            {
-            case 'c':
-                running = 0;
-                break;
-            case 'w':
-                dir_y = -1;
-                break;
-            case 's':
-                dir_y = +1;
-                break;
-            case 'a':
-                dir_x = -1;
-                break;
-            case 'd':
-                dir_x = +1;
-                break;
-            default:
-                break;
+            
+            if (phase == GAME_PLAYING) {
+                int dir_x = 0, dir_y = 0;
+                switch (k) {
+                    case 'c': running = 0; break;
+                    case 'w': dir_y = -1; break;
+                    case 's': dir_y = +1; break;
+                    case 'a': dir_x = -1; break;
+                    case 'd': dir_x = +1; break;
+                    default: break;
+                }
+                
+                if (running) {
+                    // Update game only if still playing
+                    velocity_update(dir_x, dir_y, &state.player_vel_x, &state.player_vel_y, 1);
+                    limit_velocity(&state.player_vel_x, &state.player_vel_y);
+                    movement_update(&state.player_x, &state.player_y, &state.player_vel_x, &state.player_vel_y, &mode, 1);
+                    /* PLAYER UPDATES*/
+
+                    /* BALL UPDATES*/
+                    velocity_update(dir_x, dir_y, &state.ball_vel_x, &state.ball_vel_y, 0);
+                    limit_velocity(&state.ball_vel_x, &state.ball_vel_y);
+                    movement_update(&state.ball_x, &state.ball_y, &state.ball_vel_x, &state.ball_vel_y, &mode, 0);
+                    /* BALL UPDATES*/
+
+                    check_ball_player_collision(&state);
+                }
+            } else if (phase == GAME_LEVEL_COMPLETE) {
+                if (k == '\n' || k == '\r') {
+                    load_level(&state, state.currentLevel + 1);
+                    phase = GAME_PLAYING;
+                } else if (k == 'c') {
+                    running = 0;
+                }
+            }
+            else if (phase == GAME_ALL_COMPLETE) {
+                running = 0; // Any key exits
             }
         }
-
-        /* PLAYER UPDATES*/
-        velocity_update(dir_x, dir_y, &state.player_vel_x, &state.player_vel_y, 1);
-
-        limit_velocity(&state.player_vel_x, &state.player_vel_y);
-
-        movement_update(&state.player_x, &state.player_y, &state.player_vel_x, &state.player_vel_y, &mode, 1);
-        /* PLAYER UPDATES*/
-        putString("actualice player");
         
-        /* BALL UPDATES*/
-        velocity_update(dir_x, dir_y, &state.ball_vel_x, &state.ball_vel_y, 0);
+        // Check win condition only during gameplay
+        if (phase == GAME_PLAYING) {
+            uint8_t flag = check_ball_in_hole(&state);
+            if (flag) {
+                if (state.currentLevel + 1 < (int)level_count) {
+                    phase = GAME_LEVEL_COMPLETE;
+                } else {
+                    phase = GAME_ALL_COMPLETE;
+                }
+            }
+        }
         
-        limit_velocity(&state.ball_vel_x, &state.ball_vel_y);
+        clear_screen();
         
-        movement_update(&state.ball_x, &state.ball_y, &state.ball_vel_x, &state.ball_vel_y, &mode, 0);
-        /* BALL UPDATES*/
-        check_ball_player_collision(&state);
-
-        putString("actualice ball");
-
-        uint8_t flag = check_ball_in_hole(&state);
-
-        if (flag)
-        {
-            clear_screen();
+        // Render based on phase
+        if (phase == GAME_PLAYING) {
+            draw_player(state.player_x, state.player_y, PLAYER_RADIUS);
+            draw_ball(state.ball_x, state.ball_y, BALL_RADIUS);
+            draw_hole(state.holeX, state.holeY, state.holeRadius);
+        } else if (phase == GAME_LEVEL_COMPLETE) {
             set_zoom(6);
             putString("Level Complete!\n");
             set_zoom(4);
-            if (state.currentLevel + 1 < (int)level_count)
-            {
-                putString("Press ENTER for next level or 'c' to quit\n");
-                char key = getChar(); // Blocking wait for input
-                if (key == '\n' || key == '\r')
-                {
-                    load_level(&state, state.currentLevel + 1);
-                    continue; // Continue game loop with new level
-                }
-                else if (key == 'c')
-                {
-                    running = 0; // Exit loop
-                }
-            }
-            else
-            {
-                putString("All levels complete! Press any key to return to shell\n");
-                getChar();   // Wait for any key
-                running = 0; // Exit loop
-            }
+            putString("Press ENTER for next level or 'c' to quit\n");
+        } else if (phase == GAME_ALL_COMPLETE) {
+            set_zoom(6);
+            putString("All levels complete!\n");
+            set_zoom(4);
+            putString("Press any key to return to shell\n");
         }
-
-        clear_screen();
-
-        // Render
-        draw_player(state.player_x, state.player_y, PLAYER_RADIUS);
-        draw_ball(state.ball_x, state.ball_y, BALL_RADIUS);
-        draw_hole(state.holeX, state.holeY, state.holeRadius);
-
+        
         wait_next_tick();
     }
-    clear_screen();
 
+    clear_screen();
     return;
+
 }
 
 static void velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y, int is_player)
