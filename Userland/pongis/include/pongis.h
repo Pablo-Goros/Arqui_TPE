@@ -26,7 +26,7 @@
 typedef struct GameState {
     int     currentLevel;
 
-    int     ball_x,    ball_y, ball_radius;
+    int     ball_x,    ball_y;
     float     ball_vel_x,    ball_vel_y;
 
     int     player_x, player_y;
