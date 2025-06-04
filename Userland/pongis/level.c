@@ -17,9 +17,22 @@ const Level levels[1] = {
 
         .numObstacles    =  0,
         .obstacles       = ((void*)0)
+    },
+    // Level 1
+    {
+        .ball_start_x    = 500,
+        .ball_start_y    = 500,
+
+        .player_start_x  = 100,
+        .player_start_y  = 100,
+
+        .holeX           = 1000,
+        .holeY           = 1000,
+        .holeRadius      = 200,
+
+        .numObstacles    =  0,
+        .obstacles       = ((void*)0)
     }
-
-
 };
 
 
