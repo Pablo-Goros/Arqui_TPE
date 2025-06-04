@@ -1,33 +1,19 @@
 #include "level.h"
 #include "pongis.h"    // for GameState definition
 
-static const Level lvl0 = {
-    .ball_start_x    = 100,
-    .ball_start_y    = 100,
-
-    .player_start_x  = 200,
-    .player_start_y  = 200,
-
-    .holeX           = 400,
-    .holeY           = 200,
-    .holeRadius      =  15,
-
-    .numObstacles    =  0,
-    .obstacles       = ((void*)0)
-};
 
 const Level levels[1] = {
     // Level 0: Simple level with no obstacles
     {
-        .ball_start_x    = 100,
-        .ball_start_y    = 100,
+        .ball_start_x    = 200,
+        .ball_start_y    = 200,
 
-        .player_start_x  = 200,
-        .player_start_y  = 200,
+        .player_start_x  = 100,
+        .player_start_y  = 100,
 
         .holeX           = 400,
         .holeY           = 200,
-        .holeRadius      =  15,
+        .holeRadius      = 200,
 
         .numObstacles    =  0,
         .obstacles       = ((void*)0)

@@ -108,7 +108,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
         }
         case SYS_KEY_READY: {
-            ret = kbd_has_char() ? 1 : 0; // Return 1 if a key is ready, otherwise 0
+            ret = kbd_has_char() ? 1 : 0; // Return 1 if a key is ready, 0 if not
             break;
         }
 

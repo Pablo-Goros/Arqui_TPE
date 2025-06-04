@@ -3,6 +3,7 @@
 #include "moduleLoader.h"
 #include "idtLoader.h"
 #include "videoDriver.h"
+#include "soundDriver.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -50,7 +51,8 @@ void * initializeKernelBinary()
 int main()
 {	
 	load_idt();
-	
+	//play_sound(440); // Play a sound at 440Hz
+	//beep(440, 100); // Play a beep sound at 440Hz for 100ms
 	((EntryPoint)sampleCodeModuleAddress)();
 	return 0;
 }

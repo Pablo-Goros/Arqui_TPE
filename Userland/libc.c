@@ -165,10 +165,9 @@ uint64_t get_ticks(){
 }
 
 void wait_next_tick(void) {
-    uint64_t ticks = get_ticks();
-    while (get_ticks() == ticks) {
-    }
+    _hlt(); // Halt the CPU until the next tick
 }
+
 /* ------------------------------------------------------------------------- */
 /* Cursor control & screen clearing                                          */
 /* ------------------------------------------------------------------------- */

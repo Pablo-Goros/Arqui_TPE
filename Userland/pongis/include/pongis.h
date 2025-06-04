@@ -14,8 +14,8 @@
 #define ACCELERATION   0.2f   /* px/tick² */
 #define MAX_SPEED      5.0f   /* px/tick */
 #define FRICTION       0.99f  /* velocity scaling per frame */
-#define BALL_RADIUS    8      /* px */
-#define PLAYER_RADIUS 10     /* px */
+#define BALL_RADIUS    50      /* px */
+#define PLAYER_RADIUS 70     /* px */
 
 
 #define PLAYER_COLOR    0x0000FF00  // Green player

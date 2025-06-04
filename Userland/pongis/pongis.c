@@ -34,16 +34,23 @@ void pongis_init()
         return;
     }
 
-    display_welcome_screen();
+    display_welcome_screen(mode);
     handle_menu_input(mode);
 }
 
-static void display_welcome_screen()
-{
+static void display_welcome_screen(ModeInfo mode)
+{   
+    clear_screen();
     set_zoom(6);
+    set_cursor((mode.width / 2) - 300, mode.height / 4);
     putString("PONGIS GOLF\n");
+   
     set_zoom(4);
+
+    set_cursor((mode.width / 2) - 300, mode.height / 2);
     putString("Press ENTER to start\n");
+
+    set_cursor((mode.width / 2) - 300, 3* mode.height / 4);
     putString("Press 'c' to quit\n");
 }
 
@@ -69,11 +76,6 @@ static void handle_menu_input(ModeInfo mode)
         }
     }
 }
-    // Umbral al 60% para "caida en el hoyo"
-    // float threshold = hole.radius - 0.6f * ball.radius;
-
-// Add a game state enum at the top of the file
-
 void pongis(ModeInfo mode) {
     clear_screen();
     int running = 1;
@@ -83,7 +85,6 @@ void pongis(ModeInfo mode) {
     
     while (running) {
         // Handle input based on current phase
-        if (isCharReady()) {
             char k = getChar();
             
             if (phase == GAME_PLAYING) {
@@ -105,7 +106,7 @@ void pongis(ModeInfo mode) {
                     /* PLAYER UPDATES*/
 
                     /* BALL UPDATES*/
-                    velocity_update(dir_x, dir_y, &state.ball_vel_x, &state.ball_vel_y, 0);
+                    velocity_update(0, 0, &state.ball_vel_x, &state.ball_vel_y, 0);
                     limit_velocity(&state.ball_vel_x, &state.ball_vel_y);
                     movement_update(&state.ball_x, &state.ball_y, &state.ball_vel_x, &state.ball_vel_y, &mode, 0);
                     /* BALL UPDATES*/
@@ -123,12 +124,13 @@ void pongis(ModeInfo mode) {
             else if (phase == GAME_ALL_COMPLETE) {
                 running = 0; // Any key exits
             }
-        }
+        
         
         // Check win condition only during gameplay
         if (phase == GAME_PLAYING) {
             uint8_t flag = check_ball_in_hole(&state);
             if (flag) {
+                clear_screen();
                 if (state.currentLevel + 1 < (int)level_count) {
                     phase = GAME_LEVEL_COMPLETE;
                 } else {
@@ -156,7 +158,8 @@ void pongis(ModeInfo mode) {
             putString("Press any key to return to shell\n");
         }
         
-        wait_next_tick();
+       // wait_next_tick();
+        
     }
 
     clear_screen();
@@ -229,7 +232,8 @@ static void check_ball_player_collision(GameState *state)
     {
         if (dist < 1)
         {
-            // extremely rare overlap; pick arbitrary direction
+            // complete overlap
+            // arbitrary values
             dx = 1;
             dy = 0;
             dist = 1;

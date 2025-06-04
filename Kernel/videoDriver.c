@@ -220,7 +220,15 @@ void vd_set_cursor(int col, int row) {
 }
 
 void vd_clear_screen(void) {
-    vd_draw_rectangle(0, 0, VBE_mode_info->width, VBE_mode_info->height, background_color);
+    uint8_t *framebuffer = (uint8_t *)(uintptr_t)VBE_mode_info->framebuffer;
+    uint32_t total_bytes = VBE_mode_info->width * VBE_mode_info->height * (VBE_mode_info->bpp / 8);
+
+    if (background_color == COLOR_BLACK) {
+        _memset(framebuffer, 0, total_bytes); // Clear to black
+    } else {
+        vd_draw_rectangle(0, 0, VBE_mode_info->width, VBE_mode_info->height, background_color);
+    }
+    
     cursorX = 0;
     cursorY = 0;
 }
@@ -248,7 +256,6 @@ void vd_draw_rectangle(int x, int y, int width, int height, uint32_t color) {
 }
 
 void vd_draw_circle(int center_x, int center_y, int radius, uint32_t color) {
-    // Boundary check
     if (center_x + radius < 0 || center_x - radius >= VBE_mode_info->width ||
         center_y + radius < 0 || center_y - radius >= VBE_mode_info->height) {
         return;
