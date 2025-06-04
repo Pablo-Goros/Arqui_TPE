@@ -9,7 +9,7 @@ static void velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y, in
 
 static void limit_velocity(float *vel_x, float *vel_y);
 
-static void player_movement_update(GameState *state, ModeInfo *mode);
+static void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo *mode, int is_player);
 
 static void ball_limit_velocity(GameState *state);
 
