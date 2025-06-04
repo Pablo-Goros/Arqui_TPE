@@ -85,10 +85,10 @@ static void scroll_screen(void) {
     uint32_t lines = CHAR_HEIGHT * zoom;
     uint64_t move_bytes = (uint64_t)(h - lines) * pitch;
 
-    // 1) slide every scanline up by “lines”
+    // slide every scanline up by “lines”
     _memcpy(fb, fb + (uint64_t)lines * pitch, move_bytes);
 
-    // 2) clear the new bottom “lines” of pixels
+    // clear the new bottom “lines” of pixels
     _memset(fb + move_bytes, 0, (uint64_t)lines * pitch);
 }
 
