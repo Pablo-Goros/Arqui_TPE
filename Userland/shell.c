@@ -2,14 +2,6 @@
 
 #define MAX_CMD_LENGTH 256 
 
-void shell_init(void) {
-    clear_screen();
-    putString("Welcome to the shell!\n");
-    putString("Type 'help' for a list of commands.\n");
-
-    shell();
-}
-
 void shell(void) {
     while (1) {
         char command[MAX_CMD_LENGTH];
