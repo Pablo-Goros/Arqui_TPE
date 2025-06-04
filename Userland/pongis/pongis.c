@@ -85,8 +85,7 @@ void pongis(ModeInfo mode) {
     
     while (running) {
         // Handle input based on current phase
-            char k = getChar();
-            
+            char k = (isCharReady() ? getChar() : 0);
             if (phase == GAME_PLAYING) {
                 int dir_x = 0, dir_y = 0;
                 switch (k) {
@@ -158,7 +157,7 @@ void pongis(ModeInfo mode) {
             putString("Press any key to return to shell\n");
         }
         
-       // wait_next_tick();
+        wait_next_tick();
         
     }
 
