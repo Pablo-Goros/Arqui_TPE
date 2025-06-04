@@ -178,7 +178,9 @@ _int80Handler:
 	mov rdi, rax
 	
 	call sysCallDispatcher
+	mov [aux], rax
 	popState
+	mov rax, [aux]
 	iretq
 
 	;Zero Division Exception
