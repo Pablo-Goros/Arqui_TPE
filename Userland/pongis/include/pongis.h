@@ -22,6 +22,11 @@
 #define BALL_COLOR      0x00FFFFFF  // White ball
 #define HOLE_COLOR      0x00808080  // Grey hole
 
+typedef enum {
+    GAME_PLAYING,
+    GAME_LEVEL_COMPLETE,
+    GAME_ALL_COMPLETE
+} GamePhase;
 
 typedef struct GameState {
     int     currentLevel;
