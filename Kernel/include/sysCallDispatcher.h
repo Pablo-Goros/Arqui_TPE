@@ -29,6 +29,7 @@ typedef unsigned long size_t;
 #define SYS_PUT_PIXEL       15
 #define SYS_DRAW_RECT       16
 #define SYS_DRAW_CIRCLE     17
+#define SYS_RESET_KBD       19
 #define SYS_SLEEP           35
 #define SYS_ERR   ((uint64_t)-1)
 

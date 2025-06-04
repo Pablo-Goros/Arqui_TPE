@@ -13,4 +13,6 @@ uint8_t kbd_has_char(void);
 /** Pop one ASCII char, or 0 if none */
 char kbd_get_char(void);
 
+void kbd_reset_buff();
+
 #endif // KEYBOARD_DRIVER_H

@@ -59,15 +59,14 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
         }
 
         case SYS_GET_MODE_INFO: {
-                // ! DEBUG, desp cambiar
-                uint64_t raw = va_arg(args, uint64_t);
-                //! 
-
-                ModeInfo *mode_info = (ModeInfo *) raw;
+                ModeInfo *mode_info = (ModeInfo *) va_arg(args, uint64_t);
                 vd_get_mode_info(mode_info);
                 ret = 0;
                 break;
-
+        }
+        case SYS_RESET_KBD: {
+            kbd_reset_buff();
+            break;
         }
 
         case SYS_SET_ZOOM: {

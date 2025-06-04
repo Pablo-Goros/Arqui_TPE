@@ -1,6 +1,8 @@
 #ifndef SOUND_DRIVER_H
 #define SOUND_DRIVER_H
 
+#include <stdint.h>
+
 // Hardware constants
 #define PIT_FREQUENCY 1193180      // Base frequency of the PIT in Hz
 #define PIT_COMMAND_PORT 0x43      // PIT command register
@@ -12,9 +14,8 @@
 #define MAX_FREQUENCY 20000       
 
 // Function declarations with port I/O (these should be defined elsewhere)
-extern void outb(unsigned short port, unsigned char value);
-extern unsigned char inb(unsigned short port);
-
+extern void outb(uint16_t port, uint8_t value);
+extern uint8_t inb(uint16_t port);
 /**
  * Plays a sound at the specified frequency using the PC speaker
  * @param frequency: Frequency in Hz (20-20000 Hz recommended)

@@ -5,14 +5,14 @@
 const Level levels[1] = {
     // Level 0: Simple level with no obstacles
     {
-        .ball_start_x    = 200,
-        .ball_start_y    = 200,
+        .ball_start_x    = 500,
+        .ball_start_y    = 500,
 
         .player_start_x  = 100,
-        .player_start_y  = 100,
+        .player_start_y  = 500,
 
-        .holeX           = 400,
-        .holeY           = 200,
+        .holeX           = 800,
+        .holeY           = 500,
         .holeRadius      = 200,
 
         .numObstacles    =  0,
@@ -24,11 +24,11 @@ const Level levels[1] = {
         .ball_start_y    = 500,
 
         .player_start_x  = 100,
-        .player_start_y  = 100,
+        .player_start_y  = 500,
 
-        .holeX           = 1000,
-        .holeY           = 1000,
-        .holeRadius      = 200,
+        .holeX           = 800,
+        .holeY           = 500,
+        .holeRadius      = 50,
 
         .numObstacles    =  0,
         .obstacles       = ((void*)0)

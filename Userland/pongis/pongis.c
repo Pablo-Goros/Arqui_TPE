@@ -23,6 +23,18 @@ static void display_welcome_screen();
 
 static void handle_menu_input(ModeInfo mode);
 
+static void clear_object(int x, int y, int radius) {
+    sys_call(SYS_DRAW_CIRCLE, x, y, radius + 2, 0x000000, 0); // Black with slight padding
+}
+
+static int objects_overlap(int x1, int y1, int r1, int x2, int y2, int r2) {
+    int dx = x1 - x2;
+    int dy = y1 - y2;
+    int dist_sq = dx * dx + dy * dy;
+    int combined_radius = r1 + r2;
+    return dist_sq <= (combined_radius * combined_radius);
+}
+
 void pongis_init()
 {
     clear_screen();
@@ -83,6 +95,17 @@ void pongis(ModeInfo mode) {
     GamePhase phase = GAME_PLAYING;
     load_level(&state, 0);
     
+    // Store previous positions
+    int prev_player_x = state.player_x, prev_player_y = state.player_y;
+    int prev_ball_x = state.ball_x, prev_ball_y = state.ball_y;
+    
+    // Add flags to track if messages have been displayed
+    int level_complete_displayed = 0;
+    int all_complete_displayed = 0;
+
+    draw_hole(state.holeX, state.holeY, state.holeRadius);
+
+
     while (running) {
         // Handle input based on current phase
             char k = (isCharReady() ? getChar() : 0);
@@ -98,6 +121,12 @@ void pongis(ModeInfo mode) {
                 }
                 
                 if (running) {
+
+                    prev_player_x = state.player_x;
+                    prev_player_y = state.player_y;
+                    prev_ball_x = state.ball_x;
+                    prev_ball_y = state.ball_y;
+
                     // Update game only if still playing
                     velocity_update(dir_x, dir_y, &state.player_vel_x, &state.player_vel_y, 1);
                     limit_velocity(&state.player_vel_x, &state.player_vel_y);
@@ -121,15 +150,18 @@ void pongis(ModeInfo mode) {
                 }
             }
             else if (phase == GAME_ALL_COMPLETE) {
-                running = 0; // Any key exits
+                if (k == 'c') {
+                    running = 0; // Exit to shell
+                }
             }
         
         
-        // Check win condition only during gameplay
+        // Check win condition
         if (phase == GAME_PLAYING) {
             uint8_t flag = check_ball_in_hole(&state);
             if (flag) {
                 clear_screen();
+                sys_call(SYS_RESET_KBD,0,0,0,0,0);
                 if (state.currentLevel + 1 < (int)level_count) {
                     phase = GAME_LEVEL_COMPLETE;
                 } else {
@@ -138,23 +170,45 @@ void pongis(ModeInfo mode) {
             }
         }
         
-        clear_screen();
+        // clear_screen();
         
         // Render based on phase
         if (phase == GAME_PLAYING) {
+            if (prev_player_x != state.player_x || prev_player_y != state.player_y) {
+                clear_object(prev_player_x, prev_player_y, PLAYER_RADIUS);
+            }
+            if (prev_ball_x != state.ball_x || prev_ball_y != state.ball_y) {
+                clear_object(prev_ball_x, prev_ball_y, BALL_RADIUS);
+            }
+
             draw_player(state.player_x, state.player_y, PLAYER_RADIUS);
             draw_ball(state.ball_x, state.ball_y, BALL_RADIUS);
-            draw_hole(state.holeX, state.holeY, state.holeRadius);
+
+            // redraw hole only if ball or player is overlapping
+            if (objects_overlap(state.ball_x, state.ball_y, BALL_RADIUS, state.holeX, state.holeY, state.holeRadius) ||
+                objects_overlap(state.player_x, state.player_y, PLAYER_RADIUS, state.holeX, state.holeY, state.holeRadius)) {
+                draw_hole(state.holeX, state.holeY, state.holeRadius);
+            }
         } else if (phase == GAME_LEVEL_COMPLETE) {
-            set_zoom(6);
-            putString("Level Complete!\n");
-            set_zoom(4);
-            putString("Press ENTER for next level or 'c' to quit\n");
+            if (!level_complete_displayed) {
+                set_cursor((mode.width / 2) - 200, mode.height / 2 - 50);
+                set_zoom(6);
+                putString("Level Complete!\n");
+                set_cursor((mode.width / 2) - 300, mode.height / 2 + 50);
+                set_zoom(4);
+                putString("Press ENTER for next level or 'c' to quit\n");
+                level_complete_displayed = 1;
+            }
         } else if (phase == GAME_ALL_COMPLETE) {
-            set_zoom(6);
-            putString("All levels complete!\n");
-            set_zoom(4);
-            putString("Press any key to return to shell\n");
+            if (!all_complete_displayed) {
+                set_cursor((mode.width / 2) - 200, mode.height / 2 - 50);
+                set_zoom(6);
+                putString("All levels complete!\n");
+                set_cursor((mode.width / 2) - 250, mode.height / 2 + 50);
+                set_zoom(4);
+                putString("Press 'c' to return to shell\n");
+                all_complete_displayed = 1;
+            }
         }
         
         wait_next_tick();

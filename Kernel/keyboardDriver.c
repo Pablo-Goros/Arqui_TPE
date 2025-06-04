@@ -114,6 +114,12 @@ char kbd_get_char(void) {
         return 0;
     } 
     char c = buf[tail];
-    tail = (tail + 1) % BUF_SIZE;
+    tail = (tail + 1) % BUF_SIZE; 
     return c;
 }
+
+void kbd_reset_buff() {
+    head = tail;
+    return;
+}
+
