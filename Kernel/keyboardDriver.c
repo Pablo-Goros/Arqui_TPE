@@ -149,5 +149,5 @@ void kbd_reset_buff() {
 }
 
 uint64_t kbd_is_key_down(char key) {
-    return key_state[key];
+    return key_state[(uint8_t) key];
 }

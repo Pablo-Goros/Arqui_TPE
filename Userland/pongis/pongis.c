@@ -28,12 +28,12 @@ static void clear_object(int x, int y, int radius)
     sys_call(SYS_DRAW_CIRCLE, x, y, radius + 2, 0x000000, 0); // Black with slight padding
 }
 
-static int objects_overlap(int x1, int y1, int r1, int x2, int y2, int r2)
+static int objects_overlap(PhysicsObject *obj1, PhysicsObject *obj2)
 {
-    int dx = x1 - x2;
-    int dy = y1 - y2;
+    int dx = obj1->x - obj2->x;
+    int dy = obj1->y - obj2->y;
     int dist_sq = dx * dx + dy * dy;
-    int combined_radius = r1 + r2;
+    int combined_radius = obj1->radius + obj2->radius;
     return dist_sq <= (combined_radius * combined_radius);
 }
 
@@ -100,17 +100,17 @@ void pongis(ModeInfo mode)
 
     // Store previous positions for all players and ball
     int prev_player_x[MAX_PLAYERS], prev_player_y[MAX_PLAYERS];
-    for (int i = 0; i < state.numPlayers; i++) {
-        prev_player_x[i] = state.players[i].x;
-        prev_player_y[i] = state.players[i].y;
+    for (int i = 0; i < state.numPlayers; i++)
+    {
+        prev_player_x[i] = state.players[i].physics.x;
+        prev_player_y[i] = state.players[i].physics.y;
     }
-    int prev_ball_x = state.ball.x, prev_ball_y = state.ball.y;
+    int prev_ball_x = state.ball.physics.x, prev_ball_y = state.ball.physics.y;
 
     int level_complete_displayed = 0;
     int all_complete_displayed = 0;
 
     draw_hole(state.holeX, state.holeY, state.holeRadius);
-
     while (running)
     {
         if (isCharReady())
@@ -128,12 +128,13 @@ void pongis(ModeInfo mode)
                     load_level(&state, state.currentLevel + 1);
                     phase = GAME_PLAYING;
                     // Reset previous positions for new level
-                    for (int i = 0; i < state.numPlayers; i++) {
-                        prev_player_x[i] = state.players[i].x;
-                        prev_player_y[i] = state.players[i].y;
+                    for (int i = 0; i < state.numPlayers; i++)
+                    {
+                        prev_player_x[i] = state.players[i].physics.x;
+                        prev_player_y[i] = state.players[i].physics.y;
                     }
-                    prev_ball_x = state.ball.x;
-                    prev_ball_y = state.ball.y;
+                    prev_ball_x = state.ball.physics.x;
+                    prev_ball_y = state.ball.physics.y;
                     level_complete_displayed = 0;
                 }
                 else if (ch == 'c')
@@ -163,7 +164,8 @@ void pongis(ModeInfo mode)
             if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'d', 0, 0, 0, 0))
                 dir_x[0] += 1;
 
-            if (state.numPlayers > 1) {
+            if (state.numPlayers > 1)
+            {
                 if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'i', 0, 0, 0, 0))
                     dir_y[1] -= 1;
                 if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'k', 0, 0, 0, 0))
@@ -176,24 +178,26 @@ void pongis(ModeInfo mode)
             // Add more key mappings for more players if needed
 
             // Store previous positions
-            for (int i = 0; i < state.numPlayers; i++) {
-                prev_player_x[i] = state.players[i].x;
-                prev_player_y[i] = state.players[i].y;
+            for (int i = 0; i < state.numPlayers; i++)
+            {
+                prev_player_x[i] = state.players[i].physics.x;
+                prev_player_y[i] = state.players[i].physics.y;
             }
-            prev_ball_x = state.ball.x;
-            prev_ball_y = state.ball.y;
+            prev_ball_x = state.ball.physics.x;
+            prev_ball_y = state.ball.physics.y;
 
             // Update all players
-            for (int i = 0; i < state.numPlayers; i++) {
-                velocity_update(dir_x[i], dir_y[i], &state.players[i].vel_x, &state.players[i].vel_y, 1);
-                limit_velocity(&state.players[i].vel_x, &state.players[i].vel_y);
-                movement_update(&state.players[i].x, &state.players[i].y, &state.players[i].vel_x, &state.players[i].vel_y, &mode, 1);
+            for (int i = 0; i < state.numPlayers; i++)
+            {
+                velocity_update(dir_x[i], dir_y[i], &state.players[i].physics.vel_x, &state.players[i].physics.vel_y, 1);
+                limit_velocity(&state.players[i].physics.vel_x, &state.players[i].physics.vel_y);
+                movement_update(&state.players[i].physics.x, &state.players[i].physics.y, &state.players[i].physics.vel_x, &state.players[i].physics.vel_y, &mode, 1);
             }
 
             // Update ball
-            velocity_update(0, 0, &state.ball.vel_x, &state.ball.vel_y, 0);
-            limit_velocity(&state.ball.vel_x, &state.ball.vel_y);
-            movement_update(&state.ball.x, &state.ball.y, &state.ball.vel_x, &state.ball.vel_y, &mode, 0);
+            velocity_update(0, 0, &state.ball.physics.vel_x, &state.ball.physics.vel_y, 0);
+            limit_velocity(&state.ball.physics.vel_x, &state.ball.physics.vel_y);
+            movement_update(&state.ball.physics.x, &state.ball.physics.y, &state.ball.physics.vel_x, &state.ball.physics.vel_y, &mode, 0);
 
             check_ball_player_collision(&state);
         }
@@ -221,29 +225,37 @@ void pongis(ModeInfo mode)
         if (phase == GAME_PLAYING)
         {
             // Clear previous positions for all players
-            for (int i = 0; i < state.numPlayers; i++) {
-                if (prev_player_x[i] != state.players[i].x || prev_player_y[i] != state.players[i].y) {
+            for (int i = 0; i < state.numPlayers; i++)
+            {
+                if (prev_player_x[i] != state.players[i].physics.x || prev_player_y[i] != state.players[i].physics.y)
+                {
                     clear_object(prev_player_x[i], prev_player_y[i], PLAYER_RADIUS);
                 }
             }
-            if (prev_ball_x != state.ball.x || prev_ball_y != state.ball.y) {
+            if (prev_ball_x != state.ball.physics.x || prev_ball_y != state.ball.physics.y)
+            {
                 clear_object(prev_ball_x, prev_ball_y, BALL_RADIUS);
             }
 
             // Draw all players
-            for (int i = 0; i < state.numPlayers; i++) {
-                draw_player(state.players[i].x, state.players[i].y, PLAYER_RADIUS);
+            for (int i = 0; i < state.numPlayers; i++)
+            {
+                draw_player(state.players[i].physics.x, state.players[i].physics.y, PLAYER_RADIUS);
             }
-            draw_ball(state.ball.x, state.ball.y, BALL_RADIUS);
+            draw_ball(state.ball.physics.x, state.ball.physics.y, BALL_RADIUS);
 
             // Redraw hole only if ball or any player is overlapping
-            int hole_overlap = objects_overlap(state.ball.x, state.ball.y, BALL_RADIUS, state.holeX, state.holeY, state.holeRadius);
-            for (int i = 0; i < state.numPlayers && !hole_overlap; i++) {
-                if (objects_overlap(state.players[i].x, state.players[i].y, PLAYER_RADIUS, state.holeX, state.holeY, state.holeRadius)) {
+            PhysicsObject hole_obj = { .x = state.holeX, .y = state.holeY, .radius = state.holeRadius };
+            int hole_overlap = objects_overlap(&state.ball.physics, &hole_obj);
+            for (int i = 0; i < state.numPlayers && !hole_overlap; i++)
+            {
+                if (objects_overlap(&state.players[i].physics, &hole_obj))
+                {
                     hole_overlap = 1;
                 }
             }
-            if (hole_overlap) {
+            if (hole_overlap)
+            {
                 draw_hole(state.holeX, state.holeY, state.holeRadius);
             }
         }
@@ -334,6 +346,89 @@ static void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo
         *vel_y = -*vel_y;
     }
 }
+static uint32_t int_sqrt(uint32_t x)
+{
+    // Simple integer square‐root via binary search / Newton’s method.
+    // You can replace this with any fast integer-sqrt you already have.
+    uint32_t op = x;
+    uint32_t res = 0;
+    uint32_t one = 1uL << 30; // 2^30, highest power of four <= UINT32_MAX
+
+    // "one" starts at the highest power of four <= the argument.
+    while (one > op)
+    {
+        one >>= 2;
+    }
+
+    while (one != 0)
+    {
+        if (op >= res + one)
+        {
+            op -= res + one;
+            res = (res >> 1) + one;
+        }
+        else
+        {
+            res = res >> 1;
+        }
+        one >>= 2;
+    }
+    return res;
+}
+
+// Helper to push two objects apart so they don't overlap
+static void separate_objects(int *x1, int *y1, int *x2, int *y2, float nx, float ny, float push_back1, float push_back2)
+{
+    if (push_back1 > 0)
+    {
+        *x1 += (int)(nx * push_back1);
+        *y1 += (int)(ny * push_back1);
+    }
+    if (push_back2 > 0)
+    {
+        *x2 -= (int)(nx * push_back2);
+        *y2 -= (int)(ny * push_back2);
+    }
+}
+
+static void handle_collision(PhysicsObject *obj1, PhysicsObject *obj2, float elasticity)
+{
+    int dx = obj1->x - obj2->x;
+    int dy = obj1->y - obj2->y;
+    int dist_sq = dx * dx + dy * dy;
+    int min_dist = obj1->radius + obj2->radius;
+    int min_dist_sq = min_dist * min_dist;
+
+    if (dist_sq <= min_dist_sq)
+    {
+        int dist_i = (int)int_sqrt((uint32_t)dist_sq);
+        float dist_f = (dist_i == 0 ? 1.0f : (float)dist_i);
+
+        float nx = (float)dx / dist_f;
+        float ny = (float)dy / dist_f;
+
+        // Separate objects
+        float push_back = (min_dist - dist_i);
+        separate_objects(&obj1->x, &obj1->y, &obj2->x, &obj2->y,
+                         nx, ny, push_back / 2, push_back / 2);
+
+        // Calculate collision response
+        float v1_norm = obj1->vel_x * nx + obj1->vel_y * ny;
+        float v2_norm = obj2->vel_x * nx + obj2->vel_y * ny;
+
+        if (v2_norm > v1_norm)
+        {
+            float rel_vel = v2_norm - v1_norm;
+            float impulse = rel_vel * elasticity;
+
+            obj1->vel_x += impulse * nx;
+            obj1->vel_y += impulse * ny;
+            obj2->vel_x -= impulse * nx;
+            obj2->vel_y -= impulse * ny;
+        }
+    }
+}
+
 static void check_ball_player_collision(GameState *state)
 {
     Ball *ball = &state->ball;
@@ -342,8 +437,8 @@ static void check_ball_player_collision(GameState *state)
     for (int i = 0; i < state->numPlayers; i++)
     {
         Player *player = &state->players[i];
-        int dx = ball->x - player->x;
-        int dy = ball->y - player->y;
+        int dx = ball->physics.x - player->physics.x;
+        int dy = ball->physics.y - player->physics.y;
         int dist = (int)_sqrt(dx * dx + dy * dy);
         int min_dist = BALL_RADIUS + PLAYER_RADIUS;
 
@@ -360,18 +455,18 @@ static void check_ball_player_collision(GameState *state)
             float nx = (float)dx / dist;
             float ny = (float)dy / dist;
 
-            float rel_vx = player->vel_x - ball->vel_x;
-            float rel_vy = player->vel_y - ball->vel_y;
+            float rel_vx = player->physics.vel_x - ball->physics.vel_x;
+            float rel_vy = player->physics.vel_y - ball->physics.vel_y;
             float rel_dot = rel_vx * nx + rel_vy * ny;
             if (rel_dot > 0.0f)
             {
-                ball->vel_x += (int)rel_dot * nx;
-                ball->vel_y += (int)rel_dot * ny;
+                ball->physics.vel_x += (int)rel_dot * nx;
+                ball->physics.vel_y += (int)rel_dot * ny;
             }
 
             float push_back = min_dist - dist;
-            ball->x += (int)(nx * push_back);
-            ball->y += (int)(ny * push_back);
+            ball->physics.x += (int)(nx * push_back);
+            ball->physics.y += (int)(ny * push_back);
 
             // Do not break here, so player-player collisions are also checked
         }
@@ -384,8 +479,8 @@ static void check_ball_player_collision(GameState *state)
         {
             Player *p1 = &state->players[i];
             Player *p2 = &state->players[j];
-            int dx = p1->x - p2->x;
-            int dy = p1->y - p2->y;
+            int dx = p1->physics.x - p2->physics.x;
+            int dy = p1->physics.y - p2->physics.y;
             int dist = (int)_sqrt(dx * dx + dy * dy);
             int min_dist = 2 * PLAYER_RADIUS;
 
@@ -401,25 +496,25 @@ static void check_ball_player_collision(GameState *state)
                 float ny = (float)dy / dist;
 
                 // Simple elastic collision: swap velocities along normal
-                float rel_vx = p1->vel_x - p2->vel_x;
-                float rel_vy = p1->vel_y - p2->vel_y;
+                float rel_vx = p1->physics.vel_x - p2->physics.vel_x;
+                float rel_vy = p1->physics.vel_y - p2->physics.vel_y;
                 float rel_dot = rel_vx * nx + rel_vy * ny;
                 if (rel_dot < 0.0f)
                 {
                     // Only resolve if moving towards each other
                     float impulse = -rel_dot * 0.5f;
-                    p1->vel_x += impulse * nx;
-                    p1->vel_y += impulse * ny;
-                    p2->vel_x -= impulse * nx;
-                    p2->vel_y -= impulse * ny;
+                    p1->physics.vel_x += impulse * nx;
+                    p1->physics.vel_y += impulse * ny;
+                    p2->physics.vel_x -= impulse * nx;
+                    p2->physics.vel_y -= impulse * ny;
                 }
 
                 // Push them apart so they don't overlap
                 float push_back = (min_dist - dist) / 2.0f;
-                p1->x += (int)(nx * push_back);
-                p1->y += (int)(ny * push_back);
-                p2->x -= (int)(nx * push_back);
-                p2->y -= (int)(ny * push_back);
+                p1->physics.x += (int)(nx * push_back);
+                p1->physics.y += (int)(ny * push_back);
+                p2->physics.x -= (int)(nx * push_back);
+                p2->physics.y -= (int)(ny * push_back);
             }
         }
     }
@@ -427,8 +522,8 @@ static void check_ball_player_collision(GameState *state)
 
 static uint8_t check_ball_in_hole(GameState *state)
 {
-    int dx = state->ball.x - state->holeX;
-    int dy = state->ball.y - state->holeY;
+    int dx = state->ball.physics.x - state->holeX;
+    int dy = state->ball.physics.y - state->holeY;
 
     int dist = (int)_sqrt(dx * dx + dy * dy);
 

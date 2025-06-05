@@ -10,12 +10,13 @@
 #include "bitmaps.h"
 #include "math.h"
 
-// Physics constants
-#define ACCELERATION 0.2f /* px/tick² */
-#define MAX_SPEED 5.0f    /* px/tick */
-#define FRICTION 0.99f    /* velocity scaling per frame */
-#define BALL_RADIUS 50    /* px */
-#define PLAYER_RADIUS 70  /* px */
+// Physics constants 
+#define ACCELERATION   0.2f   /* px/tick² */
+#define MAX_SPEED      5.0f   /* px/tick */
+#define FRICTION       0.995f  /* velocity scaling per frame */
+#define BALL_RADIUS    10      /* px */
+#define PLAYER_RADIUS 20     /* px */
+
 
 #define PLAYER_COLOR 0x0000FF00 // Green player
 #define BALL_COLOR 0x00FFFFFF   // White ball
@@ -30,17 +31,24 @@ typedef enum
     GAME_ALL_COMPLETE
 } GamePhase;
 
+typedef struct PhysicsObject {
+    int x;
+    int y;
+    float vel_x;
+    float vel_y;
+    int radius;
+    uint32_t color; // Color of the object
+} PhysicsObject;
+
 typedef struct Player
 {
-    int x, y;           // Position
-    float vel_x, vel_y; // Velocity
+    PhysicsObject physics; // Velocity
     int id;             // Player ID (1 or 2)
 } Player;
 
 typedef struct Ball
 {
-    int x, y;           // Position
-    float vel_x, vel_y; // Velocity
+    PhysicsObject physics; // Velocity
     // int ownerId; // Pointer to the player who owns the ball
     int lastTouchId; // Pointer to the last player who touched the ball
 } Ball;

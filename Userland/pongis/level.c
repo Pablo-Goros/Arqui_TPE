@@ -51,15 +51,15 @@ void load_level(GameState *state, int index)
     // Initialize players and balls
     state->numPlayers = 2; // Assuming single player for now
 
-    state->ball.x = levels[index].ball_start_x;
-    state->ball.y = levels[index].ball_start_y;
+    state->ball.physics.x = levels[index].ball_start_x;
+    state->ball.physics.y = levels[index].ball_start_y;
 
     for (int i = 0; i < state->numPlayers; i++)
     {
-        state->players[i].x = levels[index].players[i].x;
-        state->players[i].y = levels[index].players[i].y;
-        state->players[i].vel_x = 0.0f;
-        state->players[i].vel_y = 0.0f;
+        state->players[i].physics.x = levels[index].players[i].x;
+        state->players[i].physics.y = levels[index].players[i].y;
+        state->players[i].physics.vel_x = 0.0f;
+        state->players[i].physics.vel_y = 0.0f;
         state->players[i].id = i + 1; // Player IDs start from 1
     }
 
