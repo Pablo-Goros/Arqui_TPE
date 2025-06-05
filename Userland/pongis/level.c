@@ -1,5 +1,4 @@
 #include "level.h"
-#include "pongis.h"    // for GameState definition
 
 
 const Level levels[2] = {

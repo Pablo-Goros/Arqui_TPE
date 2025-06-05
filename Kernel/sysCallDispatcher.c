@@ -57,7 +57,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
                 ret = 0;
                 break;
         }
-        case SYS_RESET_KBD: {
+        case SYS_RESET_KBD_BUFFER: {
             kbd_reset_buff();
             break;
         }

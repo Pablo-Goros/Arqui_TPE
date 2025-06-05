@@ -1,5 +1,4 @@
 #include "time.h"
-#include "naiveConsole.h"
 #include "time_display.h"
 
 // static void format(uint8_t v, char *dst);

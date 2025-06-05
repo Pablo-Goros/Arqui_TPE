@@ -26,7 +26,7 @@ typedef enum {
 #define SYS_DRAW_RECT       16
 #define SYS_DRAW_CIRCLE     17
 #define SYS_DRAW_BITMAP     18
-#define SYS_RESET_KBD       19
+#define SYS_RESET_KBD_BUFFER   19
 
 
 

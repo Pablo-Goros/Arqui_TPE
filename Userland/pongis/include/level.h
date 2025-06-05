@@ -3,6 +3,7 @@
 #define LEVEL_H
 
 #include <stdint.h>
+#include "pongis_lib.h"
 
 // Forward declaration instead of including pongis.h
 typedef struct GameState GameState;
