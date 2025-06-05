@@ -105,7 +105,6 @@ void pongis(ModeInfo mode) {
 
     draw_hole(state.holeX, state.holeY, state.holeRadius);
 
-
     while (running) {
         if (isCharReady()) {
             char ch = getChar();
@@ -269,47 +268,112 @@ static void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo
         *vel_y = -*vel_y;
     }
 }
+static uint32_t int_sqrt(uint32_t x) {
+    // Simple integer square‐root via binary search / Newton’s method.
+    // You can replace this with any fast integer-sqrt you already have.
+    uint32_t op = x;
+    uint32_t res = 0;
+    uint32_t one = 1uL << 30;  // 2^30, highest power of four <= UINT32_MAX
+
+    // "one" starts at the highest power of four <= the argument.
+    while (one > op) {
+        one >>= 2;
+    }
+
+    while (one != 0) {
+        if (op >= res + one) {
+            op -= res + one;
+            res = (res >> 1) + one;
+        } else {
+            res = res >> 1;
+        }
+        one >>= 2;
+    }
+    return res;
+}
 
 static void check_ball_player_collision(GameState *state)
 {
-    int dx = state->ball_x - state->player_x;
-    int dy = state->ball_y - state->player_y;
-    int dist = (int)_sqrt(dx * dx + dy * dy);
-    int min_dist = BALL_RADIUS + PLAYER_RADIUS;
+    // Calculate positions in x and y
+    uint64_t bx = state->ball_x;
+    uint64_t by = state->ball_y;
+    uint64_t px = state->player_x;
+    uint64_t py = state->player_y;
 
-    if (dist <= min_dist)
+    // Deltas
+    uint64_t dx = bx - px;
+    uint64_t dy = by - py;
+
+    // Squared distance between centers
+    uint64_t dist_sq = dx * dx + dy * dy;
+
+    // 4) Minimum center‐to‐center to just touch (edge‐to‐edge)
+    uint64_t min_dist = PLAYER_RADIUS + BALL_RADIUS;
+
+    uint64_t min_dist_sq = min_dist * min_dist;
+
+    // 5) Only run collision logic if edges overlap or touch
+    if (dist_sq <= min_dist_sq)
     {
-        if (dist < 1)
-        {
-            // complete overlap
-            // arbitrary values
-            dx = 1;
-            dy = 0;
-            dist = 1;
-        }
-        float nx = (float)dx / dist;
-        float ny = (float)dy / dist;
+        // Calculate exact distance between centers 
+        uint32_t dist_i = int_sqrt(dist_sq);
+        float dist_f = (dist_i == 0 ? 1.0f : (float)dist_i);
 
-        // relative velocity of player vs. ball
-        float rel_vx = state->player_vel_x - state->ball_vel_x;
-        float rel_vy = state->player_vel_y - state->ball_vel_y;
-        // project relative velocity onto normal
-        float rel_dot = rel_vx * nx + rel_vy * ny;
-        if (rel_dot > 0.0f)
-        {
-            // player is “pushing” into the ball
-            // simply transfer “rel_dot” along normal into ball
-            state->ball_vel_x += (int)rel_dot * nx;
-            state->ball_vel_y += (int)rel_dot * ny;
-        }
+        // Calculate normalized direction vector from player to ball
+        float nx = (float)dx / dist_f;
+        float ny = (float)dy / dist_f;
 
-        // move ball out so they’re not stuck overlapping
-        float push_back = min_dist - dist;
-        state->ball_x += (int)(nx * push_back);
-        state->ball_y += (int)(ny * push_back);
+
+        // To avoid floating point multiplication, when we want ints, we use Q8.8 Fixed-Point logic       
+        // Multiplying by 256 gives us a 24.8 representation (High 24 bits are ints, and 8 low bits are fractional part)
+        int pushDist = min_dist + 1;
+        int ux_q8 = (dx / (int)dist_f) * 256;  
+        int uy_q8 = (dy / (int)dist_f) * 256;  
+
+        // We want to move balls center by pushDist pixels
+        // Multiplying ux_q8 (Our unit vector) by pushDist gives us the offset in Q8.8 format
+        // We then shift right by 8 to convert it back to int
+        int offsetX = (ux_q8 * pushDist) >> 8;
+        int offsetY = (uy_q8 * pushDist) >> 8;
+
+        // Update ball position by offset
+        state->ball_x = (float)(px + offsetX);
+        state->ball_y = (float)(py + offsetY);
+
+        // compute normal velocity components
+        float v_ball_norm   = state->ball_vel_x * nx + state->ball_vel_y * ny;
+        float v_plr_norm    = state->player_vel_x * nx + state->player_vel_y * ny;
+
+        //----------------------------------------------------------------
+        // D) Distinguish two cases:
+        //
+        // (1) Player is “catching up” to or pushing into a slower (or stationary) ball:
+        //     i.e. v_plr_norm > v_ball_norm. In that case, we transfer the player's normal
+        //     velocity onto the ball so it immediately moves forward with that speed.
+        //
+        // (2) Ball is moving faster into (or along) the player: we do an elastic reflection
+        //     of the ball's velocity about the normal: v'_ball = v_ball – 2*(v_ball·n)*n.
+        //
+        // Note: if v_plr_norm == v_ball_norm, they’re moving together along normal—no bounce.
+
+        if (v_plr_norm > v_ball_norm)
+        {
+            // CASE 1: Transfer player’s normal velocity onto ball
+            //    ball's new velocity = v_player_norm * n  (pure normal component)
+            state->ball_vel_x = v_plr_norm * nx;
+            state->ball_vel_y = v_plr_norm * ny;
+        }
+        else
+        {
+            // CASE 2: Elastic reflection of ball’s velocity
+            //    v_rel_norm = v_ball_norm  (since v_plr_norm <= v_ball_norm)
+            //    New v_ball = v_ball – 2*(v_ball_norm)*n
+            float reflectFactor = -2.0f * v_ball_norm;
+            state->ball_vel_x += reflectFactor * nx;
+            state->ball_vel_y += reflectFactor * ny;
+        }
     }
 }
-
 static uint8_t check_ball_in_hole(GameState *state)
 {
     int dx = state->ball_x - state->holeX;

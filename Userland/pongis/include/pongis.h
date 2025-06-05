@@ -13,9 +13,9 @@
 // Physics constants 
 #define ACCELERATION   0.2f   /* px/tick² */
 #define MAX_SPEED      5.0f   /* px/tick */
-#define FRICTION       0.99f  /* velocity scaling per frame */
-#define BALL_RADIUS    50      /* px */
-#define PLAYER_RADIUS 70     /* px */
+#define FRICTION       0.995f  /* velocity scaling per frame */
+#define BALL_RADIUS    10      /* px */
+#define PLAYER_RADIUS 20     /* px */
 
 
 #define PLAYER_COLOR    0x0000FF00  // Green player
@@ -29,16 +29,16 @@ typedef enum {
 } GamePhase;
 
 typedef struct GameState {
-    int     currentLevel;
+    uint64_t     currentLevel;
 
-    int     ball_x,    ball_y;
+    uint64_t     ball_x,    ball_y;
     float     ball_vel_x,    ball_vel_y;
 
-    int     player_x, player_y;
+    uint64_t     player_x, player_y;
     float     player_vel_x, player_vel_y;
 
-    int             holeX, holeY;
-    int             holeRadius;
+    uint64_t             holeX, holeY;
+    uint64_t             holeRadius;
 } GameState;
 
 void pongis(ModeInfo mode);

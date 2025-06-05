@@ -21,7 +21,7 @@ docker exec -u "$UID_GID" -w "$PROJECT_DIR" -it "$CONTAINER" make clean
 docker exec -u "$UID_GID" -w "$PROJECT_DIR" -it "$CONTAINER" make
 
 # 4) Para el contenedor
-echo "✅ Compilación completada dentro del contenedor '$CONTAINER'."
+# echo "✅ Compilación completada dentro del contenedor '$CONTAINER'."
 
 #!/bin/bash
 sudo qemu-system-x86_64 -hda Image/x64BareBonesImage.qcow2 -m 512 -audiodev dsound,id=speaker -machine pcspk-audiodev=speaker
