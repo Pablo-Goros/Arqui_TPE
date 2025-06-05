@@ -389,13 +389,14 @@ void draw_hole(int x, int y, int radius)
     sys_call(SYS_DRAW_CIRCLE, x, y, radius, HOLE_COLOR, 0);
 }
 
-void draw_counter(int count){
+void draw_counter(int count, ModeInfo mode) {
     set_cursor(10, 10);
     set_zoom(4);
     //dibuja el rectangulo en toda la parte inferior de la pantalla
-    sys_call(SYS_DRAW_RECT,0,MAX_HEIGHT-UI,MAX_WIDTH,UI,0x00FFFFFF);
-    sys_call(SYS_DRAW_RECT,10, MAX_HEIGHT-UI+10,MAX_WIDTH - 20, UI - 20, 0x00000000); // Black background for counter
-set_zoom(2);
+    sys_call(SYS_DRAW_RECT,0,mode.height+OFFSET,mode.width,UI,0x00FFFFFF);
+    sys_call(SYS_DRAW_RECT,10, mode.height+OFFSET+10,mode.width - 20, UI - 20, 0x00000000); // Black background for counter
+
+    set_zoom(2);
     set_cursor(20, 725);
     putString("Touches: ");
     char buffer[10];

@@ -56,4 +56,5 @@ void load_level(GameState *state, int index) {
     state->holeRadius = levels[index].holeRadius;
 
     state->touch_counter = 0;
+    state->prev_touch_counter = -1;
 }

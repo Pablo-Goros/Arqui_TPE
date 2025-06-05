@@ -29,9 +29,8 @@
 #define BALL_TWO_COLOR          0x00FFFF00  // Yellow ball
 #define HOLE_COLOR              0x00808080  // Grey hole
 
-#define UI                     60       /* px reserved for UI messages */
-#define MAX_WIDTH              1024     /* px */
-#define MAX_HEIGHT             768      /* px */
+#define UI                     60     /* px reserved for UI messages */
+#define OFFSET               3     /* 60 px for UI + 3 px for offset */
 
 typedef enum {
     GAME_PLAYING,
@@ -52,6 +51,7 @@ typedef struct GameState {
     int             holeRadius;
 
     int             touch_counter;
+    int             prev_touch_counter;
 } GameState;
 
 uint8_t startPongisMenu(ModeInfo mode);
@@ -153,6 +153,6 @@ void draw_ball(int x, int y, int radius);
 
 void draw_hole(int x, int y, int radius);
 
-void draw_counter(int count);
+void draw_counter(int count, ModeInfo mode);
 
 #endif // PONGIS_LIB_H

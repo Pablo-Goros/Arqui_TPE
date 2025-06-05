@@ -6,7 +6,6 @@ static void update_physics(GameState *state, ModeInfo mode);
 static void render_playing(GameState *state,int prev_px, int prev_py,int prev_bx, int prev_by, ModeInfo mode);
 static void render_level_complete(ModeInfo mode);
 static void render_all_levels_complete(ModeInfo mode);
-static int old_counter=-1;
 
 void pongis_init(void)
 {
@@ -224,12 +223,12 @@ static void render_playing(GameState *state,
     // Draw player and ball at new positions
     draw_player(state->player_x, state->player_y, PLAYER_RADIUS);
     draw_ball(state->ball_x, state->ball_y, BALL_RADIUS);
-    if(old_counter == -1){ //draw the counter only once at the start
-        draw_counter(state->touch_counter);
+    if(state->prev_touch_counter == -1){ //draw the counter only once at the start
+        draw_counter(state->touch_counter, mode);
     }
-    if( state->touch_counter > old_counter) {
-        old_counter++;
-        draw_counter(state->touch_counter);
+    if( state->touch_counter > state->prev_touch_counter) {
+        state->prev_touch_counter++;
+        draw_counter(state->touch_counter, mode);
     }
 }
 
