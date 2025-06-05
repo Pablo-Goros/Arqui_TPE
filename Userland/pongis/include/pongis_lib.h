@@ -8,7 +8,11 @@
 #define ACCELERATION        0.05f   /* px/tick² */
 #define MAX_PLAYER_SPEED    5.0f   /* px/tick */
 #define MAX_BALL_SPEED      15.0f  /* px/tick */
-#define ACCELERATION_RATE   1.0f  
+#define ACCELERATION_RATE   0.6f  
+
+#define SLOW_ACCEL_RATE     0.3f   /* px/tick² */
+#define RELEASED_AXIS_FRICTION 0.99f /* friction when one axis is released */
+#define SNAP_SPEED_THRESHOLD 0.75
 
 #define PLAYER_FRICTION     0.99f  /* velocity scaling per frame */
 #define BALL_FRICTION       0.98f  /* ball velocity scaling per frame */

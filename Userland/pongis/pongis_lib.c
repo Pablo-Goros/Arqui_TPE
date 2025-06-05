@@ -56,28 +56,47 @@ int objects_overlap(int x1, int y1, int r1, int x2, int y2, int r2) {
     int combined_radius = r1 + r2;
     return dist_sq <= (combined_radius * combined_radius);
 }
-
 void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y) {
     if (dir_x != 0 || dir_y != 0) {
-        // 1) Compute the normalized input vector (ux,uy) so diagonal speed ≈ MAX_PLAYER_SPEED
+        // 1) Compute normalized input vector (ux, uy)
         float length = _sqrt((float)(dir_x * dir_x + dir_y * dir_y));
         float ux = dir_x / length;
         float uy = dir_y / length;
 
-        // 2) “Desired” target velocity at full speed
+        // 2) Compute full‐speed targets (±MAX_PLAYER_SPEED) for each axis
         float target_vx = ux * MAX_PLAYER_SPEED;
         float target_vy = uy * MAX_PLAYER_SPEED;
 
-        // 3) Determine how far away from that “desired” we are:
-        float dvx = target_vx - *vel_x;
-        float dvy = target_vy - *vel_y;
+        // 3) Detect diagonal→straight shift (exactly one of dir_x,dir_y is zero)
+        int shifting_to_cardinal = ((dir_x == 0 && dir_y != 0) ||
+                                    (dir_x != 0 && dir_y == 0));
 
-        // 4) Move a fraction of the way toward desired each frame
-        *vel_x += dvx * ACCELERATION_RATE;
-        *vel_y += dvy * ACCELERATION_RATE;
+        // 4) Check if current speed ≥ 98% of max²
+        float speed_sq = (*vel_x) * (*vel_x) + (*vel_y) * (*vel_y);
+        float max_sq   = MAX_PLAYER_SPEED * MAX_PLAYER_SPEED;
+        int   already_fast = (speed_sq >= SNAP_SPEED_THRESHOLD * max_sq);
+
+        if (shifting_to_cardinal && already_fast) {
+            // ─── Snap the held axis, gently decay the released axis ───
+            if (dir_x != 0 && dir_y == 0) {
+                *vel_x = target_vx;
+                *vel_y *= RELEASED_AXIS_FRICTION;
+            }
+            else {
+                *vel_y = target_vy;
+                *vel_x *= RELEASED_AXIS_FRICTION;
+            }
+        }
+        else {
+            // ─── Slow “ease‐toward” to the target (using SLOW_ACCEL_RATE) ───
+            float dvx = target_vx - *vel_x;
+            float dvy = target_vy - *vel_y;
+            *vel_x += dvx * SLOW_ACCEL_RATE;
+            *vel_y += dvy * SLOW_ACCEL_RATE;
+        }
     }
     else {
-        // 5) No key pressed → apply friction so we coast/slow down
+        // ─── No key pressed → standard friction coast ───
         *vel_x *= PLAYER_FRICTION;
         *vel_y *= PLAYER_FRICTION;
     }
