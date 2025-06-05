@@ -1,5 +1,96 @@
 #include "pongis_lib.h"
 
+const char* menuOptions[] = {
+    "Jugar (1 jugador)",
+    "Jugar (2 jugadores)",
+    "Instrucciones",
+    "Volver al Shell"
+};
+const int menuCount = sizeof(menuOptions) / sizeof(menuOptions[0]);
+
+
+uint8_t startPongisMenu(ModeInfo mode) {
+    int selected = 0;
+    drawMainMenu(selected);
+
+    while (1) {
+        if (!isCharReady()) {
+            _hlt();  // Espera a la siguiente interrupción
+            continue;
+        }
+
+        char c = getChar();
+        switch (c) {
+            case 'w':  // Mover selección hacia arriba
+                selected = (selected + menuCount - 1) % menuCount;
+                drawMainMenu(selected);
+                break;
+
+            case 's':  // Mover selección hacia abajo
+                selected = (selected + 1) % menuCount;
+                drawMainMenu(selected);
+                break;
+
+            case '\n':
+            case '\r':
+                return selected;
+                break;
+
+            default:
+                break;
+        }
+    }
+}
+
+void drawMainMenu(int selected) {
+    clear_screen();
+    set_zoom(5);
+    putString("       PONGIS GOLF\n\n");
+
+    set_zoom(3);
+    for (int i = 0; i < menuCount; i++) {
+        putString("  ");
+        putString(menuOptions[i]);
+        if (i == selected) {
+            putString("  <--");
+        }
+        putString("\n\n");
+    }
+}
+
+void drawInstructions(void) {
+    clear_screen();
+    set_zoom(4);
+    putString("      INSTRUCCIONES\n\n");
+
+    set_zoom(2);
+    putString(" Jugador 1:\n");
+    putString("   W    -> Arriba\n");
+    putString("   S    -> Abajo\n");
+    putString("   A    -> Izquierda\n");
+    putString("   D    -> Derecha\n\n");
+
+    putString(" Jugador 2:\n");
+    putString("   Flecha Arriba    -> Arriba\n");
+    putString("   Flecha Abajo     -> Abajo\n");
+    putString("   Flecha Izquierda -> Izquierda\n");
+    putString("   Flecha Derecha   -> Derecha\n\n");
+
+    putString(" Presiona 'c' para volver al menú principal.\n");
+
+    // Espera hasta que el usuario presione 'c' o ENTER
+    while (1) {
+        if (isCharReady()) {
+            char key = getChar();
+            if (key == 'c' || key == '\n' || key == '\r') {
+                return;
+            }
+        }
+        _hlt();
+    }
+}
+
+
 void display_welcome_screen(ModeInfo mode)
 {   
     clear_screen();
@@ -56,22 +147,22 @@ int objects_overlap(int x1, int y1, int r1, int x2, int y2, int r2) {
     int combined_radius = r1 + r2;
     return dist_sq <= (combined_radius * combined_radius);
 }
+
 void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y) {
     if (dir_x != 0 || dir_y != 0) {
-        // 1) Compute normalized input vector (ux, uy)
+        // Calculate normalized input vector (ux, uy)
         float length = _sqrt((float)(dir_x * dir_x + dir_y * dir_y));
         float ux = dir_x / length;
         float uy = dir_y / length;
 
-        // 2) Compute full‐speed targets (±MAX_PLAYER_SPEED) for each axis
+        // Calculate ±MAX_PLAYER_SPEED for each axis
         float target_vx = ux * MAX_PLAYER_SPEED;
         float target_vy = uy * MAX_PLAYER_SPEED;
 
-        // 3) Detect diagonal→straight shift (exactly one of dir_x,dir_y is zero)
-        int shifting_to_cardinal = ((dir_x == 0 && dir_y != 0) ||
-                                    (dir_x != 0 && dir_y == 0));
+        // Detect diagonal to straight shift 
+        int shifting_to_cardinal = ((dir_x == 0 && dir_y != 0) || (dir_x != 0 && dir_y == 0));
 
-        // 4) Check if current speed ≥ 98% of max²
+        // Check if current speed ≥ SNAP_SPEED_THRESHOLD% of max_sq
         float speed_sq = (*vel_x) * (*vel_x) + (*vel_y) * (*vel_y);
         float max_sq   = MAX_PLAYER_SPEED * MAX_PLAYER_SPEED;
         int   already_fast = (speed_sq >= SNAP_SPEED_THRESHOLD * max_sq);
@@ -259,18 +350,29 @@ void check_ball_player_collision(GameState *state)
 
 uint8_t check_ball_in_hole(GameState *state)
 {
-    int dx = state->ball_x - state->holeX;
-    int dy = state->ball_y - state->holeY;
+    // Convert float positions to int for distance calculation
+    int ball_x = (int)state->ball_x;
+    int ball_y = (int)state->ball_y;
+    
+    int dx = ball_x - state->holeX;
+    int dy = ball_y - state->holeY;
 
-    int dist = (int)_sqrt(dx * dx + dy * dy);
+    // Use integer square root like you do in collision detection
+    uint32_t dist_sq = (uint32_t)(dx * dx + dy * dy);
+    int dist = (int)int_sqrt(dist_sq);  // Use your existing int_sqrt function
 
-    // Ball falls in when it's mostly inside the hole
-    int threshold = state->holeRadius - (BALL_RADIUS * 0.8f);
+    // Ball falls in when its center is close enough to hole center
+    // The threshold should be positive - when ball center gets within 
+    // (hole_radius - some_margin) of hole center
+    int threshold = state->holeRadius - (BALL_RADIUS / 2);
+    
+    // Make sure threshold is positive
+    if (threshold <= 0) {
+        threshold = state->holeRadius / 2;  // Fallback to half hole radius
+    }
 
     return dist <= threshold ? 1 : 0;
 }
-
-//? quizas agregar una variable en draw circle q sea con o sin outline, por ejemplo para el hole...
 
 void draw_player(int x, int y, int radius)
 {

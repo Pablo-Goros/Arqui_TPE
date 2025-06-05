@@ -29,7 +29,7 @@
 #define BALL_TWO_COLOR          0x00FFFF00  // Yellow ball
 #define HOLE_COLOR              0x00808080  // Grey hole
 
-#define UI                     60      /* px reserved for UI messages */
+#define UI                     60       /* px reserved for UI messages */
 #define MAX_WIDTH              1024     /* px */
 #define MAX_HEIGHT             768      /* px */
 
@@ -54,6 +54,11 @@ typedef struct GameState {
     int             touch_counter;
 } GameState;
 
+uint8_t startPongisMenu(ModeInfo mode);
+
+void drawMainMenu(int selected);
+
+void drawInstructions(void);
 
 void clear_object(int x, int y, int radius);
 

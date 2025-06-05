@@ -19,8 +19,36 @@ void pongis_init(void)
     }
     mode.height -= UI; // Reserve space for UI
 
-    display_welcome_screen(mode);
-    handle_menu_input(mode);
+    uint8_t selected = startPongisMenu(mode);
+
+    switch (selected) {
+                    case 0:
+                        // Modo 1 jugador
+                        pongis(mode);        // Asume que arranca el juego en modo 1 jugador
+                        return;
+
+                    case 1:
+                        // Modo 2 jugadores (si está implementado)
+                        // current_level = 1;
+                        //startGameTwoPlayers(); // Debe implementar lógica de 2 jugadores
+                        return;
+
+                    case 2:
+                        // Instrucciones
+                        drawInstructions();
+                        drawMainMenu(selected = 0);  // Vuelve con la primera opción resaltada
+                        break;
+
+                    case 3:
+                        // Volver al shell
+                        clear_screen();
+                        return;
+
+                    default:
+                        return;
+                }
+    //display_welcome_screen(mode);
+    //handle_menu_input(mode);
 }
 
 void pongis(ModeInfo mode)
@@ -196,7 +224,7 @@ static void render_playing(GameState *state,
     // Draw player and ball at new positions
     draw_player(state->player_x, state->player_y, PLAYER_RADIUS);
     draw_ball(state->ball_x, state->ball_y, BALL_RADIUS);
-    if(old_counter == -1){//draw the counter only once at the start
+    if(old_counter == -1){ //draw the counter only once at the start
         draw_counter(state->touch_counter);
     }
     if( state->touch_counter > old_counter) {
