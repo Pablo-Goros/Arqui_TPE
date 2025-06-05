@@ -31,6 +31,7 @@ void pongis_init(void)
                         // Modo 2 jugadores (si está implementado)
                         // current_level = 1;
                         //startGameTwoPlayers(); // Debe implementar lógica de 2 jugadores
+                        clear_screen();
                         return;
 
                     case 2:
@@ -47,8 +48,7 @@ void pongis_init(void)
                     default:
                         return;
                 }
-    //display_welcome_screen(mode);
-    //handle_menu_input(mode);
+
 }
 
 void pongis(ModeInfo mode)

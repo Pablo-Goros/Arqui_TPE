@@ -1,10 +1,10 @@
 #include "pongis_lib.h"
 
 const char* menuOptions[] = {
-    "Jugar (1 jugador)",
-    "Jugar (2 jugadores)",
-    "Instrucciones",
-    "Volver al Shell"
+    "Jugar (1 jugador)      ",
+    "Jugar (2 jugadores)    ",
+    "Instrucciones          ",
+    "Volver al Shell        "
 };
 const int menuCount = sizeof(menuOptions) / sizeof(menuOptions[0]);
 
