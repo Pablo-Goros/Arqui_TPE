@@ -10,10 +10,21 @@ static volatile int   tail = 0;
 static uint8_t        shift = 0;
 static uint8_t        caps = 0;
 
-static volatile uint8_t w_down = 0;
-static volatile uint8_t a_down = 0;
-static volatile uint8_t s_down = 0;
-static volatile uint8_t d_down = 0;
+static volatile uint8_t key_state[128] = {0};
+
+static inline char to_lower(char c) {
+    if (c >= 'A' && c <= 'Z') {
+        return (char)(c - 'A' + 'a');
+    }
+    return c;
+}
+
+static inline char to_upper(char c) {
+    if (c >= 'a' && c <= 'z') {
+        return (char)(c - 'a' + 'A');
+    }
+    return c;
+}
 
 /* Partial scancode→ASCII tables (fill out the rest as needed) */
 static const char tbl_no_shift[128] = {
@@ -79,7 +90,6 @@ static const char tbl_shift[128] = {
 void kbd_get_key(void) {
     
     uint8_t sc = get_key_asm();
-
     uint8_t make_flag = !(sc & 0x80);
     uint8_t code = sc & 0x7F;
 
@@ -94,32 +104,31 @@ void kbd_get_key(void) {
         return;
     }
     
-
-    if (code == 0x11) {        // w
-        w_down = make_flag;
-    } else if (code == 0x1E) { // a
-        a_down = make_flag;
-    } else if (code == 0x1F) { // s
-        s_down = make_flag;
-    } else if (code == 0x20) { // d
-        d_down = make_flag;
+    char key = tbl_no_shift[code];
+    if (key == 0) { // check if the key is printable
+        return;     // not printable, skip
+    }
+    
+    if (!make_flag) { // break code
+        key_state[(uint8_t)key] = 0; // turn off key state
+        return; 
     }
 
-    if (make_flag) {
-        char ch = shift ? tbl_shift[code] : tbl_no_shift[code];
-        // apply CapsLock for letters 
-        if (caps && ch >= 'a' && ch <= 'z') {
-            ch = ch - 'a' + 'A';
-        }
-        if (ch) {
-            buf[head] = ch;
-            head = (head + 1) % BUF_SIZE;
-            if (head == tail)   // overrun → drop oldest
-                tail = (tail + 1) % BUF_SIZE;
-        }
+    // we now know its a make code and a printable key
+    char ch = shift ? tbl_shift[code] : tbl_no_shift[code];
+    
+    key_state[(uint8_t)tbl_no_shift[code]] = 1; // mark key as pressed (ignore shift state)
+    
+    // apply CapsLock for letters 
+    if (caps) ch = to_upper(ch);
+
+    buf[head] = ch;
+    head = (head + 1) % BUF_SIZE;
+    if (head == tail) {
+        // buffer overrun → drop oldest
+        tail = (tail + 1) % BUF_SIZE;
     }
 }
-
 
 uint8_t kbd_has_char(void) {
     return head != tail;
@@ -140,11 +149,5 @@ void kbd_reset_buff() {
 }
 
 uint8_t kbd_is_key_down(char key) {
-    switch (key) {
-        case 'w': case 'W': return w_down;
-        case 'a': case 'A': return a_down;
-        case 's': case 'S': return s_down;
-        case 'd': case 'D': return d_down;
-        default: return 0;  // all others always “up”
-    }
+    
 }
