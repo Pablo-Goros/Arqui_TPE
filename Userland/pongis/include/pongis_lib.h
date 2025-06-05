@@ -5,19 +5,25 @@
 #include "libc.h"
 #include "math.h"
 
-#define ACCELERATION        0.2f   /* px/tick² */
-#define MAX_SPEED           5.0f   /* px/tick */
+#define ACCELERATION        0.05f   /* px/tick² */
+#define MAX_PLAYER_SPEED    5.0f   /* px/tick */
+#define MAX_BALL_SPEED      15.0f  /* px/tick */
+#define ACCELERATION_RATE   1.0f  
+
 #define PLAYER_FRICTION     0.99f  /* velocity scaling per frame */
 #define BALL_FRICTION       0.98f  /* ball velocity scaling per frame */
-#define ACCELERATION_RATE   0.25f  
 
 #define BALL_RADIUS         10      /* px */
 #define PLAYER_RADIUS       20     /* px */
 
+#define IS_PLAYER           1
+#define IS_BALL             0
+
 #define PLAYER_ONE_COLOR        0x0000FF00  // Green player
 #define PLAYER_TWO_COLOR        0x00FF0000  // Red player
-#define BALL_COLOR          0x00FFFFFF  // White ball
-#define HOLE_COLOR          0x00808080  // Grey hole
+#define BALL_ONE_COLOR          0x000000FF  // Blue ball
+#define BALL_TWO_COLOR          0x00FFFF00  // Yellow ball
+#define HOLE_COLOR              0x00808080  // Grey hole
 
 typedef enum {
     GAME_PLAYING,
@@ -45,20 +51,17 @@ int objects_overlap(int x1, int y1, int r1, int x2, int y2, int r2);
 
 /**
    @brief: Update velocity for player or ball. If is_player is non-zero, apply acceleration based on dir_x/dir_y, then apply friction. Otherwise, apply friction only.
-   @param dir_x:      Direction on the x-axis (-1, 0, +1) for player movement.
-   @param dir_y:      Direction on the y-axis (-1, 0, +1) for player movement.
    @param vel_x:      Pointer to the current x-component of velocity (modifiable).
    @param vel_y:      Pointer to the current y-component of velocity (modifiable).
-   @param is_player:  Non-zero if updating player velocity (apply acceleration), zero if updating ball (friction only).
 **/
-void velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y, int is_player);
+void ball_velocity_update(float *vel_x, float *vel_y);
 
 /**
    @brief: Clamp a velocity vector so its magnitude does not exceed maximum speed.
    @param vel_x:  Pointer to the x-component of velocity (modifiable).
    @param vel_y:  Pointer to the y-component of velocity (modifiable).
 **/
-void limit_velocity(float *vel_x, float *vel_y);
+void limit_velocity(float *vel_x, float *vel_y, int is_player);
 
 /**
    @brief: Update an object's position based on its velocity, handling screen boundaries.

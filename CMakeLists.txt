@@ -30,8 +30,6 @@ enable_language(ASM)
 set(ASM_SOURCES
         Kernel/asm/interrupts.asm
         Kernel/asm/libasm.asm
-        Kernel/trig.c
-        Kernel/include/trig.h
 )
 
 # Crea un ejecutable falso para análisis

@@ -58,51 +58,51 @@ int objects_overlap(int x1, int y1, int r1, int x2, int y2, int r2) {
 }
 
 void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y) {
-    // 1) Compute the “desired” velocity this frame based on input direction:
-    float desired_vx = 0.0f, desired_vy = 0.0f;
     if (dir_x != 0 || dir_y != 0) {
-        // If diagonal, normalize so diagonal speed ≈ MAX_SPEED
+        // 1) Compute the normalized input vector (ux,uy) so diagonal speed ≈ MAX_PLAYER_SPEED
         float length = _sqrt((float)(dir_x * dir_x + dir_y * dir_y));
-        desired_vx = (dir_x / length) * MAX_SPEED;
-        desired_vy = (dir_y / length) * MAX_SPEED;
+        float ux = dir_x / length;
+        float uy = dir_y / length;
+
+        // 2) “Desired” target velocity at full speed
+        float target_vx = ux * MAX_PLAYER_SPEED;
+        float target_vy = uy * MAX_PLAYER_SPEED;
+
+        // 3) Determine how far away from that “desired” we are:
+        float dvx = target_vx - *vel_x;
+        float dvy = target_vy - *vel_y;
+
+        // 4) Move a fraction of the way toward desired each frame
+        *vel_x += dvx * ACCELERATION_RATE;
+        *vel_y += dvy * ACCELERATION_RATE;
     }
-    // 2) Compute the difference between desired and current
-    float dvx = desired_vx - *vel_x;
-    float dvy = desired_vy - *vel_y;
+    else {
+        // 5) No key pressed → apply friction so we coast/slow down
+        *vel_x *= PLAYER_FRICTION;
+        *vel_y *= PLAYER_FRICTION;
+    }
 
-    // 3) Move current velocity a small fraction toward desired (acceleration)
-    *vel_x += dvx * ACCELERATION_RATE;
-    *vel_y += dvy * ACCELERATION_RATE;
-
-    // 4) Apply friction so the player coasts/slowly stops if no keys are down
-    *vel_x *= PLAYER_FRICTION;
-    *vel_y *= PLAYER_FRICTION;
-
-    // 5) If the velocity is very small, snap to zero to avoid endless drift
-    if ( ( *vel_x > -0.05f && *vel_x < 0.05f ) ) *vel_x = 0.0f;
-    if ( ( *vel_y > -0.05f && *vel_y < 0.05f ) ) *vel_y = 0.0f;
+    limit_velocity(vel_x, vel_y, IS_PLAYER);
 }
 
-void velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y, int is_player)
+void ball_velocity_update(float *vel_x, float *vel_y)
 {
-    if (is_player)
-    {
-        *vel_x += dir_x * ACCELERATION;
-        *vel_y += dir_y * ACCELERATION;
-    }
-
+    // Friction multiplier for the ball
     *vel_x *= BALL_FRICTION;
     *vel_y *= BALL_FRICTION;
+
+    limit_velocity(vel_x, vel_y, IS_BALL);
 }
 
-void limit_velocity(float *vel_x, float *vel_y)
+void limit_velocity(float *vel_x, float *vel_y, int is_player)
 {
+    int max_speed = (is_player == IS_PLAYER) ? MAX_PLAYER_SPEED : MAX_BALL_SPEED;
     float speed = _sqrt((*vel_x) * (*vel_x) + (*vel_y) * (*vel_y));
 
     // limit player speed
-    if (speed > MAX_SPEED)
+    if (speed > max_speed)
     {
-        float scale = MAX_SPEED / speed;
+        float scale = max_speed / speed;
         *vel_x *= scale;
         *vel_y *= scale;
     }
@@ -110,7 +110,7 @@ void limit_velocity(float *vel_x, float *vel_y)
 
 void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo *mode, int is_player)
 {
-    int radius = is_player ? PLAYER_RADIUS : BALL_RADIUS;
+    int radius = (is_player == IS_PLAYER) ? PLAYER_RADIUS : BALL_RADIUS;
     *x += (int)*vel_x;
     *y += (int)*vel_y;
 
@@ -223,10 +223,10 @@ void check_ball_player_collision(GameState *state)
                  Elastic reflection: v'_ball = v_ball – 2*(v_ball·n)*n
         */
         if (v_player_norm > v_ball_norm) // Case 1
-        {
-            // Ball's new velocity = v_player_norm * n  (pure normal component)
-            state->ball_vel_x = v_player_norm * nx;
-            state->ball_vel_y = v_player_norm * ny;
+        {   
+            float boost = 4.0f; // 20% extra “kick”
+            state->ball_vel_x = v_player_norm * nx * boost;
+            state->ball_vel_y = v_player_norm * ny * boost;
         }
         else // Case 2
         {
@@ -259,7 +259,7 @@ void draw_player(int x, int y, int radius)
 
 void draw_ball(int x, int y, int radius)
 {
-    sys_call(SYS_DRAW_CIRCLE, x, y, radius, BALL_COLOR, 0);
+    sys_call(SYS_DRAW_CIRCLE, x, y, radius, BALL_ONE_COLOR, 0);
 }
 
 void draw_hole(int x, int y, int radius)

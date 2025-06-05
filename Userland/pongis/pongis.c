@@ -154,24 +154,13 @@ static void update_physics(GameState *state, ModeInfo mode)
     if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'d', 0, 0, 0, 0)) dir_x += 1;
 
     /* Update player velocity and position */
-    velocity_update(dir_x, dir_y,
-                    &state->player_vel_x, &state->player_vel_y,
-                    /* is_player */ 1);
-    limit_velocity(&state->player_vel_x, &state->player_vel_y);
-    movement_update(&state->player_x, &state->player_y,
-                    &state->player_vel_x, &state->player_vel_y,
-                    &mode,
-                    /* is_player */ 1);
+    player_velocity_update(dir_x, dir_y, &state->player_vel_x, &state->player_vel_y);
+    movement_update(&state->player_x, &state->player_y, &state->player_vel_x, &state->player_vel_y, &mode, IS_PLAYER);
 
     /* Update ball velocity and position */
-    velocity_update(0, 0,
-                    &state->ball_vel_x, &state->ball_vel_y,
-                    /* is_player */ 0);
-    limit_velocity(&state->ball_vel_x, &state->ball_vel_y);
-    movement_update(&state->ball_x, &state->ball_y,
-                    &state->ball_vel_x, &state->ball_vel_y,
-                    &mode,
-                    /* is_player */ 0);
+    ball_velocity_update(&state->ball_vel_x, &state->ball_vel_y);
+
+    movement_update(&state->ball_x, &state->ball_y, &state->ball_vel_x, &state->ball_vel_y, &mode, IS_BALL);
 
     /* Check collision between player and ball */
     check_ball_player_collision(state);
