@@ -12,7 +12,7 @@ const Level levels[2] = {
 
         .holeX           = 800,
         .holeY           = 500,
-        .holeRadius      = 200,
+        .holeRadius      = 20,
 
         .numObstacles    =  0,
         .obstacles       = ((void*)0)
@@ -54,4 +54,6 @@ void load_level(GameState *state, int index) {
     state->holeX = levels[index].holeX;
     state->holeY = levels[index].holeY;
     state->holeRadius = levels[index].holeRadius;
+
+    state->touch_counter = 0;
 }
