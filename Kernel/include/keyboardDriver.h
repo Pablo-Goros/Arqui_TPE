@@ -15,6 +15,6 @@ char kbd_get_char(void);
 
 void kbd_reset_buff();
 
-uint8_t kbd_is_key_down(char key);
+uint64_t kbd_is_key_down(char key);
 
 #endif // KEYBOARD_DRIVER_H

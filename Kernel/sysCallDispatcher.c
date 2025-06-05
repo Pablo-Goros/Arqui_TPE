@@ -105,7 +105,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
         }
         case SYS_IS_KEY_DOWN: {
             char key = (char) va_arg(args, uint64_t);
-            ret = (uint64_t) kbd_is_key_down(key);
+            ret = kbd_is_key_down(key);
             break;
         }
 
