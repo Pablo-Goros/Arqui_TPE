@@ -10,7 +10,10 @@ static volatile int   tail = 0;
 static uint8_t        shift = 0;
 static uint8_t        caps = 0;
 
-
+static volatile uint8_t w_down = 0;
+static volatile uint8_t a_down = 0;
+static volatile uint8_t s_down = 0;
+static volatile uint8_t d_down = 0;
 
 /* Partial scancode→ASCII tables (fill out the rest as needed) */
 static const char tbl_no_shift[128] = {
@@ -83,13 +86,26 @@ void kbd_get_key(void) {
     // Shift keys 
     if (code == 0x2A || code == 0x36) {
         shift = make_flag;
+        return;
     }
     // Caps Lock 
     else if (code == 0x3A && make_flag) {
         caps = !caps;
+        return;
     }
-    // Key press → convert & buffer 
-    else if (make_flag) {
+    
+
+    if (code == 0x11) {        // w
+        w_down = make_flag;
+    } else if (code == 0x1E) { // a
+        a_down = make_flag;
+    } else if (code == 0x1F) { // s
+        s_down = make_flag;
+    } else if (code == 0x20) { // d
+        d_down = make_flag;
+    }
+
+    if (make_flag) {
         char ch = shift ? tbl_shift[code] : tbl_no_shift[code];
         // apply CapsLock for letters 
         if (caps && ch >= 'a' && ch <= 'z') {
@@ -123,3 +139,12 @@ void kbd_reset_buff() {
     return;
 }
 
+uint8_t kbd_is_key_down(char key) {
+    switch (key) {
+        case 'w': case 'W': return w_down;
+        case 'a': case 'A': return a_down;
+        case 's': case 'S': return s_down;
+        case 'd': case 'D': return d_down;
+        default: return 0;  // all others always “up”
+    }
+}

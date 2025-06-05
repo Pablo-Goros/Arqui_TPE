@@ -51,8 +51,8 @@ void * initializeKernelBinary()
 int main()
 {	
 	load_idt();
-	play_sound(440); // Play a sound at 440Hz
-	beep(440, 100); // Play a beep sound at 440Hz for 100ms
-	//((EntryPoint)sampleCodeModuleAddress)();
+	//play_sound(440); // Play a sound at 440Hz
+	//beep(440, 100); // Play a beep sound at 440Hz for 100ms
+	((EntryPoint)sampleCodeModuleAddress)();
 	return 0;
 }

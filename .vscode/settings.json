@@ -6,6 +6,7 @@
         "exceptiondispatcher.h": "c",
         "libc.h": "c",
         "time_display.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "stdarg.h": "c"
     }
 }

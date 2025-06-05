@@ -2,7 +2,7 @@
 #include "pongis.h"    // for GameState definition
 
 
-const Level levels[1] = {
+const Level levels[2] = {
     // Level 0: Simple level with no obstacles
     {
         .ball_start_x    = 500,

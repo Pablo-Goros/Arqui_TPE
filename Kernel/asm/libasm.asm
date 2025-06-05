@@ -4,7 +4,7 @@ GLOBAL get_key_asm
 GLOBAL outb
 GLOBAL outw
 GLOBAL inb
-GLOBAL inw
+
 
 section .text
 	
@@ -74,10 +74,3 @@ inb:
     in al, dx       ; Read byte from port into AL
     ret
 
-; uint16_t inw(uint16_t port)
-; Reads a word (2 bytes) from an I/O port
-inw:
-    mov rdx, rdi    ; First argument (port)
-    xor rax, rax    ; Clear RAX
-    in ax, dx       ; Read word from port into AX
-    ret

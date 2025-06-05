@@ -21,16 +21,14 @@ typedef unsigned long size_t;
 #define SYS_SET_ZOOM        7
 #define SYS_EXIT            8
 #define SYS_GET_MODE_INFO   9
-#define SYS_WAIT_NEXT_TICK  10
+#define SYS_IS_KEY_DOWN     10
 
 #define SYS_KEY_READY       12
-#define SYS_READ_KEY        13
 #define SYS_GET_TICKS       14
 #define SYS_PUT_PIXEL       15
 #define SYS_DRAW_RECT       16
 #define SYS_DRAW_CIRCLE     17
 #define SYS_RESET_KBD       19
-#define SYS_SLEEP           35
 #define SYS_ERR   ((uint64_t)-1)
 
 uint64_t sysCallDispatcher(uint64_t rax, ...);
@@ -38,11 +36,5 @@ uint64_t sysCallDispatcher(uint64_t rax, ...);
 void sys_write(FileDescriptor fd, const char *buf, size_t count);
 
 uint64_t sys_read(FileDescriptor fd, char *buf, size_t count);
-
-void     sys_clearScreen(void);
-
-void     sys_setCursor(int col, int row);
-
-void     sys_setZoom(int level);
 
 #endif

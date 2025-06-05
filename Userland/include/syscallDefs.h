@@ -18,6 +18,7 @@ typedef enum {
 #define SYS_SET_ZOOM        7
 #define SYS_EXIT            8
 #define SYS_GET_MODE_INFO   9
+#define SYS_IS_KEY_DOWN     10
 // #define SYS_BLIT            11
 #define SYS_CHAR_READY      12
 #define SYS_READ_KEY        13

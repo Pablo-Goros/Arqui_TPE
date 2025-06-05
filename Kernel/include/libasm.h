@@ -23,7 +23,6 @@ extern void outw(uint16_t port, uint16_t val);
 // Receive a byte from an I/O port
 extern uint8_t inb(uint16_t port);
 
-// Receive a word (2 bytes) from an I/O port
-extern uint16_t inw(uint16_t port);
+
 
 #endif

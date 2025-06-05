@@ -46,13 +46,6 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
         }
 
-        case SYS_SLEEP: {
-            int seconds = (int)va_arg(args, uint64_t);
-            sleep(seconds * 18); // Assuming 18 ticks per second
-            ret = 0;
-            break;
-        }
-
         case SYS_GET_TICKS: {
             ret = get_ticks();
             break;
@@ -110,7 +103,11 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = kbd_has_char() ? 1 : 0; // Return 1 if a key is ready, 0 if not
             break;
         }
-
+        case SYS_IS_KEY_DOWN: {
+            char key = (char) va_arg(args, uint64_t);
+            ret = (uint64_t) kbd_is_key_down(key);
+            break;
+        }
 
         default:
             // syscall not recognized
@@ -150,6 +147,5 @@ uint64_t sys_read(FileDescriptor fd, char *buf, size_t count) {
 
     return 0;
 }
-
 
 

@@ -107,53 +107,49 @@ void pongis(ModeInfo mode) {
 
 
     while (running) {
-        // Handle input based on current phase
-            char k = (isCharReady() ? getChar() : 0);
+        if (isCharReady()) {
+            char ch = getChar();
             if (phase == GAME_PLAYING) {
-                int dir_x = 0, dir_y = 0;
-                switch (k) {
-                    case 'c': running = 0; break;
-                    case 'w': dir_y = -1; break;
-                    case 's': dir_y = +1; break;
-                    case 'a': dir_x = -1; break;
-                    case 'd': dir_x = +1; break;
-                    default: break;
-                }
-                
-                if (running) {
-
-                    prev_player_x = state.player_x;
-                    prev_player_y = state.player_y;
-                    prev_ball_x = state.ball_x;
-                    prev_ball_y = state.ball_y;
-
-                    // Update game only if still playing
-                    velocity_update(dir_x, dir_y, &state.player_vel_x, &state.player_vel_y, 1);
-                    limit_velocity(&state.player_vel_x, &state.player_vel_y);
-                    movement_update(&state.player_x, &state.player_y, &state.player_vel_x, &state.player_vel_y, &mode, 1);
-                    /* PLAYER UPDATES*/
-
-                    /* BALL UPDATES*/
-                    velocity_update(0, 0, &state.ball_vel_x, &state.ball_vel_y, 0);
-                    limit_velocity(&state.ball_vel_x, &state.ball_vel_y);
-                    movement_update(&state.ball_x, &state.ball_y, &state.ball_vel_x, &state.ball_vel_y, &mode, 0);
-                    /* BALL UPDATES*/
-
-                    check_ball_player_collision(&state);
-                }
-            } else if (phase == GAME_LEVEL_COMPLETE) {
-                if (k == '\n' || k == '\r') {
+                if (ch == 'c') running = 0;
+            }
+            else if (phase == GAME_LEVEL_COMPLETE) {
+                if (ch == '\n' || ch == '\r') {
                     load_level(&state, state.currentLevel + 1);
                     phase = GAME_PLAYING;
-                } else if (k == 'c') {
+                } else if (ch == 'c') {
                     running = 0;
                 }
             }
             else if (phase == GAME_ALL_COMPLETE) {
-                if (k == 'c') {
-                    running = 0; // Exit to shell
-                }
+                if (ch == 'c') running = 0;
             }
+        }
+
+        // 2) Build continuous direction via new syscall:
+        int dir_x = 0, dir_y = 0;
+        if (phase == GAME_PLAYING) {
+            if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'w', 0, 0, 0, 0)) dir_y -= 1;
+            if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'s', 0, 0, 0, 0)) dir_y += 1;
+            if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'a', 0, 0, 0, 0)) dir_x -= 1;
+            if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'d', 0, 0, 0, 0)) dir_x += 1;
+
+            // 3) Snapshot, update, collide, etc. (unchanged) …
+            prev_player_x = state.player_x;
+            prev_player_y = state.player_y;
+            prev_ball_x   = state.ball_x;
+            prev_ball_y   = state.ball_y;
+
+            velocity_update(dir_x, dir_y, &state.player_vel_x, &state.player_vel_y, 1);
+            limit_velocity(&state.player_vel_x, &state.player_vel_y);
+            movement_update(&state.player_x, &state.player_y, &state.player_vel_x, &state.player_vel_y, &mode, 1);
+
+            velocity_update(0, 0, &state.ball_vel_x, &state.ball_vel_y, 0);
+            limit_velocity(&state.ball_vel_x, &state.ball_vel_y);
+            movement_update(&state.ball_x, &state.ball_y, &state.ball_vel_x, &state.ball_vel_y, &mode, 0);
+
+            check_ball_player_collision(&state);
+        }
+    
         
         
         // Check win condition
