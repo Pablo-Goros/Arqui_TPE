@@ -25,6 +25,10 @@
 #define BALL_TWO_COLOR          0x00FFFF00  // Yellow ball
 #define HOLE_COLOR              0x00808080  // Grey hole
 
+#define UI                     60      /* px reserved for UI messages */
+#define MAX_WIDTH              1024     /* px */
+#define MAX_HEIGHT             768      /* px */
+
 typedef enum {
     GAME_PLAYING,
     GAME_LEVEL_COMPLETE,
@@ -42,6 +46,8 @@ typedef struct GameState {
 
     int             holeX, holeY;
     int             holeRadius;
+
+    int             touch_counter;
 } GameState;
 
 
@@ -137,5 +143,7 @@ void draw_player(int x, int y, int radius);
 void draw_ball(int x, int y, int radius);
 
 void draw_hole(int x, int y, int radius);
+
+void draw_counter(int count);
 
 #endif // PONGIS_LIB_H
