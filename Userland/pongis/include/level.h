@@ -7,24 +7,31 @@
 // Forward declaration instead of including pongis.h
 typedef struct GameState GameState;
 
-typedef struct {
+typedef struct
+{
     int x, y, w, h;
 } Obstacle;
 
-typedef struct {
-    int             ball_start_x, ball_start_y;
+typedef struct
+{
+    int x, y; // Player start position
+} PlayerStart;
 
-    int             player_start_x, player_start_y;
+typedef struct
+{
+    int ball_start_x, ball_start_y;
+    
+    PlayerStart players[2]; // Array of player start positions, if numPlayers == 1, the second player will be unused
 
-    int             holeX, holeY;
-    int             holeRadius;
+    int holeX, holeY;
+    int holeRadius;
 
-    int             numObstacles;
+    int numObstacles;
     const Obstacle *obstacles;
     // add lo q falte (e.g. terrain flags, etc.)
 } Level;
 
-extern const Level  levels[];
+extern const Level levels[];
 extern const uint64_t level_count;
 
 void load_level(GameState *state, int index);

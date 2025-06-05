@@ -10,44 +10,60 @@
 #include "bitmaps.h"
 #include "math.h"
 
-// Physics constants 
-#define ACCELERATION   0.2f   /* px/tick² */
-#define MAX_SPEED      5.0f   /* px/tick */
-#define FRICTION       0.99f  /* velocity scaling per frame */
-#define BALL_RADIUS    50      /* px */
-#define PLAYER_RADIUS 70     /* px */
+// Physics constants
+#define ACCELERATION 0.2f /* px/tick² */
+#define MAX_SPEED 5.0f    /* px/tick */
+#define FRICTION 0.99f    /* velocity scaling per frame */
+#define BALL_RADIUS 50    /* px */
+#define PLAYER_RADIUS 70  /* px */
 
+#define PLAYER_COLOR 0x0000FF00 // Green player
+#define BALL_COLOR 0x00FFFFFF   // White ball
+#define HOLE_COLOR 0x00808080   // Grey hole
 
-#define PLAYER_COLOR    0x0000FF00  // Green player
-#define BALL_COLOR      0x00FFFFFF  // White ball
-#define HOLE_COLOR      0x00808080  // Grey hole
+#define MAX_PLAYERS 2 
 
-typedef enum {
+typedef enum
+{
     GAME_PLAYING,
     GAME_LEVEL_COMPLETE,
     GAME_ALL_COMPLETE
 } GamePhase;
 
-typedef struct GameState {
-    int     currentLevel;
+typedef struct Player
+{
+    int x, y;           // Position
+    float vel_x, vel_y; // Velocity
+    int id;             // Player ID (1 or 2)
+} Player;
 
-    int     ball_x,    ball_y;
-    float     ball_vel_x,    ball_vel_y;
+typedef struct Ball
+{
+    int x, y;           // Position
+    float vel_x, vel_y; // Velocity
+    // int ownerId; // Pointer to the player who owns the ball
+    int lastTouchId; // Pointer to the last player who touched the ball
+} Ball;
 
-    int     player_x, player_y;
-    float     player_vel_x, player_vel_y;
+typedef struct GameState
+{
+    int currentLevel;
+    int numPlayers; // 1 or 2 players
 
-    int             holeX, holeY;
-    int             holeRadius;
+    Player players[2]; // Array of players, if numPlayers == 1,the second player will be unused
+    Ball ball;         // Array of balls,
+
+    int holeX, holeY;
+    int holeRadius;
 } GameState;
 
 void pongis(ModeInfo mode);
 
 void pongis_init();
 
-void draw_player(int x, int y, int radius); 
+void draw_player(int x, int y, int radius);
 
 void draw_ball(int x, int y, int radius);
 
 void draw_hole(int x, int y, int radius);
-#endif 
+#endif
