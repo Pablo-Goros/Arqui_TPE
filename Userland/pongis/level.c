@@ -68,6 +68,10 @@ void load_level(GameState *state, int index) {
     state->players[FIRST_PLAYER_ID].physics.vel_x = state->players[FIRST_PLAYER_ID].physics.vel_y = 0.0f;
     state->players[SECOND_PLAYER_ID].physics.vel_x = state->players[SECOND_PLAYER_ID].physics.vel_y = 0.0f;
     
+    state->players[FIRST_PLAYER_ID].physics.color = PLAYER_ONE_COLOR;
+    state->players[SECOND_PLAYER_ID].physics.color = PLAYER_TWO_COLOR;
+
+    
     state->ball.lastTouchId = -1; // No player has touched the ball yet
     
     state->hole.x = levels[index].hole.x;

@@ -75,7 +75,8 @@ void pongis(ModeInfo mode, int player_count)
     while (running) {
         // Handle any keypress and (possibly) change running or phase 
         handle_input(&running, phase, &state, &level_complete_displayed);
-        Point prev_ball, prev_first_player, prev_second_player;
+        Point prev_ball, prev_first_player;
+        Point prev_second_player = {0, 0}; // Initalize here to avoid warnings...
 
         // If PLAYING, update physics
         if (phase == GAME_PLAYING) {
@@ -239,6 +240,9 @@ static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point
             draw_hole(state->hole, state->holeRadius);
         }
 
+        if (prev_sp.x != state->players[SECOND_PLAYER_ID].physics.position.x || prev_sp.y != state->players[SECOND_PLAYER_ID].physics.position.y) {
+            clear_object(prev_sp, PLAYER_RADIUS);
+        }
         draw_player(state->players[SECOND_PLAYER_ID].physics.position, PLAYER_RADIUS, state->players[SECOND_PLAYER_ID].physics.color);
 
     } else {
