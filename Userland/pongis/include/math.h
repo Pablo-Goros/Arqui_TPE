@@ -1,6 +1,9 @@
 #ifndef MATH_H
 #define MATH_H
 
-float _sqrt(float x);
+#include <stdint.h>
 
+float sqrtf(float x);
+
+uint32_t int_sqrt(uint32_t x);
 #endif

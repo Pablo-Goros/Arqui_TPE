@@ -108,10 +108,6 @@ void clear_object(Point point, int radius) {
     sys_call(SYS_DRAW_CIRCLE, point.x, point.y, radius, BLACK_COLOR, 0); // 
 }
 
-void clear_object(Point point, int radius, uint32_t color) {
-    sys_call(SYS_DRAW_CIRCLE, point.x, point.y, radius /*+ 2*/, 0x000000, 0); // Black with slight padding?
-}
-
 int objects_overlap(Point point1, Point point2, int radius1, int radius2) {
     int dx = point1.x - point2.x;
     int dy = point1.y - point2.y;
@@ -124,7 +120,7 @@ int objects_overlap(Point point1, Point point2, int radius1, int radius2) {
 void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y) {
     if (dir_x != 0 || dir_y != 0) {
         // Calculate normalized input vector (ux, uy)
-        float length = _sqrt((float)(dir_x * dir_x + dir_y * dir_y));
+        float length = sqrtf((float)(dir_x * dir_x + dir_y * dir_y));
         float ux = dir_x / length;
         float uy = dir_y / length;
 
@@ -180,7 +176,7 @@ void ball_velocity_update(float *vel_x, float *vel_y)
 void limit_velocity(float *vel_x, float *vel_y, int is_player)
 {
     int max_speed = (is_player == IS_PLAYER) ? MAX_PLAYER_SPEED : MAX_BALL_SPEED;
-    float speed = _sqrt((*vel_x) * (*vel_x) + (*vel_y) * (*vel_y));
+    float speed = sqrtf((*vel_x) * (*vel_x) + (*vel_y) * (*vel_y));
 
     // limit player speed
     if (speed > max_speed)
@@ -217,30 +213,6 @@ void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius)
         obj->position.y = mode->height - radius;
         obj->vel_y = -obj->vel_y; // * BOUNCE_FACTOR;
     }
-}
-
-static uint32_t int_sqrt(uint32_t x) {
-    // Simple integer square‐root via binary search / Newton’s method.
-    // You can replace this with any fast integer-sqrt you already have.
-    uint32_t op = x;
-    uint32_t res = 0;
-    uint32_t one = 1uL << 30;  // 2^30, highest power of four <= UINT32_MAX
-
-    // "one" starts at the highest power of four <= the argument.
-    while (one > op) {
-        one >>= 2;
-    }
-
-    while (one != 0) {
-        if (op >= res + one) {
-            op -= res + one;
-            res = (res >> 1) + one;
-        } else {
-            res = res >> 1;
-        }
-        one >>= 2;
-    }
-    return res;
 }
 
 void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
@@ -306,10 +278,6 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
 
 uint8_t check_ball_in_hole(GameState *state)
 {
-    // Convert float positions to int for distance calculation
-    int ball_x = state->ball.physics.position.x;
-    int ball_y = state->ball.physics.position.y;
-    
     int dx = state->ball.physics.position.x - state->hole.x;
     int dy = state->ball.physics.position.y - state->hole.y;
 

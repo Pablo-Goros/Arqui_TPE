@@ -1,10 +1,12 @@
 #ifndef PONGIS_LIB_H
 #define PONGIS_LIB_H
-#include <stdint.h>
+
 #include "pongis.h"
 #include "libc.h"
 #include "math.h"
+#include "pongis_types.h"
 
+// Physics constants
 #define ACCELERATION        0.05f   /* px/tick² */
 #define MAX_PLAYER_SPEED    5.0f   /* px/tick */
 #define MAX_BALL_SPEED      15.0f  /* px/tick */
@@ -17,75 +19,8 @@
 #define PLAYER_FRICTION     0.99f  /* velocity scaling per frame */
 #define BALL_FRICTION       0.98f  /* ball velocity scaling per frame */
 
-#define BALL_RADIUS         10      /* px */
-#define PLAYER_RADIUS       20     /* px */
-
 #define IS_PLAYER           1
 #define IS_BALL             0
-
-#define PLAYER_ONE_COLOR        0x0000FF00  // Green player
-#define PLAYER_TWO_COLOR        0x00FF0000  // Red player
-#define BALL_COLOR          0x000000FF  // Blue ball
-#define HOLE_COLOR              0x00808080  // Grey hole
-#define BLACK_COLOR             0x00000000  // Black color for background
-
-#define UI                     60     /* px reserved for UI messages */
-#define OFFSET                 3     /* 60 px for UI + 3 px for offset */
-
-#define FIRST_PLAYER_ID        0
-#define SECOND_PLAYER_ID       1
-#define MAX_PLAYERS            2 
-
-#define ONE_PLAYER_MODE       1
-#define TWO_PLAYER_MODE       2
-
-typedef enum {
-    GAME_PLAYING,
-    GAME_LEVEL_COMPLETE,
-    GAME_ALL_COMPLETE
-} GamePhase;
-
-typedef struct Point {
-      int x;
-      int y;
-} Point;
-
-typedef struct PhysicsObject {
-   Point position; // Position of the object (x, y)
-   float vel_x;
-   float vel_y;
-   int radius;
-   uint32_t color; // Color of the object
-} PhysicsObject;
-
-typedef struct Player
-{
-   PhysicsObject physics; // Velocity
-   int id;             // Player ID (1 or 2)
-   // PALO DE GOLF
-} Player;
-
-typedef struct Ball
-{
-   PhysicsObject physics; // Velocity
-   // int ownerId; // Pointer to the player who owns the ball
-   int lastTouchId; // Pointer to the last player who touched the ball
-} Ball;
-
-typedef struct GameState
-{
-   int currentLevel;
-   int numPlayers; // 1 or 2 players
-
-   Player players[MAX_PLAYERS]; // Array of players, if numPlayers == 1,the second player will be unused
-   Ball ball;         // Array of balls,
-
-   Point hole; // Position of the hole
-   int holeRadius;
-
-   int touch_counter;
-   int prev_touch_counter;
-} GameState;
 
 uint8_t startPongisMenu(ModeInfo mode);
 
@@ -164,9 +99,10 @@ void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y);
 
 /**
    @brief: Check if two objects overlap based on their positions and radius.
-   @param state: Pointer to the GameState containing object positions and radius.
+   @param obj1: Pointer to the first PhysicsObject.
+   @param obj2: Pointer to the second PhysicsObject.
 **/
-void check_ball_player_collision(GameState *state);
+void check_collision(PhysicsObject *obj1, PhysicsObject *obj2);
 
 /** 
    @brief: Verify if the ball is within the hole's radius, indicating a win condition.

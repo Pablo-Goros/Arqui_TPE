@@ -197,8 +197,24 @@ static void update_physics(GameState *state, ModeInfo mode)
     player_velocity_update(p1_dir_x, p1_dir_y, &state->players[FIRST_PLAYER_ID].physics.vel_x, &state->players[FIRST_PLAYER_ID].physics.vel_y);
     movement_update(&state->players[FIRST_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
 
-    /* Check collision between player and ball */
-    check_ball_player_collision(state);
+    check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->ball.physics);
+
+    if (state->numPlayers == TWO_PLAYER_MODE) {
+        // Second player checks
+        int p2_dir_x = 0, p2_dir_y = 0;
+        /*
+        // Arrow keys check via sys_call 
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)UP_ARROW, 0, 0, 0, 0)) p2_dir_y -= 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)DOWN_ARROW, 0, 0, 0, 0)) p2_dir_y += 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)LEFT_ARROW, 0, 0, 0, 0)) p2_dir_x -= 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)RIGHT_ARROW, 0, 0, 0, 0)) p2_dir_x += 1;
+        */
+        // Update second player velocity based on input
+        player_velocity_update(p2_dir_x, p2_dir_y, &state->players[SECOND_PLAYER_ID].physics.vel_x, &state->players[SECOND_PLAYER_ID].physics.vel_y);
+        movement_update(&state->players[SECOND_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
+        check_collision(&state->players[SECOND_PLAYER_ID].physics, &state->ball.physics);
+        check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->players[SECOND_PLAYER_ID].physics);
+    }
 }
 
 /*

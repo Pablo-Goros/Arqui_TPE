@@ -53,7 +53,7 @@
 
 // metodo de newton (metodos numericos 4 the win)
 
-float _sqrt(float x) {
+float sqrtf(float x) {
     if (x < 0) return -1;
     float r = x < 1 ? 1 : x;      // initial guess
     for (int i = 0; i < 6; i++)
@@ -61,3 +61,26 @@ float _sqrt(float x) {
     return r;
 }
     
+uint32_t int_sqrt(uint32_t x) {
+    // Simple integer square‐root via binary search / Newton’s method.
+    // You can replace this with any fast integer-sqrt you already have.
+    uint32_t op = x;
+    uint32_t res = 0;
+    uint32_t one = 1uL << 30;  // 2^30, highest power of four <= UINT32_MAX
+
+    // "one" starts at the highest power of four <= the argument.
+    while (one > op) {
+        one >>= 2;
+    }
+
+    while (one != 0) {
+        if (op >= res + one) {
+            op -= res + one;
+            res = (res >> 1) + one;
+        } else {
+            res = res >> 1;
+        }
+        one >>= 2;
+    }
+    return res;
+}

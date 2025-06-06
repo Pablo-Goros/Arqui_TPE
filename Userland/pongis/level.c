@@ -20,8 +20,8 @@ const Level levels[2] = {
         },
         .holeRadius      = 50,
 
-        .numObstacles    =  0,
-        .obstacles       = ((void*)0)
+        //.numObstacles    =  0,
+        //.obstacles       = ((void*)0)
     },
     // Level 1
     {
@@ -41,8 +41,8 @@ const Level levels[2] = {
         },
         .holeRadius      = 20,
 
-        .numObstacles    =  0,
-        .obstacles       = ((void*)0)
+        //.numObstacles    =  0,
+        //.obstacles       = ((void*)0)
     }
 };
 
