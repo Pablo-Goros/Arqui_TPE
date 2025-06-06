@@ -1,40 +1,133 @@
 #include "pongis.h"
 
-static float limit_vel(float vel, float min, float max)
+float limit_vel(float vel, float min, float max)
 {
     return vel < min ? min : (vel > max ? max : vel);
 }
 
-static void velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y, int is_player);
+const char *menuOptions[] = {
+    "Jugar (1 jugador)      ",
+    "Jugar (2 jugadores)    ",
+    "Instrucciones          ",
+    "Volver al Shell        "};
+const int menuCount = sizeof(menuOptions) / sizeof(menuOptions[0]);
 
-static void limit_velocity(float *vel_x, float *vel_y);
+uint8_t startPongisMenu(ModeInfo mode)
+{
+    int selected = 0;
+    drawMainMenu(selected);
 
-static void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo *mode, int is_player);
+    while (1)
+    {
+        if (!isCharReady())
+        { // Wait for next char
+            _hlt();
+            continue;
+        }
 
-static void ball_limit_velocity(GameState *state);
+        char c = getChar();
+        switch (c)
+        {
+        case 'w': // Move up
+            selected = (selected + menuCount - 1) % menuCount;
+            drawMainMenu(selected);
+            break;
 
-static void ball_movement_update(GameState *state, ModeInfo *mode);
+        case 's': // Move down
+            selected = (selected + 1) % menuCount;
+            drawMainMenu(selected);
+            break;
 
-static uint8_t check_ball_in_hole(GameState *state);
+        case '\n':
+        case '\r':
+            return selected;
+            break;
 
-static void check_ball_player_collision(GameState *state);
+        default:
+            break;
+        }
+    }
+}
 
-static void display_welcome_screen();
+void drawMainMenu(int selected)
+{
+    clear_screen();
+    set_zoom(5);
+    putString("       PONGIS GOLF\n\n");
 
-static void handle_menu_input(ModeInfo mode);
+    set_zoom(3);
+    for (int i = 0; i < menuCount; i++)
+    {
+        putString("  ");
+        putString(menuOptions[i]);
+        if (i == selected)
+        {
+            putString("  <--");
+        }
+        putString("\n\n");
+    }
+}
 
-static void clear_object(int x, int y, int radius)
+void drawInstructions(void)
+{
+    clear_screen();
+    set_zoom(4);
+    putString("      INSTRUCCIONES\n\n");
+
+    set_zoom(2);
+    putString(" Jugador 1:\n");
+    putString("   W    -> Arriba\n");
+    putString("   S    -> Abajo\n");
+    putString("   A    -> Izquierda\n");
+    putString("   D    -> Derecha\n\n");
+
+    putString(" Jugador 2:\n");
+    putString("   Flecha Arriba    -> Arriba\n");
+    putString("   Flecha Abajo     -> Abajo\n");
+    putString("   Flecha Izquierda -> Izquierda\n");
+    putString("   Flecha Derecha   -> Derecha\n\n");
+
+    putString(" Presiona 'c' para volver al menú principal.\n");
+
+    sys_call(SYS_RESET_KBD, 0, 0, 0, 0, 0);
+
+    while (isCharReady())
+    {
+        (void)getChar();
+    }
+
+    // Wait for user input
+    while (1)
+    {
+        if (isCharReady())
+        {
+            char key = getChar();
+            if (key == 'c')
+            {
+                return;
+            }
+        }
+        _hlt();
+    }
+}
+
+void clear_object(int x, int y, int radius)
 {
     sys_call(SYS_DRAW_CIRCLE, x, y, radius + 2, 0x000000, 0); // Black with slight padding
 }
 
-static int objects_overlap(PhysicsObject *obj1, PhysicsObject *obj2)
+int objects_overlap(PhysicsObject *obj1, PhysicsObject *obj2)
+{
+    return calc_sq_dist(obj1, obj2) <= 0;
+}
+
+int calc_sq_dist(PhysicsObject *obj1, PhysicsObject *obj2)
 {
     int dx = obj1->x - obj2->x;
     int dy = obj1->y - obj2->y;
     int dist_sq = dx * dx + dy * dy;
     int combined_radius = obj1->radius + obj2->radius;
-    return dist_sq <= (combined_radius * combined_radius);
+    return dist_sq - (combined_radius * combined_radius);
 }
 
 void pongis_init()
@@ -48,55 +141,88 @@ void pongis_init()
         return;
     }
 
-    display_welcome_screen(mode);
-    handle_menu_input(mode);
-}
-
-static void display_welcome_screen(ModeInfo mode)
-{
-    clear_screen();
-    set_zoom(6);
-    set_cursor((mode.width / 2) - 300, mode.height / 4);
-    putString("PONGIS GOLF\n");
-
-    set_zoom(4);
-
-    set_cursor((mode.width / 2) - 300, mode.height / 2);
-    putString("Press ENTER to start\n");
-
-    set_cursor((mode.width / 2) - 300, 3 * mode.height / 4);
-    putString("Press 'c' to quit\n");
-}
-
-static void handle_menu_input(ModeInfo mode)
-{
     while (1)
     {
-        if (isCharReady())
+        uint8_t selected = startPongisMenu(mode);
+        switch (selected)
         {
-            char key = getChar();
-            switch (key)
-            {
-            case '\n':
-            case '\r':
-                pongis(mode);
-                return; // Exit after game ends
-            case 'c':
-                clear_screen();
-                return; // Exit to shell
-            default:
-                break; // Ignore other keys
-            }
+        case 0:
+            // One player
+            pongis(mode, ONE_PLAYER_MODE);
+            return;
+
+        case 1:
+            // Two players
+            pongis(mode, TWO_PLAYER_MODE);
+            clear_screen();
+            return;
+
+        case 2:
+            // Instructions
+            drawInstructions();
+            sys_call(SYS_RESET_KBD, 0, 0, 0, 0, 0);
+            startPongisMenu(mode);
+            break;
+
+        case 3:
+            // Back to shell
+            clear_screen();
+            return;
+
+        default:
+            return;
         }
     }
 }
-void pongis(ModeInfo mode)
+
+// void display_welcome_screen(ModeInfo mode)
+// {
+//     clear_screen();
+//     set_zoom(6);
+//     set_cursor((mode.width / 2) - 300, mode.height / 4);
+//     putString("PONGIS GOLF\n");
+
+//     set_zoom(4);
+
+//     set_cursor((mode.width / 2) - 300, mode.height / 2);
+//     putString("Press ENTER to start\n");
+
+//     set_cursor((mode.width / 2) - 300, 3 * mode.height / 4);
+//     putString("Press 'c' to quit\n");
+// }
+
+// void handle_menu_input(ModeInfo mode)
+// {
+//     while (1)
+//     {
+//         if (isCharReady())
+//         {
+//             char key = getChar();
+//             switch (key)
+//             {
+//             case '\n':
+//             case '\r':
+//                 pongis(mode);
+//                 return; // Exit after game ends
+//             case 'c':
+//                 clear_screen();
+//                 return; // Exit to shell
+//             default:
+//                 break; // Ignore other keys
+//             }
+//         }
+//     }
+// }
+void pongis(ModeInfo mode, int player_count)
 {
     clear_screen();
     int running = 1;
     GameState state;
     GamePhase phase = GAME_PLAYING;
     load_level(&state, 0);
+
+    state.numPlayers = player_count;
+    // state.touch_counter = 0;
 
     // Store previous positions for all players and ball
     int prev_player_x[MAX_PLAYERS], prev_player_y[MAX_PLAYERS];
@@ -245,7 +371,7 @@ void pongis(ModeInfo mode)
             draw_ball(state.ball.physics.x, state.ball.physics.y, BALL_RADIUS);
 
             // Redraw hole only if ball or any player is overlapping
-            PhysicsObject hole_obj = { .x = state.holeX, .y = state.holeY, .radius = state.holeRadius };
+            PhysicsObject hole_obj = {.x = state.holeX, .y = state.holeY, .radius = state.holeRadius};
             int hole_overlap = objects_overlap(&state.ball.physics, &hole_obj);
             for (int i = 0; i < state.numPlayers && !hole_overlap; i++)
             {
@@ -293,7 +419,7 @@ void pongis(ModeInfo mode)
     return;
 }
 
-static void velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y, int is_player)
+void velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y, int is_player)
 {
     if (is_player)
     {
@@ -305,7 +431,7 @@ static void velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y, in
     *vel_y *= FRICTION;
 }
 
-static void limit_velocity(float *vel_x, float *vel_y)
+void limit_velocity(float *vel_x, float *vel_y)
 {
     float speed = _sqrt((*vel_x) * (*vel_x) + (*vel_y) * (*vel_y));
 
@@ -318,7 +444,7 @@ static void limit_velocity(float *vel_x, float *vel_y)
     }
 }
 
-static void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo *mode, int is_player)
+void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo *mode, int is_player)
 {
     int radius = is_player ? PLAYER_RADIUS : BALL_RADIUS;
     *x += (int)*vel_x;
@@ -346,7 +472,7 @@ static void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo
         *vel_y = -*vel_y;
     }
 }
-static uint32_t int_sqrt(uint32_t x)
+uint32_t int_sqrt(uint32_t x)
 {
     // Simple integer square‐root via binary search / Newton’s method.
     // You can replace this with any fast integer-sqrt you already have.
@@ -376,60 +502,7 @@ static uint32_t int_sqrt(uint32_t x)
     return res;
 }
 
-// Helper to push two objects apart so they don't overlap
-static void separate_objects(int *x1, int *y1, int *x2, int *y2, float nx, float ny, float push_back1, float push_back2)
-{
-    if (push_back1 > 0)
-    {
-        *x1 += (int)(nx * push_back1);
-        *y1 += (int)(ny * push_back1);
-    }
-    if (push_back2 > 0)
-    {
-        *x2 -= (int)(nx * push_back2);
-        *y2 -= (int)(ny * push_back2);
-    }
-}
-
-static void handle_collision(PhysicsObject *obj1, PhysicsObject *obj2, float elasticity)
-{
-    int dx = obj1->x - obj2->x;
-    int dy = obj1->y - obj2->y;
-    int dist_sq = dx * dx + dy * dy;
-    int min_dist = obj1->radius + obj2->radius;
-    int min_dist_sq = min_dist * min_dist;
-
-    if (dist_sq <= min_dist_sq)
-    {
-        int dist_i = (int)int_sqrt((uint32_t)dist_sq);
-        float dist_f = (dist_i == 0 ? 1.0f : (float)dist_i);
-
-        float nx = (float)dx / dist_f;
-        float ny = (float)dy / dist_f;
-
-        // Separate objects
-        float push_back = (min_dist - dist_i);
-        separate_objects(&obj1->x, &obj1->y, &obj2->x, &obj2->y,
-                         nx, ny, push_back / 2, push_back / 2);
-
-        // Calculate collision response
-        float v1_norm = obj1->vel_x * nx + obj1->vel_y * ny;
-        float v2_norm = obj2->vel_x * nx + obj2->vel_y * ny;
-
-        if (v2_norm > v1_norm)
-        {
-            float rel_vel = v2_norm - v1_norm;
-            float impulse = rel_vel * elasticity;
-
-            obj1->vel_x += impulse * nx;
-            obj1->vel_y += impulse * ny;
-            obj2->vel_x -= impulse * nx;
-            obj2->vel_y -= impulse * ny;
-        }
-    }
-}
-
-static void check_ball_player_collision(GameState *state)
+void check_ball_player_collision(GameState *state)
 {
     Ball *ball = &state->ball;
 
@@ -481,8 +554,8 @@ static void check_ball_player_collision(GameState *state)
             Player *p2 = &state->players[j];
             int dx = p1->physics.x - p2->physics.x;
             int dy = p1->physics.y - p2->physics.y;
-            int dist = (int)_sqrt(dx * dx + dy * dy);
-            int min_dist = 2 * PLAYER_RADIUS;
+            int dist = dx * dx + dy * dy;
+            int min_dist = 4 * (PLAYER_RADIUS * PLAYER_RADIUS);
 
             if (dist < min_dist)
             {
@@ -520,7 +593,7 @@ static void check_ball_player_collision(GameState *state)
     }
 }
 
-static uint8_t check_ball_in_hole(GameState *state)
+uint8_t check_ball_in_hole(GameState *state)
 {
     int dx = state->ball.physics.x - state->holeX;
     int dy = state->ball.physics.y - state->holeY;
@@ -530,7 +603,7 @@ static uint8_t check_ball_in_hole(GameState *state)
     // Ball falls in when it's mostly inside the hole
     int threshold = state->holeRadius - (BALL_RADIUS * 0.8f);
 
-    return dist <= threshold ? 1 : 0;
+    return dist <= threshold;
 }
 
 //? quizas agregar una variable en draw circle q sea con o sin outline, por ejemplo para el hole...

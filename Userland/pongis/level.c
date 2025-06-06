@@ -61,6 +61,7 @@ void load_level(GameState *state, int index)
         state->players[i].physics.vel_x = 0.0f;
         state->players[i].physics.vel_y = 0.0f;
         state->players[i].id = i + 1; // Player IDs start from 1
+        state->players[i].physics.radius = PLAYER_RADIUS;
     }
 
     state->holeX = levels[index].holeX;
