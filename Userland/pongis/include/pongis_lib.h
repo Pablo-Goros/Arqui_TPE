@@ -25,12 +25,19 @@
 
 #define PLAYER_ONE_COLOR        0x0000FF00  // Green player
 #define PLAYER_TWO_COLOR        0x00FF0000  // Red player
-#define BALL_ONE_COLOR          0x000000FF  // Blue ball
-#define BALL_TWO_COLOR          0x00FFFF00  // Yellow ball
+#define BALL_COLOR          0x000000FF  // Blue ball
 #define HOLE_COLOR              0x00808080  // Grey hole
+#define BLACK_COLOR             0x00000000  // Black color for background
 
 #define UI                     60     /* px reserved for UI messages */
-#define OFFSET               3     /* 60 px for UI + 3 px for offset */
+#define OFFSET                 3     /* 60 px for UI + 3 px for offset */
+
+#define FIRST_PLAYER_ID        0
+#define SECOND_PLAYER_ID       1
+#define MAX_PLAYERS            2 
+
+#define ONE_PLAYER_MODE       1
+#define TWO_PLAYER_MODE       2
 
 typedef enum {
     GAME_PLAYING,
@@ -38,20 +45,46 @@ typedef enum {
     GAME_ALL_COMPLETE
 } GamePhase;
 
-typedef struct GameState {
-    int     currentLevel;
+typedef struct Point {
+      int x;
+      int y;
+} Point;
 
-    int     ball_x,    ball_y;
-    float     ball_vel_x,    ball_vel_y;
+typedef struct PhysicsObject {
+   Point position; // Position of the object (x, y)
+   float vel_x;
+   float vel_y;
+   int radius;
+   uint32_t color; // Color of the object
+} PhysicsObject;
 
-    int     player_x, player_y;
-    float     player_vel_x, player_vel_y;
+typedef struct Player
+{
+   PhysicsObject physics; // Velocity
+   int id;             // Player ID (1 or 2)
+   // PALO DE GOLF
+} Player;
 
-    int             holeX, holeY;
-    int             holeRadius;
+typedef struct Ball
+{
+   PhysicsObject physics; // Velocity
+   // int ownerId; // Pointer to the player who owns the ball
+   int lastTouchId; // Pointer to the last player who touched the ball
+} Ball;
 
-    int             touch_counter;
-    int             prev_touch_counter;
+typedef struct GameState
+{
+   int currentLevel;
+   int numPlayers; // 1 or 2 players
+
+   Player players[MAX_PLAYERS]; // Array of players, if numPlayers == 1,the second player will be unused
+   Ball ball;         // Array of balls,
+
+   Point hole; // Position of the hole
+   int holeRadius;
+
+   int touch_counter;
+   int prev_touch_counter;
 } GameState;
 
 uint8_t startPongisMenu(ModeInfo mode);
@@ -60,9 +93,7 @@ void drawMainMenu(int selected);
 
 void drawInstructions(void);
 
-void clear_object(int x, int y, int radius);
-
-int objects_overlap(int x1, int y1, int r1, int x2, int y2, int r2);
+int objects_overlap(Point point1, Point point2, int radius1, int radius2);
 
 /**
    @brief: Update velocity for player or ball. If is_player is non-zero, apply acceleration based on dir_x/dir_y, then apply friction. Otherwise, apply friction only.
@@ -80,14 +111,10 @@ void limit_velocity(float *vel_x, float *vel_y, int is_player);
 
 /**
    @brief: Update an object's position based on its velocity, handling screen boundaries.
-   @param x:         Pointer to the current x-coordinate of the object (modifiable).
-   @param y:         Pointer to the current y-coordinate of the object (modifiable).
-   @param vel_x:     Pointer to the x-component of velocity.
-   @param vel_y:     Pointer to the y-component of velocity.
-   @param mode:      Pointer to ModeInfo containing screen dimensions.
-   @param is_player: Non-zero if updating the player (use player clamping); zero if updating the ball.
+   @param raduis: Radius of the object to handle screen boundaries.
+   @param obj: Pointer to PhysicsObject containing position and velocity.
 **/
-void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo *mode, int is_player);
+void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius);
 
 /**
    @brief: Apply friction or other limits to the ball's velocity only.
@@ -113,7 +140,7 @@ uint8_t check_ball_in_hole(GameState *state);
    @brief: Detect and resolve collisions between the player and the ball, adjusting positions and velocities.
    @param state: Pointer to the GameState containing player_x, player_y, player_vel_x, player_vel_y, ball_x, ball_y, ball_vel_x, ball_vel_y.
 **/
-void check_ball_player_collision(GameState *state);
+void check_collision(PhysicsObject *obj1, PhysicsObject *obj2);
 
 /**
    @brief: Display the initial welcome screen and any instructions before the game starts. Blocks until user proceeds.
@@ -147,12 +174,15 @@ void check_ball_player_collision(GameState *state);
 **/
 uint8_t check_ball_in_hole(GameState *state);
 
-void draw_player(int x, int y, int radius);
 
-void draw_ball(int x, int y, int radius);
+void draw_player(Point point, int radius, uint32_t color);
 
-void draw_hole(int x, int y, int radius);
+void draw_ball(Point point, int radius);
+
+void draw_hole(Point point, int radius);
 
 void draw_counter(int count, ModeInfo mode);
+
+void clear_object(Point point, int radius);
 
 #endif // PONGIS_LIB_H

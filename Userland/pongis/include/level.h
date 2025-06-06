@@ -7,17 +7,21 @@
 
 // Forward declaration instead of including pongis.h
 typedef struct GameState GameState;
+typedef struct Point Point;
+
+
 
 typedef struct {
     int x, y, w, h;
 } Obstacle;
 
+
 typedef struct {
-    int             ball_start_x, ball_start_y;
+    Point ball_start;
 
-    int             player_start_x, player_start_y;
+    Point player_start[MAX_PLAYERS];
 
-    int             holeX, holeY;
+    Point hole;
     int             holeRadius;
 
     int             numObstacles;

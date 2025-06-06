@@ -10,23 +10,24 @@ const int menuCount = sizeof(menuOptions) / sizeof(menuOptions[0]);
 
 
 uint8_t startPongisMenu(ModeInfo mode) {
+
     int selected = 0;
     drawMainMenu(selected);
 
     while (1) {
-        if (!isCharReady()) {
-            _hlt();  // Espera a la siguiente interrupción
+        if (!isCharReady()) { // Wait for next char
+            _hlt();  
             continue;
         }
 
         char c = getChar();
         switch (c) {
-            case 'w':  // Mover selección hacia arriba
+            case 'w':  // Move up
                 selected = (selected + menuCount - 1) % menuCount;
                 drawMainMenu(selected);
                 break;
 
-            case 's':  // Mover selección hacia abajo
+            case 's':  // Move down
                 selected = (selected + 1) % menuCount;
                 drawMainMenu(selected);
                 break;
@@ -78,55 +79,21 @@ void drawInstructions(void) {
 
     putString(" Presiona 'c' para volver al menú principal.\n");
 
-    // Espera hasta que el usuario presione 'c' o ENTER
+    sys_call(SYS_RESET_KBD_BUFFER, 0, 0, 0, 0, 0);
+
+    while (isCharReady()) {
+        (void)getChar();
+    }
+
+    // Wait for user input
     while (1) {
         if (isCharReady()) {
             char key = getChar();
-            if (key == 'c' || key == '\n' || key == '\r') {
+            if (key == 'c') {
                 return;
             }
         }
         _hlt();
-    }
-}
-
-
-void display_welcome_screen(ModeInfo mode)
-{   
-    clear_screen();
-    set_zoom(6);
-    set_cursor((mode.width / 2) - 300, mode.height / 4);
-    putString("PONGIS GOLF\n");
-   
-    set_zoom(4);
-
-    set_cursor((mode.width / 2) - 300, mode.height / 2);
-    putString("Press ENTER to start\n");
-
-    set_cursor((mode.width / 2) - 300, 3* mode.height / 4);
-    putString("Press 'c' to quit\n");
-}
-
-void handle_menu_input(ModeInfo mode)
-{
-    while (1)
-    {
-        if (isCharReady())
-        {
-            char key = getChar();
-            switch (key)
-            {
-                case '\n':
-                case '\r':
-                    pongis(mode);
-                    return; // Exit after game ends
-                case 'c':
-                    clear_screen();
-                    return; // Exit to shell
-                default:
-                    break; // Ignore other keys
-            }
-        }
     }
 }
 
@@ -136,15 +103,21 @@ float limit_vel(float vel, float min, float max)
     return vel < min ? min : (vel > max ? max : vel);
 }
 
-void clear_object(int x, int y, int radius) {
-    sys_call(SYS_DRAW_CIRCLE, x, y, radius + 2, 0x000000, 0); // Black with slight padding
+void clear_object(Point point, int radius) {
+    // Clear the object by drawing a black circle over it
+    sys_call(SYS_DRAW_CIRCLE, point.x, point.y, radius, BLACK_COLOR, 0); // 
 }
 
-int objects_overlap(int x1, int y1, int r1, int x2, int y2, int r2) {
-    int dx = x1 - x2;
-    int dy = y1 - y2;
+void clear_object(Point point, int radius, uint32_t color) {
+    sys_call(SYS_DRAW_CIRCLE, point.x, point.y, radius /*+ 2*/, 0x000000, 0); // Black with slight padding?
+}
+
+int objects_overlap(Point point1, Point point2, int radius1, int radius2) {
+    int dx = point1.x - point2.x;
+    int dy = point1.y - point2.y;
+
     int dist_sq = dx * dx + dy * dy;
-    int combined_radius = r1 + r2;
+    int combined_radius = radius1 + radius2;
     return dist_sq <= (combined_radius * combined_radius);
 }
 
@@ -218,32 +191,31 @@ void limit_velocity(float *vel_x, float *vel_y, int is_player)
     }
 }
 
-void movement_update(int *x, int *y, float *vel_x, float *vel_y, ModeInfo *mode, int is_player)
+void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius)
 {
-    int radius = (is_player == IS_PLAYER) ? PLAYER_RADIUS : BALL_RADIUS;
-    *x += (int)*vel_x;
-    *y += (int)*vel_y;
+    obj->position.x += (int)obj->vel_x;
+    obj->position.y += (int)obj->vel_y;
 
     // bounce ball off screen edges
-    if (*x < radius)
+    if (obj->position.x < radius)
     {
-        *x = radius;
-        *vel_x = -*vel_x;
+        obj->position.x = radius;
+        obj->vel_x = -obj->vel_x; // * BOUNCE_FACTOR;
     }
-    else if (*x > mode->width - radius)
+    else if (obj->position.x > mode->width - radius)
     {
-        *x = mode->width - radius;
-        *vel_x = -*vel_x;
+        obj->position.x = mode->width - radius;
+        obj->vel_x = -obj->vel_x; // * BOUNCE_FACTOR;
     }
-    if (*y < radius)
+    if (obj->position.y < radius)
     {
-        *y = radius;
-        *vel_y = -*vel_y;
+        obj->position.y = radius;
+        obj->vel_y = -obj->vel_y; // * BOUNCE_FACTOR;
     }
-    else if (*y > mode->height - radius)
+    else if (obj->position.y > mode->height - radius)
     {
-        *y = mode->height - radius;
-        *vel_y = -*vel_y;
+        obj->position.y = mode->height - radius;
+        obj->vel_y = -obj->vel_y; // * BOUNCE_FACTOR;
     }
 }
 
@@ -271,128 +243,109 @@ static uint32_t int_sqrt(uint32_t x) {
     return res;
 }
 
-void check_ball_player_collision(GameState *state)
+void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
 {
     // Calculate positions in x and y
-    int  bx = (int)state->ball_x;
-    int  by = (int)state->ball_y;
-    int  px = (int)state->player_x;
-    int  py = (int)state->player_y;
+    int  x1 = (int)obj1->position.x;
+    int  y1 = (int)obj1->position.y;
+    int  x2 = (int)obj2->position.x;
+    int  y2 = (int)obj2->position.y;
 
     // Deltas
-    int  dx = bx - px;
-    int  dy = by - py;
+    int  dx = x1 - x2;
+    int  dy = y1 - y2;
 
     // Squared distance between centers
     uint32_t  dist_sq = (uint32_t) ((uint32_t) dx * (uint32_t) dx + (uint32_t) dy * (uint32_t) dy);
 
     // Minimum center‐to‐center to just touch (edge‐to‐edge)
-    int  min_dist = PLAYER_RADIUS + BALL_RADIUS;
+    int  min_dist = obj1->radius + obj2->radius;
     uint32_t  min_dist_sq = min_dist * min_dist;
 
     // Only run collision logic if edges overlap or touch
-    if (dist_sq <= min_dist_sq)
-    {
-        state->touch_counter++;
-        // Calculate exact distance between centers 
-        uint32_t dist_i = int_sqrt(dist_sq);
-        float dist_f = (dist_i == 0 ? 1.0f : (float)dist_i);
-
-        // Calculate normalized direction vector from player to ball
-        float nx = (float)dx / dist_f;
-        float ny = (float)dy / dist_f;
-
-        /*
-        To avoid floating point multiplication, when we want ints, we use Q8.8 Fixed-Point logic       
-        Multiplying by 256 gives us a 24.8 representation (High 24 bits are ints, and 8 low bits are fractional part)
-        */
-        int pushDist = min_dist + 1;
-        int ux_q8 = (dx * 256) / (int)dist_f;  
-        int uy_q8 = (dy * 256) / (int)dist_f;  
-
-        /*
-        We want to move balls center by pushDist pixels
-        Multiplying ux_q8 (Our unit vector) by pushDist gives us the offset in Q8.8 format
-        We then shift right by 8 to convert it back to int
-        */ 
-        int offsetX = (ux_q8 * pushDist) >> 8;
-        int offsetY = (uy_q8 * pushDist) >> 8;
-
-        // Update ball position by offset
-        state->ball_x = (float)(px + offsetX);
-        state->ball_y = (float)(py + offsetY);
-
-        // compute normal velocity components
-        float v_ball_norm   = state->ball_vel_x * nx + state->ball_vel_y * ny;
-        float v_player_norm = state->player_vel_x * nx + state->player_vel_y * ny;
-
-        /* Cases:
-              1. Player is "cathing up" to or pushing into a slower (or stationary) ball (v_player_norm > v_ball_norm)
-                 Transfer the player's normal velocity onto the ball so it immediately moves forward with that speed.
-              
-              2. Ball is moving faster into the player 
-                 Elastic reflection: v'_ball = v_ball – 2*(v_ball·n)*n
-        */
-        if (v_player_norm > v_ball_norm) // Case 1
-        {   
-            float boost = 4.0f; // 20% extra “kick”
-            state->ball_vel_x = v_player_norm * nx * boost;
-            state->ball_vel_y = v_player_norm * ny * boost;
-        }
-        else // Case 2
-        {
-            float reflectFactor = -2.0f * v_ball_norm;
-            state->ball_vel_x += reflectFactor * nx;
-            state->ball_vel_y += reflectFactor * ny;
-        }
+    if (dist_sq > min_dist_sq) {
+        return;
     }
+    //! REVISAR ESTO PARA EL CONTADOR DE TOQUES
+    //! if ((obj1->radius == PLAYER_RADIUS && obj2->radius == BALL_RADIUS) || ()) {
+    //! state->touch_counter++;
+
+    float dist_f = (dist_sq == 0) ? 1.0f : sqrtf((float)dist_sq);
+    
+    float nx = (float)dx / dist_f;
+    float ny = (float)dy / dist_f;
+
+    // Push each object half of the overlap distance
+    float penetration = (float)min_dist - dist_f;
+    float push = penetration * 0.5f;
+    obj1->position.x += nx * push;
+    obj1->position.y += ny * push;
+    obj2->position.x -= nx * push;
+    obj2->position.y -= ny * push;
+    
+    // 5) Project both velocities onto the normal & tangent directions
+    //    Normal components:
+    float v1n = obj1->vel_x * nx + obj1->vel_y * ny;
+    float v2n = obj2->vel_x * nx + obj2->vel_y * ny;
+    //    Tangential components (remaining vector after removing normal part):
+    float v1t_x = obj1->vel_x - (v1n * nx);
+    float v1t_y = obj1->vel_y - (v1n * ny);
+    float v2t_x = obj2->vel_x - (v2n * nx);
+    float v2t_y = obj2->vel_y - (v2n * ny);
+
+    // 6) Swap normal components for an equal‐mass elastic collision
+    float new_v1n = v2n;
+    float new_v2n = v1n;
+
+    // 7) Reconstruct final velocities: tangential + swapped normal
+    obj1->vel_x = v1t_x + new_v1n * nx;
+    obj1->vel_y = v1t_y + new_v1n * ny;
+    obj2->vel_x = v2t_x + new_v2n * nx;
+    obj2->vel_y = v2t_y + new_v2n * ny;
 }
 
 uint8_t check_ball_in_hole(GameState *state)
 {
     // Convert float positions to int for distance calculation
-    int ball_x = (int)state->ball_x;
-    int ball_y = (int)state->ball_y;
+    int ball_x = state->ball.physics.position.x;
+    int ball_y = state->ball.physics.position.y;
     
-    int dx = ball_x - state->holeX;
-    int dy = ball_y - state->holeY;
+    int dx = state->ball.physics.position.x - state->hole.x;
+    int dy = state->ball.physics.position.y - state->hole.y;
 
-    // Use integer square root like you do in collision detection
     uint32_t dist_sq = (uint32_t)(dx * dx + dy * dy);
-    int dist = (int)int_sqrt(dist_sq);  // Use your existing int_sqrt function
+    int dist = (int)int_sqrt(dist_sq);  
 
-    // Ball falls in when its center is close enough to hole center
-    // The threshold should be positive - when ball center gets within 
-    // (hole_radius - some_margin) of hole center
-    int threshold = state->holeRadius - (BALL_RADIUS / 2);
-    
-    // Make sure threshold is positive
-    if (threshold <= 0) {
-        threshold = state->holeRadius / 2;  // Fallback to half hole radius
-    }
+
+    //! REVISAR ESTO
+    //! Ball falls in when its center is close enough to hole center
+    //! The threshold should be positive - when ball center gets within 
+    //! (hole_radius - some_margin) of hole center
+    int threshold = state->holeRadius - BALL_RADIUS;
 
     return dist <= threshold ? 1 : 0;
 }
 
-void draw_player(int x, int y, int radius)
+void draw_player(Point point, int radius, uint32_t color)
 {
-    sys_call(SYS_DRAW_CIRCLE, x, y, radius, PLAYER_ONE_COLOR, 0);
+    sys_call(SYS_DRAW_CIRCLE, point.x, point.y, radius, color, 0);
 }
 
-void draw_ball(int x, int y, int radius)
+void draw_ball(Point point, int radius)
 {
-    sys_call(SYS_DRAW_CIRCLE, x, y, radius, BALL_ONE_COLOR, 0);
+    sys_call(SYS_DRAW_CIRCLE, point.x, point.y, radius, BALL_COLOR, 0);
 }
 
-void draw_hole(int x, int y, int radius)
+void draw_hole(Point point, int radius)
 {
-    sys_call(SYS_DRAW_CIRCLE, x, y, radius, HOLE_COLOR, 0);
+    sys_call(SYS_DRAW_CIRCLE, point.x, point.y, radius, HOLE_COLOR, 0);
 }
 
 void draw_counter(int count, ModeInfo mode) {
     set_cursor(10, 10);
     set_zoom(4);
-    //dibuja el rectangulo en toda la parte inferior de la pantalla
+
+    // Draw counter in the bottom of screen
     sys_call(SYS_DRAW_RECT,0,mode.height+OFFSET,mode.width,UI,0x00FFFFFF);
     sys_call(SYS_DRAW_RECT,10, mode.height+OFFSET+10,mode.width - 20, UI - 20, 0x00000000); // Black background for counter
 
@@ -402,5 +355,4 @@ void draw_counter(int count, ModeInfo mode) {
     char buffer[10];
     itoa(count, buffer, 10);
     putString(buffer);
-
 }

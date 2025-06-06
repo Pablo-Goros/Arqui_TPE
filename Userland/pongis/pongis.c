@@ -3,9 +3,9 @@
 
 static void handle_input(int *running, GamePhase phase, GameState *state, int *level_complete_displayed);
 static void update_physics(GameState *state, ModeInfo mode);
-static void render_playing(GameState *state,int prev_px, int prev_py,int prev_bx, int prev_by, ModeInfo mode);
-static void render_level_complete(ModeInfo mode);
-static void render_all_levels_complete(ModeInfo mode);
+static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point prev_ball, ModeInfo mode, int *counter_displayed);
+static void render_level_complete(void);
+static void render_all_levels_complete(void);
 
 void pongis_init(void)
 {
@@ -18,39 +18,40 @@ void pongis_init(void)
     }
     mode.height -= UI; // Reserve space for UI
 
-    uint8_t selected = startPongisMenu(mode);
-
-    switch (selected) {
+    
+    while (1) {
+        uint8_t selected = startPongisMenu(mode);
+        switch (selected) {
                     case 0:
-                        // Modo 1 jugador
-                        pongis(mode);        // Asume que arranca el juego en modo 1 jugador
+                        // One player
+                        pongis(mode, ONE_PLAYER_MODE);        
                         return;
 
                     case 1:
-                        // Modo 2 jugadores (si está implementado)
-                        // current_level = 1;
-                        //startGameTwoPlayers(); // Debe implementar lógica de 2 jugadores
+                        // Two players
+                        pongis(mode, TWO_PLAYER_MODE);
                         clear_screen();
                         return;
 
                     case 2:
-                        // Instrucciones
+                        // Instructions
                         drawInstructions();
-                        drawMainMenu(selected = 0);  // Vuelve con la primera opción resaltada
+                        sys_call(SYS_RESET_KBD_BUFFER, 0, 0, 0, 0, 0);
+                        startPongisMenu(mode);  
                         break;
 
                     case 3:
-                        // Volver al shell
+                        // Back to shell
                         clear_screen();
                         return;
 
                     default:
                         return;
                 }
-
+    }
 }
 
-void pongis(ModeInfo mode)
+void pongis(ModeInfo mode, int player_count)
 {
     clear_screen();
 
@@ -60,30 +61,36 @@ void pongis(ModeInfo mode)
 
     load_level(&state, 0);
 
-    // previous positions, used for “clearing” only moved objects 
-    int prev_player_x = state.player_x;
-    int prev_player_y = state.player_y;
-    int prev_ball_x   = state.ball_x;
-    int prev_ball_y   = state.ball_y;
+    state.numPlayers = player_count;
+    state.touch_counter = 0;
 
     // Flags to ensure “Level Complete” / “All Complete” messages print once
     int level_complete_displayed = 0;
     int all_complete_displayed   = 0;
+    int counter_displayed = 0;
 
     // Draw the hole background exactly once at the start 
-    draw_hole(state.holeX, state.holeY, state.holeRadius);
+    draw_hole(state.hole, state.holeRadius);
 
     while (running) {
         // Handle any keypress and (possibly) change running or phase 
         handle_input(&running, phase, &state, &level_complete_displayed);
+        Point prev_ball, prev_first_player, prev_second_player;
 
         // If PLAYING, update physics
         if (phase == GAME_PLAYING) {
             // Save current positions before updating
-            prev_player_x = state.player_x;
-            prev_player_y = state.player_y;
-            prev_ball_x   = state.ball_x;
-            prev_ball_y   = state.ball_y;
+            // Previous positions, used for “clearing” only moved objects 
+            prev_ball.x = state.ball.physics.position.x;
+            prev_ball.y = state.ball.physics.position.y;
+
+            prev_first_player.x = state.players[FIRST_PLAYER_ID].physics.position.x;
+            prev_first_player.y = state.players[FIRST_PLAYER_ID].physics.position.y;
+            
+            if (state.numPlayers == TWO_PLAYER_MODE) {
+                prev_second_player.x = state.players[SECOND_PLAYER_ID].physics.position.x;
+                prev_second_player.y = state.players[SECOND_PLAYER_ID].physics.position.y;
+            }
 
             update_physics(&state, mode);
         }
@@ -105,19 +112,19 @@ void pongis(ModeInfo mode)
         // Render according to current phase
         switch (phase) {
             case GAME_PLAYING:
-                render_playing(&state, prev_player_x, prev_player_y, prev_ball_x, prev_ball_y, mode);
+                render_playing(&state, prev_first_player, prev_second_player, prev_ball, mode, &counter_displayed);
                 break;
 
             case GAME_LEVEL_COMPLETE:
                 if (!level_complete_displayed) {
-                    render_level_complete(mode);
+                    render_level_complete();
                     level_complete_displayed = 1;
                 }
                 break;
 
             case GAME_ALL_COMPLETE:
                 if (!all_complete_displayed) {
-                    render_all_levels_complete(mode);
+                    render_all_levels_complete();
                     all_complete_displayed = 1;
                 }
                 break;
@@ -175,22 +182,20 @@ static void handle_input(int *running, GamePhase phase, GameState *state, int *l
 */
 static void update_physics(GameState *state, ModeInfo mode)
 {
-    int dir_x = 0, dir_y = 0;
+    ball_velocity_update(&state->ball.physics.vel_x, &state->ball.physics.vel_x);
+    
+    // First player checks
+    int p1_dir_x = 0, p1_dir_y = 0;
 
-    /* WASD check via sys_call */
-    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'w', 0, 0, 0, 0)) dir_y -= 1;
-    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'s', 0, 0, 0, 0)) dir_y += 1;
-    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'a', 0, 0, 0, 0)) dir_x -= 1;
-    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'d', 0, 0, 0, 0)) dir_x += 1;
+    // WASD check via sys_call 
+    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'w', 0, 0, 0, 0)) p1_dir_x -= 1;
+    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'s', 0, 0, 0, 0)) p1_dir_y += 1;
+    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'a', 0, 0, 0, 0)) p1_dir_x -= 1;
+    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'d', 0, 0, 0, 0)) p1_dir_y += 1;
 
-    /* Update player velocity and position */
-    player_velocity_update(dir_x, dir_y, &state->player_vel_x, &state->player_vel_y);
-    movement_update(&state->player_x, &state->player_y, &state->player_vel_x, &state->player_vel_y, &mode, IS_PLAYER);
-
-    /* Update ball velocity and position */
-    ball_velocity_update(&state->ball_vel_x, &state->ball_vel_y);
-
-    movement_update(&state->ball_x, &state->ball_y, &state->ball_vel_x, &state->ball_vel_y, &mode, IS_BALL);
+    // Update player velocity based on input
+    player_velocity_update(p1_dir_x, p1_dir_y, &state->players[FIRST_PLAYER_ID].physics.vel_x, &state->players[FIRST_PLAYER_ID].physics.vel_y);
+    movement_update(&state->players[FIRST_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
 
     /* Check collision between player and ball */
     check_ball_player_collision(state);
@@ -201,58 +206,72 @@ static void update_physics(GameState *state, ModeInfo mode)
      - Clear only objects that moved (using prev positions).
      - Draw player, ball, and possibly redraw hole if overlapping.
 */
-static void render_playing(GameState *state,
-                           int prev_px, int prev_py,
-                           int prev_bx, int prev_by,
-                           ModeInfo mode)
+static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point prev_ball, ModeInfo mode, int *counter_displayed)
 {
     // If player moved, erase its previous circle
-    if (prev_px != state->player_x || prev_py != state->player_y) {
-        clear_object(prev_px, prev_py, PLAYER_RADIUS);
+    if (prev_fp.x != state->players[FIRST_PLAYER_ID].physics.position.x || prev_fp.y != state->players[FIRST_PLAYER_ID].physics.position.y) {
+        clear_object(prev_fp, PLAYER_RADIUS);
     }
     // If ball moved, erase its previous circle
-    if (prev_bx != state->ball_x || prev_by != state->ball_y) {
-        clear_object(prev_bx, prev_by, BALL_RADIUS);
-    }
-    // If either player or ball overlaps with the hole, redraw the hole
-    if (objects_overlap(state->ball_x, state->ball_y, BALL_RADIUS, state->holeX, state->holeY, state->holeRadius) || 
-    objects_overlap(state->player_x, state->player_y, PLAYER_RADIUS, state->holeX, state->holeY, state->holeRadius)) {
-            draw_hole(state->holeX, state->holeY, state->holeRadius);
+    if (prev_ball.x != state->ball.physics.position.x || prev_ball.y != state->ball.physics.position.y) {
+        clear_object(prev_ball, BALL_RADIUS);
     }
 
-    // Draw player and ball at new positions
-    draw_player(state->player_x, state->player_y, PLAYER_RADIUS);
-    draw_ball(state->ball_x, state->ball_y, BALL_RADIUS);
-    if(state->prev_touch_counter == -1){ //draw the counter only once at the start
-        draw_counter(state->touch_counter, mode);
+    if (state->numPlayers == TWO_PLAYER_MODE) {
+        // If second player moved, erase its previous circle
+        if (prev_sp.x != state->players[SECOND_PLAYER_ID].physics.position.x || prev_sp.y != state->players[SECOND_PLAYER_ID].physics.position.y) {
+            draw_hole(state->hole, state->holeRadius);
+        }
+
+        draw_player(state->players[SECOND_PLAYER_ID].physics.position, PLAYER_RADIUS, state->players[SECOND_PLAYER_ID].physics.color);
+
+    } else {
+        if (objects_overlap(prev_fp, state->hole, PLAYER_RADIUS, state->holeRadius) || objects_overlap(prev_ball, state->hole, BALL_RADIUS, state->holeRadius)) {
+        // If first player or ball overlaps with the hole, redraw the hole
+        draw_hole(state->hole, state->holeRadius); 
+        } 
     }
-    if( state->touch_counter > state->prev_touch_counter) {
-        state->prev_touch_counter++;
-        draw_counter(state->touch_counter, mode);
+
+    draw_player(state->players[FIRST_PLAYER_ID].physics.position, PLAYER_RADIUS, state->players[FIRST_PLAYER_ID].physics.color);
+    draw_ball(state->ball.physics.position, BALL_RADIUS);
+
+    if(!(*counter_displayed)){ //draw the counter only once at the start
+        draw_counter(*counter_displayed, mode);
+        *counter_displayed = 1;
     }
 }
 
 /*
    render_level_complete: show “Level Complete!” only once per level.
 */
-static void render_level_complete(ModeInfo mode)
+static void render_level_complete()
 {
-    set_cursor((mode.width / 2) - 200, mode.height / 2 - 50);
-    set_zoom(6);
-    putString("Level Complete!\n");
+    clear_screen();
 
-    set_cursor((mode.width / 2) - 300, mode.height / 2 + 50);
+    // Ajusta el número de '\n' para posicionar verticalmente
+    putString("\n\n\n\n");
+
+    // Título principal en Zoom 6, con espacios para centrar horizontalmente
+    set_zoom(6);
+    putString("        Level Complete!\n\n");
+
+    // Instrucciones en Zoom 4
     set_zoom(4);
-    putString("Press ENTER for next level or 'c' to quit\n");
+    putString("   Press ENTER for next level or 'c' to quit\n");
 }
 
-static void render_all_levels_complete(ModeInfo mode)
+static void render_all_levels_complete()
 {
-    set_cursor((mode.width / 2) - 200, mode.height / 2 - 50);
-    set_zoom(6);
-    putString("All levels complete!\n");
+    clear_screen();
 
-    set_cursor((mode.width / 2) - 250, mode.height / 2 + 50);
+    // Ajusta el número de '\n' para posicionar verticalmente
+    putString("\n\n\n\n");
+
+    // Título principal en Zoom 6
+    set_zoom(6);
+    putString("     All levels complete!\n\n");
+
+    // Instrucción en Zoom 4
     set_zoom(4);
-    putString("Press 'c' to return to shell\n");
+    putString("      Press 'c' to return to shell\n");
 }
