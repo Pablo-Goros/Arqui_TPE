@@ -10,7 +10,6 @@ static void render_all_levels_complete(void);
 void pongis_init(void)
 {
     clear_screen();
-
     ModeInfo mode;
     if (get_mode_info(&mode) != 0) {
         putString("\nError getting mode info\n");
@@ -267,7 +266,7 @@ static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point
 static void render_level_complete()
 {
     clear_screen();
-
+    victory_sound();
     // Ajusta el número de '\n' para posicionar verticalmente
     putString("\n\n\n\n");
 

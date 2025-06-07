@@ -38,10 +38,12 @@ void cmd_pong() {
 }
 
 void cmd_div0() {
+    exception_sound();
     _div0();
 }
 
 void cmd_invalid_opcode() {
+    exception_sound();
     _ioc();
 }
 

@@ -212,8 +212,25 @@ uint64_t get_mode_info(ModeInfo *mode) {
     return sys_call(SYS_GET_MODE_INFO, (uint64_t)mode, 0, 0, 0, 0);
 }
 
-void draw_circle(int x, int y, int radius, int color) {
-    
+
+void exception_sound() {
+    uint64_t melody[] = { 523, 415};
+    uint64_t duration[] = { 150, 300};
+
+    for (int i = 0; i < 2; i++) {
+        sys_call(SYS_BEEP, melody[i], duration[i], 0, 0, 0);
+        for (volatile int j = 0; j < 20000*duration[i]; j++);
+    }
+}
+
+void system_start_sound() {
+    unsigned int melody[] = { 523, 659, 784, 1046};
+    unsigned int duration[] = { 300, 300, 300, 500};
+
+    for (int i = 0; i < 4; i++) {
+        sys_call(SYS_BEEP, melody[i], duration[i], 0, 0, 0);
+        for (volatile int j = 0; j < 15000*duration[i]; j++);
+    }
 }
 
 

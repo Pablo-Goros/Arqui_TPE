@@ -1,5 +1,6 @@
 #include "sysCallDispatcher.h"
 #include "videoDriver.h"
+#include "soundDriver.h"
 
 uint64_t sysCallDispatcher(uint64_t rax, ...) {
     va_list args;
@@ -106,6 +107,13 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
         case SYS_IS_KEY_DOWN: {
             char key = (char) va_arg(args, uint64_t);
             ret = kbd_is_key_down(key);
+            break;
+        }
+        case SYS_BEEP: {
+            unsigned int frequency = (unsigned int) va_arg(args, uint64_t);
+            unsigned int duration_ms = (unsigned int) va_arg(args, uint64_t);
+            beep(frequency, duration_ms);
+            ret = 0;
             break;
         }
 

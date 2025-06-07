@@ -29,6 +29,7 @@ typedef unsigned long size_t;
 #define SYS_DRAW_RECT       16
 #define SYS_DRAW_CIRCLE     17
 #define SYS_RESET_KBD_BUFFER       19
+#define SYS_BEEP            20
 #define SYS_ERR   ((uint64_t)-1)
 
 uint64_t sysCallDispatcher(uint64_t rax, ...);

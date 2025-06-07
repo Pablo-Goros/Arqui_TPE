@@ -88,5 +88,7 @@ void draw_bitmap(int x, int y, int w, int h, const uint32_t *pixels);
 void wait_next_tick(void); /* block until next timer IRQ (60 fps target) */
 
 int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
+void exception_sound();
+void system_start_sound();
 
 #endif /* _LIBC_H_ */

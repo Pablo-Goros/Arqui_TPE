@@ -13,7 +13,7 @@ uint8_t startPongisMenu(ModeInfo mode) {
 
     int selected = 0;
     drawMainMenu(selected);
-
+    game_start_sound();
     while (1) {
         if (!isCharReady()) { // Wait for next char
             _hlt();  
@@ -324,3 +324,27 @@ void draw_counter(int count, ModeInfo mode) {
     itoa(count, buffer, 10);
     putString(buffer);
 }
+
+void victory_sound() {
+    unsigned int melody[] = { 659, 784, 987, 1046 }; // E5, G5, B5, C6
+    unsigned int duration[] = { 200, 200, 200, 400 };
+
+    for (int i = 0; i < 4; i++) {
+        sys_call(SYS_BEEP,melody[i], duration[i],0,0, 0); // Llama al syscall para hacer beep
+        for (volatile int j = 0; j < 15000 * duration[i]; j++);
+    }
+}
+
+void game_start_sound() {
+    unsigned int melody[] = {
+            523, 659, 784, 523, 659, 784, 880, 988, 1046
+    }; // C5, E5, G5, C5, E5, G5, A5, B5, C6
+    unsigned int duration[] = {
+            200, 200, 300, 200, 200, 300, 400, 400, 600
+    };
+    for (int i = 0; i < 5; i++) {
+        sys_call(SYS_BEEP, melody[i], duration[i], 0, 0, 0);
+        for (volatile int j = 0; j < 15000*duration[i]; j++);
+    }
+}
+

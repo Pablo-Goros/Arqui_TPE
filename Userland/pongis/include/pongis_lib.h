@@ -120,5 +120,6 @@ void draw_hole(Point point, int radius);
 void draw_counter(int count, ModeInfo mode);
 
 void clear_object(Point point, int radius);
-
+void victory_sound();
+void game_start_sound();
 #endif // PONGIS_LIB_H

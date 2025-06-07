@@ -29,22 +29,24 @@ void play_sound(unsigned int frequency) {
     outb(SPEAKER_CONTROL_PORT, tmp | 0x03); // Set bits 0 and 1
 }
 
-void stopSound(void) {
-    unsigned char tmp;
-    
-    // Disable PC speaker by clearing bits 0 and 1 in speaker control port  
-    tmp = inb(SPEAKER_CONTROL_PORT);
-    outb(SPEAKER_CONTROL_PORT, tmp & 0xFC); // Clear bits 0 and 1 (0xFC = 11111100b)
-}
-
 void beep(unsigned int frequency, unsigned int duration_ms) {
-    play_sound(frequency);
- 
-    // Simple delay loop (this is platform/timing dependent)
-    // In a real kernel, you'd use proper timer interrupts
-    for (volatile unsigned int i = 0; i < duration_ms * 1000; i++) {
-        // Busy wait - not ideal but simple
-    }
-    
-    stopSound();
+    if (frequency < MIN_FREQUENCY || frequency > MAX_FREQUENCY) return;
+
+    unsigned int divisor = PIT_FREQUENCY / frequency;
+
+    // Configurar PIT canal 2 en modo square wave (10110110b)
+    outb(PIT_COMMAND_PORT, 0xB6);
+    outb(PIT_CHANNEL2_PORT, (uint8_t) (divisor & 0xFF));        // Low byte
+    outb(PIT_CHANNEL2_PORT, (uint8_t) ((divisor >> 8) & 0xFF)); // High byte
+
+    // Activar speaker (bits 0 y 1)
+    uint8_t tmp = inb(SPEAKER_CONTROL_PORT);
+    outb(SPEAKER_CONTROL_PORT, tmp | 0x03);
+
+    // Esperar el tiempo indicado (QEMU necesita delay real)
+    for (volatile uint64_t i = 0; i < duration_ms * 50000; i++); // puede requerir ajuste
+
+    // Desactivar solo bit 0 (mantener 1 para dejar en modo "activo")
+    tmp = inb(SPEAKER_CONTROL_PORT);
+    outb(SPEAKER_CONTROL_PORT, tmp & ~0x01);
 }
