@@ -57,7 +57,6 @@ typedef struct Player {
 // Ball structure
 typedef struct Ball {
     PhysicsObject physics;
-    int lastTouchId;    // Pointer to the last player who touched the ball
 } Ball;
 
 // Game state structure

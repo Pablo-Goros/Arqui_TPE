@@ -56,25 +56,24 @@ void load_level(GameState *state, int index) {
 
     state->ball.physics.position.x =  levels[index].ball_start.x;
     state->ball.physics.position.y =  levels[index].ball_start.y;
-
-    state->players[FIRST_PLAYER_ID].physics.position.x = levels[index].player_start[FIRST_PLAYER_ID].x;
-    state->players[FIRST_PLAYER_ID].physics.position.y = levels[index].player_start[FIRST_PLAYER_ID].y;
-
-    state->players[SECOND_PLAYER_ID].physics.position.x = levels[index].player_start[SECOND_PLAYER_ID].x;
-    state->players[SECOND_PLAYER_ID].physics.position.y = levels[index].player_start[SECOND_PLAYER_ID].y;
-
     state->ball.physics.vel_x  = state->ball.physics.vel_y = 0.0f;
     state->ball.physics.radius = BALL_RADIUS;
     state->ball.physics.color  = BALL_COLOR;
-    
-    state->players[FIRST_PLAYER_ID].physics.vel_x = state->players[FIRST_PLAYER_ID].physics.vel_y = 0.0f;
-    state->players[SECOND_PLAYER_ID].physics.vel_x = state->players[SECOND_PLAYER_ID].physics.vel_y = 0.0f;
-    
+
+
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+        state->players[i].id = i;
+        state->players[i].physics.position.x = levels[index].player_start[i].x;
+        state->players[i].physics.position.y = levels[index].player_start[i].y;
+        state->players[i].physics.radius = PLAYER_RADIUS;
+        state->players[i].physics.vel_x = 0.0f;
+        state->players[i].physics.vel_y = 0.0f;
+    }
     state->players[FIRST_PLAYER_ID].physics.color = PLAYER_ONE_COLOR;
     state->players[SECOND_PLAYER_ID].physics.color = PLAYER_TWO_COLOR;
+    state->players[FIRST_PLAYER_ID].id = FIRST_PLAYER_ID;
+    state->players[SECOND_PLAYER_ID].id = SECOND_PLAYER_ID;
 
-    state->ball.lastTouchId = -1; // No player has touched the ball yet
-    
     state->hole.x = levels[index].hole.x;
     state->hole.y = levels[index].hole.y;
     state->holeRadius = levels[index].holeRadius;

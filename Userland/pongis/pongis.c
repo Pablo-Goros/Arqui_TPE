@@ -16,7 +16,7 @@ void pongis_init(void)
         return;
     }
     mode.height -= UI; // Reserve space for UI
-
+    game_start_sound();
     
     while (1) {
         uint8_t selected = startPongisMenu(mode);
@@ -185,10 +185,10 @@ static void update_physics(GameState *state, ModeInfo mode)
     int p1_dir_x = 0, p1_dir_y = 0;
 
     // WASD check via sys_call 
-    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'w', 0, 0, 0, 0)) p1_dir_x -= 1;
+    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'w', 0, 0, 0, 0)) p1_dir_y -= 1;
     if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'s', 0, 0, 0, 0)) p1_dir_y += 1;
     if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'a', 0, 0, 0, 0)) p1_dir_x -= 1;
-    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'d', 0, 0, 0, 0)) p1_dir_y += 1;
+    if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'d', 0, 0, 0, 0)) p1_dir_x += 1;
 
     // Update player velocity based on input
     player_velocity_update(p1_dir_x, p1_dir_y, &state->players[FIRST_PLAYER_ID].physics.vel_x, &state->players[FIRST_PLAYER_ID].physics.vel_y);
@@ -233,18 +233,21 @@ static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point
     if (state->numPlayers == TWO_PLAYER_MODE) {
         // If second player moved, erase its previous circle
         if (prev_sp.x != state->players[SECOND_PLAYER_ID].physics.position.x || prev_sp.y != state->players[SECOND_PLAYER_ID].physics.position.y) {
-            draw_hole(state->hole, state->holeRadius);
-        }
-
-        if (prev_sp.x != state->players[SECOND_PLAYER_ID].physics.position.x || prev_sp.y != state->players[SECOND_PLAYER_ID].physics.position.y) {
             clear_object(prev_sp, PLAYER_RADIUS);
         }
+
+        if (objects_overlap(prev_fp, state->hole, PLAYER_RADIUS, state->holeRadius) ||
+            objects_overlap(prev_ball, state->hole, BALL_RADIUS, state->holeRadius) || 
+            objects_overlap(prev_sp, state->hole, PLAYER_RADIUS, state->holeRadius)) {
+            clear_object(prev_sp, PLAYER_RADIUS);
+        }
+
         draw_player(state->players[SECOND_PLAYER_ID].physics.position, PLAYER_RADIUS, state->players[SECOND_PLAYER_ID].physics.color);
 
     } else {
         if (objects_overlap(prev_fp, state->hole, PLAYER_RADIUS, state->holeRadius) || objects_overlap(prev_ball, state->hole, BALL_RADIUS, state->holeRadius)) {
-        // If first player or ball overlaps with the hole, redraw the hole
-        draw_hole(state->hole, state->holeRadius); 
+            // If first player or ball overlaps with the hole, redraw the hole
+            draw_hole(state->hole, state->holeRadius); 
         } 
     }
 
@@ -273,7 +276,7 @@ static void render_level_complete()
 
     // Instrucciones en Zoom 4
     set_zoom(4);
-    putString("   Press ENTER for next level or 'c' to quit\n");
+    putString("Press ENTER for next level or 'c' to quit\n");
 }
 
 static void render_all_levels_complete()
