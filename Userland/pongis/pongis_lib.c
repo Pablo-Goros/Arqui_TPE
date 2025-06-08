@@ -277,31 +277,39 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
 
     // ─── Player ↔ Player: equal-mass elastic collision ───
     if (obj1IsPlayer && obj2IsPlayer) {
-         // Decompose each velocity into normal & tangential parts
-        float v1n    = obj1->vel_x*nx + obj1->vel_y*ny;
-        float v1t_x  = obj1->vel_x - v1n*nx;
-        float v1t_y  = obj1->vel_y - v1n*ny;
-        float v2n    = obj2->vel_x*nx + obj2->vel_y*ny;
-        float v2t_x  = obj2->vel_x - v2n*nx;
-        float v2t_y  = obj2->vel_y - v2n*ny;
+        // Calcular velocidades normales antes de la colisión
+        float v1n = obj1->vel_x*nx + obj1->vel_y*ny;
+        float v2n = obj2->vel_x*nx + obj2->vel_y*ny;
+        
+        // Verificar si se están aproximando: obj1 debe moverse hacia obj2 y viceversa
+        // v1n > v2n significa que obj1 se mueve más rápido hacia obj2 que obj2 hacia obj1
+        if (v1n > v2n) {
+            // Decompose each velocity into normal & tangential parts
+            float v1t_x  = obj1->vel_x - v1n*nx;
+            float v1t_y  = obj1->vel_y - v1n*ny;
+            float v2t_x  = obj2->vel_x - v2n*nx;
+            float v2t_y  = obj2->vel_y - v2n*ny;
 
-        // Swap the normal components
-        float new_v1n = v2n;
-        float new_v2n = v1n;
+            // Swap the normal components (elastic collision)
+            float new_v1n = v2n;
+            float new_v2n = v1n;
 
-        // Reconstruct final velocities
-        obj1->vel_x = v1t_x + new_v1n*nx;
-        obj1->vel_y = v1t_y + new_v1n*ny;
-        obj2->vel_x = v2t_x + new_v2n*nx;
-        obj2->vel_y = v2t_y + new_v2n*ny;
+            // Reconstruct final velocities
+            obj1->vel_x = v1t_x + new_v1n*nx;
+            obj1->vel_y = v1t_y + new_v1n*ny;
+            obj2->vel_x = v2t_x + new_v2n*nx;
+            obj2->vel_y = v2t_y + new_v2n*ny;
+        }
 
-        // Push each player half the overlap
+        // Separar objetos SIEMPRE para evitar superposición
         float overlap = radius_sum - dist;
-        float half    = overlap * 0.5f;
-        obj1->position.x -= (int)roundf(nx * half);
-        obj1->position.y -= (int)roundf(ny * half);
-        obj2->position.x += (int)roundf(nx * half);
-        obj2->position.y += (int)roundf(ny * half);
+        if (overlap > 0) {
+            float half = overlap * 0.5f;
+            obj1->position.x -= (int)roundf(nx * half);
+            obj1->position.y -= (int)roundf(ny * half);
+            obj2->position.x += (int)roundf(nx * half);
+            obj2->position.y += (int)roundf(ny * half);
+        }
         return;
     }
 
