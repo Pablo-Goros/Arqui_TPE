@@ -2,15 +2,14 @@
 #include "interrupts.h"        
 
 
-#define BUF_SIZE      128
-
 static char           buf[BUF_SIZE];
 static volatile int   head = 0;
 static volatile int   tail = 0;
 static uint8_t        shift = 0;
 static uint8_t        caps = 0;
+static uint8_t        extended;              // for 0xE0 prefix
 
-static volatile uint8_t key_state[128] = {0};
+static volatile uint8_t key_state[KEY_STATE_SIZE] = {0};
 
 static inline char to_lower(char c) {
     if (c >= 'A' && c <= 'Z') {
@@ -90,8 +89,29 @@ static const char tbl_shift[128] = {
 void kbd_get_key(void) {
     
     uint8_t sc = get_key_asm();
+
+    if (sc == 0xE0) {
+        extended = 1;
+        return;
+    }
+
     uint8_t make_flag = !(sc & 0x80);
     uint8_t code = sc & 0x7F;
+
+    // Check for arrows 
+    if (extended) {
+        extended = 0;
+        uint8_t arrow = 0;
+        switch (code) {
+            case 0x48: arrow = ARROW_UP;    break;
+            case 0x50: arrow = ARROW_DOWN;  break;
+            case 0x4B: arrow = ARROW_LEFT;  break;
+            case 0x4D: arrow = ARROW_RIGHT; break;
+            default:  return;  // some other extended key
+        }
+        key_state[arrow] = make_flag;
+        return;
+    }
 
     // Shift keys 
     if (code == 0x2A || code == 0x36) {

@@ -2,8 +2,8 @@
 
 
 static void handle_input(int *running, GamePhase phase, GameState *state, int *level_complete_displayed);
-static void update_physics(GameState *state, ModeInfo mode);
-static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point prev_ball, ModeInfo mode, int *counter_displayed);
+static void update_physics(GameState *state, ModeInfo mode, int *counter);
+static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point prev_ball, ModeInfo mode, int *counter_flag);
 static void render_level_complete(void);
 static void render_all_levels_complete(void);
 
@@ -61,10 +61,10 @@ void pongis(ModeInfo mode, int player_count)
 
     state.numPlayers = player_count;
 
-    // Flags to ensure “Level Complete” / “All Complete” messages print once
+    // Flags to ensure “Level Complete” / “All Complete”  messages print once
     int level_complete_displayed = 0;
     int all_complete_displayed   = 0;
-    int counter_displayed = 0;
+    int counter_displayed_flag = 0;
 
     // Draw the hole background exactly once at the start 
     draw_hole(state.hole, state.holeRadius);
@@ -90,14 +90,14 @@ void pongis(ModeInfo mode, int player_count)
                 prev_second_player.y = state.players[SECOND_PLAYER_ID].physics.position.y;
             }
 
-            update_physics(&state, mode);
-        }
-
-        // Check if level has been completed 
-        if (phase == GAME_PLAYING) {
+            update_physics(&state, mode, &state.touch_counter);
+        
             if (check_ball_in_hole(&state)) {
                 clear_screen();
-                sys_call(SYS_RESET_KBD_BUFFER, 0, 0, 0, 0, 0);
+
+                while (isCharReady()) {
+                    getChar(); // Clear input buffer
+                }
 
                 if (state.currentLevel + 1 < (int)level_count) {
                     phase = GAME_LEVEL_COMPLETE;
@@ -106,16 +106,21 @@ void pongis(ModeInfo mode, int player_count)
                 }
             }
         }
-
+        if (phase == GAME_LEVEL_COMPLETE) {
+            // If level complete, reset touch counter
+            state.touch_counter = 0;
+            
+        }
         // Render according to current phase
         switch (phase) {
             case GAME_PLAYING:
-                render_playing(&state, prev_first_player, prev_second_player, prev_ball, mode, &counter_displayed);
+                render_playing(&state, prev_first_player, prev_second_player, prev_ball, mode, &counter_displayed_flag);
                 break;
 
             case GAME_LEVEL_COMPLETE:
                 if (!level_complete_displayed) {
                     render_level_complete();
+
                     level_complete_displayed = 1;
                 }
                 break;
@@ -178,7 +183,7 @@ static void handle_input(int *running, GamePhase phase, GameState *state, int *l
 /*
    update_physics: apply input→direction, then move player, ball, check collision.
 */
-static void update_physics(GameState *state, ModeInfo mode)
+static void update_physics(GameState *state, ModeInfo mode, int *counter_displayed)
 {
     ball_velocity_update(&state->ball.physics.vel_x, &state->ball.physics.vel_y);
     movement_update(&state->ball.physics, &mode, BALL_RADIUS);
@@ -196,30 +201,28 @@ static void update_physics(GameState *state, ModeInfo mode)
     player_velocity_update(p1_dir_x, p1_dir_y, &state->players[FIRST_PLAYER_ID].physics.vel_x, &state->players[FIRST_PLAYER_ID].physics.vel_y);
     movement_update(&state->players[FIRST_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
 
-    check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->ball.physics);
+    check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter);
 
     if (state->numPlayers == TWO_PLAYER_MODE) {
         // Second player checks
         int p2_dir_x = 0, p2_dir_y = 0;
-
-        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'i', 0, 0, 0, 0)) p2_dir_y -= 1;
-        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'k', 0, 0, 0, 0)) p2_dir_y += 1;
-        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'j', 0, 0, 0, 0)) p2_dir_x -= 1;
-        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'l', 0, 0, 0, 0)) p2_dir_x += 1;
         
-        /*
         // Arrow keys check via sys_call 
-        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)UP_ARROW, 0, 0, 0, 0)) p2_dir_y -= 1;
-        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)DOWN_ARROW, 0, 0, 0, 0)) p2_dir_y += 1;
-        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)LEFT_ARROW, 0, 0, 0, 0)) p2_dir_x -= 1;
-        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)RIGHT_ARROW, 0, 0, 0, 0)) p2_dir_x += 1;
-        */
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)ARROW_UP, 0, 0, 0, 0)) p2_dir_y -= 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)ARROW_DOWN, 0, 0, 0, 0)) p2_dir_y += 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)ARROW_LEFT, 0, 0, 0, 0)) p2_dir_x -= 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)ARROW_RIGHT, 0, 0, 0, 0)) p2_dir_x += 1;
+        
         // Update second player velocity based on input
         player_velocity_update(p2_dir_x, p2_dir_y, &state->players[SECOND_PLAYER_ID].physics.vel_x, &state->players[SECOND_PLAYER_ID].physics.vel_y);
         movement_update(&state->players[SECOND_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
-        check_collision(&state->players[SECOND_PLAYER_ID].physics, &state->ball.physics);
-        check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->players[SECOND_PLAYER_ID].physics);
+        check_all_collisions_with_obstacles(state);
+        // check_collision(&state->players[SECOND_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter);
+        // check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->players[SECOND_PLAYER_ID].physics, &state->touch_counter);
+        // check_all_obstacle_collisions();
     }
+    
+    
 }
 
 /*
@@ -227,7 +230,7 @@ static void update_physics(GameState *state, ModeInfo mode)
      - Clear only objects that moved (using prev positions).
      - Draw player, ball, and possibly redraw hole if overlapping.
 */
-static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point prev_ball, ModeInfo mode, int *counter_displayed)
+static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point prev_ball, ModeInfo mode, int *counter_flag)
 {
     // If player moved, erase its previous circle
     if (prev_fp.x != state->players[FIRST_PLAYER_ID].physics.position.x || prev_fp.y != state->players[FIRST_PLAYER_ID].physics.position.y) {
@@ -243,7 +246,7 @@ static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point
         if (prev_sp.x != state->players[SECOND_PLAYER_ID].physics.position.x || prev_sp.y != state->players[SECOND_PLAYER_ID].physics.position.y) {
             clear_object(prev_sp, PLAYER_RADIUS);
         }
-
+            //If something overlapped with hole, redraw it
         if (objects_overlap(prev_fp, state->hole, PLAYER_RADIUS, state->holeRadius) ||
             objects_overlap(prev_ball, state->hole, BALL_RADIUS, state->holeRadius) || 
             objects_overlap(prev_sp, state->hole, PLAYER_RADIUS, state->holeRadius)) {
@@ -261,11 +264,20 @@ static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point
 
     draw_player(state->players[FIRST_PLAYER_ID].physics.position, PLAYER_RADIUS, state->players[FIRST_PLAYER_ID].physics.color);
     draw_ball(state->ball.physics.position, BALL_RADIUS);
+    draw_obstacles(state->current_level);
 
-    if(!(*counter_displayed)){ //draw the counter only once at the start
-        draw_counter(*counter_displayed, mode);
-        *counter_displayed = 1;
+    if(!(*counter_flag)){ //draw the counter only once at the start
+        draw_counter_box(mode);
+        draw_counter(0, mode);
+        *counter_flag = 1;
+        
     }
+
+    if(state->prev_touch_counter < state->touch_counter){
+        draw_counter(state->touch_counter, mode);
+        state->prev_touch_counter = state->touch_counter;
+    }
+
 }
 
 /*
@@ -279,11 +291,11 @@ static void render_level_complete()
     putString("\n\n\n\n");
 
     // Título principal en Zoom 6, con espacios para centrar horizontalmente
-    set_zoom(6);
-    putString("        Level Complete!\n\n");
+    set_zoom(5);
+    putString("  Level Complete!\n\n");
 
     // Instrucciones en Zoom 4
-    set_zoom(4);
+    set_zoom(3);
     putString("Press ENTER for next level or 'c' to quit\n");
 }
 

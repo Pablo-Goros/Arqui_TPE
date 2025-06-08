@@ -24,6 +24,14 @@
 #define IS_PLAYER                1
 #define IS_BALL                  0
 
+#define ARROW_UP    0x80
+#define ARROW_DOWN  0x81
+#define ARROW_LEFT  0x82
+#define ARROW_RIGHT 0x83
+
+// amarillo
+#define OBSTACLE_COLOR           0xFFFF00
+
 uint8_t startPongisMenu(ModeInfo mode);
 
 void drawMainMenu(int selected);
@@ -73,11 +81,6 @@ void ball_movement_update(GameState *state, ModeInfo *mode);
 **/
 uint8_t check_ball_in_hole(GameState *state);
 
-/**
-   @brief: Detect and resolve collisions between the player and the ball, adjusting positions and velocities.
-   @param state: Pointer to the GameState containing player_x, player_y, player_vel_x, player_vel_y, ball_x, ball_y, ball_vel_x, ball_vel_y.
-**/
-void check_collision(PhysicsObject *obj1, PhysicsObject *obj2);
 
 /**
    @brief: Display the initial welcome screen and any instructions before the game starts. Blocks until user proceeds.
@@ -106,7 +109,13 @@ void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y);
    @param obj1: Pointer to the first PhysicsObject.
    @param obj2: Pointer to the second PhysicsObject.
 **/
-void check_collision(PhysicsObject *obj1, PhysicsObject *obj2);
+void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter_displayed);
+
+void check_obstacle_collision(PhysicsObject *obj, Obstacle *obstacle);
+void check_all_obstacle_collisions(PhysicsObject *obj, const Level *level);
+void check_all_collisions_with_obstacles(GameState *state);
+void draw_obstacles(const Level *level);
+int is_point_clear_of_obstacles(Point point, int radius, const Level *level);
 
 /** 
    @brief: Verify if the ball is within the hole's radius, indicating a win condition.
@@ -122,6 +131,7 @@ void draw_ball(Point point, int radius);
 void draw_hole(Point point, int radius);
 
 void draw_counter(int count, ModeInfo mode);
+void draw_counter_box(ModeInfo mode);
 
 void clear_object(Point point, int radius);
 void victory_sound();

@@ -11,7 +11,7 @@ const Level levels[2] = {
 
         .player_start = {
             { .x = 100, .y = 500 },
-            { .x = 200, .y = 700 }      
+            { .x = 200, .y = 700 }
         },
 
         .hole = {
@@ -19,9 +19,14 @@ const Level levels[2] = {
             .y = 500
         },
         .holeRadius      = 50,
-
-        //.numObstacles    =  0,
-        //.obstacles       = ((void*)0)
+        .numObstacles    =  1,
+        .obstacles       = (Obstacle[]) {
+            {
+                .point = { .x = 400, .y = 500 },
+                .radius = 50,
+                .color = 0x00FF0000 // Red obstacle
+            }
+        }
     },
     // Level 1
     {
@@ -41,9 +46,31 @@ const Level levels[2] = {
         },
         .holeRadius      = 20,
 
-        //.numObstacles    =  0,
-        //.obstacles       = ((void*)0)
-    }
+        .numObstacles    =  1,
+        .obstacles       = (Obstacle[]) {
+            {
+                .point = { .x = 400, .y = 500 },
+                .radius = 50,
+                .color = 0x00FF0000 // Red obstacle
+            }
+        }
+    } /*
+    // Level 2
+    {
+
+    },
+    // Level 3
+    {
+
+    },
+    // Level 4
+    {
+
+    }, 
+    // Level 5
+    {
+
+    }, */
 };
 
 
@@ -78,6 +105,8 @@ void load_level(GameState *state, int index) {
     state->hole.y = levels[index].hole.y;
     state->holeRadius = levels[index].holeRadius;
 
-    state->touch_counter = 0;
-    state->prev_touch_counter = -1;
+    state->touch_counter =state->prev_touch_counter= 0;
+
+    state->current_level = (Level*)&levels[index];
+
 }

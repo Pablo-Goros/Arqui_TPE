@@ -3,6 +3,14 @@
 
 #include <stdint.h>
 
+#define ARROW_UP    0x80
+#define ARROW_DOWN  0x81
+#define ARROW_LEFT  0x82
+#define ARROW_RIGHT 0x83
+
+#define BUF_SIZE        128
+#define KEY_STATE_SIZE  256
+
 extern unsigned int get_key_asm(void);
 
 void kbd_get_key(void);

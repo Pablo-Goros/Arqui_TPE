@@ -210,9 +210,11 @@ void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius)
         obj->position.y = mode->height - radius;
         obj->vel_y = -obj->vel_y * WALL_BOUNCE_FACTOR;
     }
+
+
 }
 
-void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
+void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
 {
     // 1) Vector from obj1 → obj2
     float dx     = obj2->position.x - obj1->position.x;
@@ -245,6 +247,7 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
         PhysicsObject *player = obj1IsPlayer ? obj1 : obj2;
         PhysicsObject *ball   = (player == obj1) ? obj2 : obj1;
 
+        (*counter)++;
         // Recompute vector from player → ball
         dx = ball->position.x - player->position.x;
         dy = ball->position.y - player->position.y;
@@ -263,9 +266,8 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
         // Only if moving into each other
         if (rel_dot > 0.0f) {
             // Impart that normal component onto the ball
-            //! BOUNCE FACTOR CAMBIALO DESP
-            ball->vel_x += rel_dot * nx * 1.5;
-            ball->vel_y += rel_dot * ny * 1.5;
+            ball->vel_x += rel_dot * nx * BALL_BOUNE_FACTOR;
+            ball->vel_y += rel_dot * ny * BALL_BOUNE_FACTOR;
         }
 
         // Push the ball fully out of the player
@@ -316,6 +318,107 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
     // ─── Other cases (e.g., ball ↔ ball) can be left untouched or handled similarly ───
 }
 
+// Agregar estas funciones al final de tu pongis_lib.c
+
+// Función para verificar colisión de un objeto circular con un obstáculo circular
+void check_obstacle_collision(PhysicsObject *obj, Obstacle *obstacle) {
+    if (!obstacle) return;
+    
+    // Calcular distancia entre centros
+    float dx = (float)obj->position.x - (float)obstacle->point.x;
+    float dy = (float)obj->position.y - (float)obstacle->point.y;
+    float dist_sq = dx*dx + dy*dy;
+    float radius_sum = (float)(obj->radius + obstacle->radius);
+    
+    // Verificar si hay colisión
+    if (dist_sq < radius_sum * radius_sum) {
+        float dist = sqrtf(dist_sq);
+        float nx, ny;
+        
+        // Calcular normal de colisión (del obstáculo hacia el objeto)
+        if (dist < 1e-4f) {
+            // Exactamente superpuestos → usar dirección por defecto
+            nx = 1.0f; ny = 0.0f;
+        } else {
+            nx = dx / dist;
+            ny = dy / dist;
+        }
+        
+        // Empujar el objeto fuera del obstáculo PRIMERO
+        float overlap = radius_sum - dist;
+        obj->position.x += (int)roundf(nx * overlap);
+        obj->position.y += (int)roundf(ny * overlap);
+        
+        // Determinar el tipo de objeto por su radio
+        int isPlayer = (obj->radius == PLAYER_RADIUS);
+        int isBall = (obj->radius == BALL_RADIUS);
+        
+        if (isPlayer) {
+            // Para jugadores: detener solo el componente de velocidad hacia el obstáculo
+            float vel_dot_normal = obj->vel_x * nx + obj->vel_y * ny;
+            
+            // Solo anular la velocidad si se está moviendo hacia el obstáculo
+            if (vel_dot_normal < 0.0f) {
+                // Remover solo el componente normal de la velocidad (no reflejar)
+                obj->vel_x -= vel_dot_normal * nx;
+                obj->vel_y -= vel_dot_normal * ny;
+            }
+        } else if (isBall) {
+            // Para pelotas: comportamiento de rebote como antes
+            float vel_dot_normal = obj->vel_x * nx + obj->vel_y * ny;
+            
+            // Solo reflejar si se está moviendo hacia el obstáculo
+            if (vel_dot_normal < 0.0f) {
+                obj->vel_x -= 2.0f * vel_dot_normal * nx * WALL_BOUNCE_FACTOR;
+                obj->vel_y -= 2.0f * vel_dot_normal * ny * WALL_BOUNCE_FACTOR;
+            }
+        }
+    }
+}
+
+// Función para verificar colisiones de un objeto con todos los obstáculos del nivel
+void check_all_obstacle_collisions(PhysicsObject *obj, const Level *level) {
+    if (!level || level->numObstacles <= 0 || !level->obstacles) {
+        return;
+    }
+    
+    for (int i = 0; i < level->numObstacles; i++) {
+        check_obstacle_collision(obj, (Obstacle*)&level->obstacles[i]);
+    }
+}
+
+// Función para verificar todas las colisiones (objetos + obstáculos)
+void check_all_collisions_with_obstacles(GameState *state) {
+    Level *level = state->current_level;
+
+    // Verificar colisión jugador-jugador solo si hay 2 jugadores
+    if (state->numPlayers == 2) { // se queda pegado
+        check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->players[SECOND_PLAYER_ID].physics, &state->touch_counter);
+    }
+
+    // Verificar colisiones jugador-pelota y jugador-obstáculo (para todos los jugadores)
+    for (int i = 0; i < state->numPlayers; i++) {
+        check_collision(&state->players[i].physics, &state->ball.physics, &state->touch_counter);
+        check_all_obstacle_collisions(&state->players[i].physics, level);
+    }
+
+    // Verificar colisiones de la pelota con obstáculos
+    check_all_obstacle_collisions(&state->ball.physics, level);
+}
+
+// Función para dibujar obstáculos circulares
+void draw_obstacles(const Level *level) {
+    if (!level || level->numObstacles <= 0 || !level->obstacles) {
+        return;
+    }
+    
+    for (int i = 0; i < level->numObstacles; i++) {
+        const Obstacle *obs = &level->obstacles[i];
+        // Dibujar círculo del obstáculo
+        sys_call(SYS_DRAW_CIRCLE, obs->point.x, obs->point.y, obs->radius, OBSTACLE_COLOR, 0);
+    }
+}
+
 uint8_t check_ball_in_hole(GameState *state)
 {
     int dx = state->ball.physics.position.x - state->hole.x;
@@ -349,7 +452,7 @@ void draw_hole(Point point, int radius)
     sys_call(SYS_DRAW_CIRCLE, point.x, point.y, radius, HOLE_COLOR, 0);
 }
 
-void draw_counter(int count, ModeInfo mode) {
+void draw_counter_box(ModeInfo mode){
     set_cursor(10, 10);
     set_zoom(4);
 
@@ -357,6 +460,10 @@ void draw_counter(int count, ModeInfo mode) {
     sys_call(SYS_DRAW_RECT,0,mode.height+OFFSET,mode.width,UI,0x00FFFFFF);
     sys_call(SYS_DRAW_RECT,10, mode.height+OFFSET+10,mode.width - 20, UI - 20, 0x00000000); // Black background for counter
 
+}
+
+void draw_counter(int count, ModeInfo mode) {
+    set_cursor(10, 10);
     set_zoom(2);
     set_cursor(20, 725);
     putString("Touches: ");
@@ -380,7 +487,7 @@ void game_start_sound() {
             523, 659, 784, 523, 659, 784, 880, 988, 1046
     }; // C5, E5, G5, C5, E5, G5, A5, B5, C6
     unsigned int duration[] = {
-            200, 200, 300, 200, 200, 300, 400, 400, 600
+            300, 300, 400, 300, 300, 400, 500, 500, 800
     };
     for (int i = 0; i < 5; i++) {
         sys_call(SYS_BEEP, melody[i], duration[i], 0, 0, 0);

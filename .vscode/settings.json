@@ -8,6 +8,7 @@
         "time_display.h": "c",
         "time.h": "c",
         "stdarg.h": "c",
-        "pongis_lib.h": "c"
+        "pongis_lib.h": "c",
+        "level.h": "c"
     }
 }

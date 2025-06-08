@@ -59,6 +59,21 @@ typedef struct Ball {
     PhysicsObject physics;
 } Ball;
 
+typedef struct {
+    Point point;
+    int radius;
+    uint32_t color; // Color of the obstacle
+} Obstacle;
+
+typedef struct {
+    Point ball_start;
+    Point player_start[MAX_PLAYERS];
+    Point hole;
+    int holeRadius;
+    int numObstacles;
+    const Obstacle *obstacles;
+} Level;
+
 // Game state structure
 typedef struct GameState {
     int currentLevel;
@@ -70,8 +85,12 @@ typedef struct GameState {
     Point hole;         // Position of the hole
     int holeRadius;
     
+    Level * current_level;      // Pointer to the current level
+    
     int touch_counter;
     int prev_touch_counter;
 } GameState;
+
+
 
 #endif // PONGIS_TYPES_H
