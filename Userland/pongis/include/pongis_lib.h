@@ -88,6 +88,8 @@ void display_welcome_screen(ModeInfo mode);
 **/
 void handle_menu_input(ModeInfo mode);
 
+void showInstructions();
+
 /**
    @brief: Update the player's velocity using acceleration toward a desired direction and apply friction.
    @param dir_x:  Direction on the x-axis (-1, 0, +1) based on user input.

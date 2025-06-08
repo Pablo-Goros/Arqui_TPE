@@ -59,6 +59,18 @@ void drawMainMenu(int selected) {
     }
 }
 
+void showInstructions() {
+    drawInstructions();
+    uint8_t key = 0;
+    // keep reading until the player really presses 'c'
+    do {
+        if (isCharReady()) {
+            key = getChar();
+        }
+    } while (key != 'c');
+    // now the 'c' is consumed, and we simply return
+ }
+
 void drawInstructions(void) {
     clear_screen();
     set_zoom(4);
@@ -81,20 +93,6 @@ void drawInstructions(void) {
 
     sys_call(SYS_RESET_KBD_BUFFER, 0, 0, 0, 0, 0);
 
-    while (isCharReady()) {
-        (void)getChar();
-    }
-
-    // Wait for user input
-    while (1) {
-        if (isCharReady()) {
-            char key = getChar();
-            if (key == 'c') {
-                return;
-            }
-        }
-        _hlt();
-    }
 }
 
 

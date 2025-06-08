@@ -34,9 +34,7 @@ void pongis_init(void)
 
                     case 2:
                         // Instructions
-                        drawInstructions();
-                        sys_call(SYS_RESET_KBD_BUFFER, 0, 0, 0, 0, 0);
-                        startPongisMenu(mode);  
+                        showInstructions();
                         break;
 
                     case 3:
@@ -61,7 +59,6 @@ void pongis(ModeInfo mode, int player_count)
     load_level(&state, 0);
 
     state.numPlayers = player_count;
-    state.touch_counter = 0;
 
     // Flags to ensure “Level Complete” / “All Complete” messages print once
     int level_complete_displayed = 0;
