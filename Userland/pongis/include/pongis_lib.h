@@ -111,8 +111,10 @@ void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y);
 **/
 void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter_displayed);
 
-void check_obstacle_collision(PhysicsObject *obj, Obstacle *obstacle);
+void check_obstacle_collision(PhysicsObject *obj, const Obstacle *obs);
+
 void check_all_obstacle_collisions(PhysicsObject *obj, const Level *level);
+
 void check_all_collisions_with_obstacles(GameState *state);
 void draw_obstacles(const Level *level);
 int is_point_clear_of_obstacles(Point point, int radius, const Level *level);

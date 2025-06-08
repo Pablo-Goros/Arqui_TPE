@@ -201,6 +201,7 @@ static void update_physics(GameState *state, ModeInfo mode, int *counter_display
     player_velocity_update(p1_dir_x, p1_dir_y, &state->players[FIRST_PLAYER_ID].physics.vel_x, &state->players[FIRST_PLAYER_ID].physics.vel_y);
     movement_update(&state->players[FIRST_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
 
+    // Check collisions for first player - ball
     check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter);
 
     if (state->numPlayers == TWO_PLAYER_MODE) {
@@ -216,12 +217,15 @@ static void update_physics(GameState *state, ModeInfo mode, int *counter_display
         // Update second player velocity based on input
         player_velocity_update(p2_dir_x, p2_dir_y, &state->players[SECOND_PLAYER_ID].physics.vel_x, &state->players[SECOND_PLAYER_ID].physics.vel_y);
         movement_update(&state->players[SECOND_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
-        check_all_collisions_with_obstacles(state);
-        // check_collision(&state->players[SECOND_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter);
-        // check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->players[SECOND_PLAYER_ID].physics, &state->touch_counter);
-        // check_all_obstacle_collisions();
+        
+        // Check collisions for second player - ball
+        check_collision(&state->players[SECOND_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter);
+        
+        // Check collisions between players
+        check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->players[SECOND_PLAYER_ID].physics, &state->touch_counter);
     }
-    
+
+    check_all_collisions_with_obstacles(state);
     
 }
 

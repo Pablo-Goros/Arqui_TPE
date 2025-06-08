@@ -317,64 +317,54 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
 
     // ─── Other cases (e.g., ball ↔ ball) can be left untouched or handled similarly ───
 }
+// Revised collision vs. a circular obstacle
+// Check & resolve collision between one circular object and one circular obstacle.
+// After this, obj’s center will sit exactly at (obs.center + normal*sumR), and
+// only the normal component of velocity is removed (players) or reflected (ball).
+void check_obstacle_collision(PhysicsObject *obj, const Obstacle *obs) {
+    if (!obs) return;
 
-// Agregar estas funciones al final de tu pongis_lib.c
+    // 1) Vector from obstacle → object
+    int ox = obs->point.x;
+    int oy = obs->point.y;
+    int px = obj->position.x;
+    int py = obj->position.y;
+    int dx = px - ox;
+    int dy = py - oy;
+    float dist_sq = (dx*dx + dy*dy);
 
-// Función para verificar colisión de un objeto circular con un obstáculo circular
-void check_obstacle_collision(PhysicsObject *obj, Obstacle *obstacle) {
-    if (!obstacle) return;
-    
-    // Calcular distancia entre centros
-    float dx = (float)obj->position.x - (float)obstacle->point.x;
-    float dy = (float)obj->position.y - (float)obstacle->point.y;
-    float dist_sq = dx*dx + dy*dy;
-    float radius_sum = (float)(obj->radius + obstacle->radius);
-    
-    // Verificar si hay colisión
-    if (dist_sq < radius_sum * radius_sum) {
+    // 2) Only proceed if overlapping
+    float sumR = (float)(obj->radius + obs->radius);
+    if (dist_sq < sumR * sumR) {
         float dist = sqrtf(dist_sq);
-        float nx, ny;
-        
-        // Calcular normal de colisión (del obstáculo hacia el objeto)
-        if (dist < 1e-4f) {
-            // Exactamente superpuestos → usar dirección por defecto
-            nx = 1.0f; ny = 0.0f;
-        } else {
-            nx = dx / dist;
-            ny = dy / dist;
-        }
-        
-        // Empujar el objeto fuera del obstáculo PRIMERO
-        float overlap = radius_sum - dist;
-        obj->position.x += (int)roundf(nx * overlap);
-        obj->position.y += (int)roundf(ny * overlap);
-        
-        // Determinar el tipo de objeto por su radio
-        int isPlayer = (obj->radius == PLAYER_RADIUS);
-        int isBall = (obj->radius == BALL_RADIUS);
-        
-        if (isPlayer) {
-            // Para jugadores: detener solo el componente de velocidad hacia el obstáculo
-            float vel_dot_normal = obj->vel_x * nx + obj->vel_y * ny;
-            
-            // Solo anular la velocidad si se está moviendo hacia el obstáculo
-            if (vel_dot_normal < 0.0f) {
-                // Remover solo el componente normal de la velocidad (no reflejar)
-                obj->vel_x -= vel_dot_normal * nx;
-                obj->vel_y -= vel_dot_normal * ny;
+        // a) Compute robust normal (nx,ny)
+        float nx = (dist > 1e-4f ? dx/dist : 1.0f);
+        float ny = (dist > 1e-4f ? dy/dist : 0.0f);
+
+        // b) Snap center so that edges just touch (not centers)
+        // Distance between centers should be exactly sumR
+        obj->position.x = (int)roundf(ox + nx * sumR);
+        obj->position.y = (int)roundf(oy + ny * sumR);
+
+        // c) Remove or reflect only the normal component of velocity
+        float vDot = obj->vel_x * nx + obj->vel_y * ny;
+        if (vDot < 0.0f) {
+            // Player: cancel normal component → can still slide tangentially
+            if (obj->radius == PLAYER_RADIUS) {
+                obj->vel_x -= vDot * nx;
+                obj->vel_y -= vDot * ny;
             }
-        } else if (isBall) {
-            // Para pelotas: comportamiento de rebote como antes
-            float vel_dot_normal = obj->vel_x * nx + obj->vel_y * ny;
-            
-            // Solo reflejar si se está moviendo hacia el obstáculo
-            if (vel_dot_normal < 0.0f) {
-                obj->vel_x -= 2.0f * vel_dot_normal * nx * WALL_BOUNCE_FACTOR;
-                obj->vel_y -= 2.0f * vel_dot_normal * ny * WALL_BOUNCE_FACTOR;
+            // Ball: reflect normal component with restitution
+            else if (obj->radius == BALL_RADIUS) {
+                float e = WALL_BOUNCE_FACTOR;
+                // v' = v - (1 + e) * (v·n) * n
+                obj->vel_x -= (1.0f + e) * vDot * nx;
+                obj->vel_y -= (1.0f + e) * vDot * ny;
             }
         }
     }
 }
+
 
 // Función para verificar colisiones de un objeto con todos los obstáculos del nivel
 void check_all_obstacle_collisions(PhysicsObject *obj, const Level *level) {
@@ -391,18 +381,12 @@ void check_all_obstacle_collisions(PhysicsObject *obj, const Level *level) {
 void check_all_collisions_with_obstacles(GameState *state) {
     Level *level = state->current_level;
 
-    // Verificar colisión jugador-jugador solo si hay 2 jugadores
-    if (state->numPlayers == 2) { // se queda pegado
-        check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->players[SECOND_PLAYER_ID].physics, &state->touch_counter);
-    }
-
-    // Verificar colisiones jugador-pelota y jugador-obstáculo (para todos los jugadores)
+    // Check Player(s) collisions with obstacles
     for (int i = 0; i < state->numPlayers; i++) {
-        check_collision(&state->players[i].physics, &state->ball.physics, &state->touch_counter);
         check_all_obstacle_collisions(&state->players[i].physics, level);
     }
 
-    // Verificar colisiones de la pelota con obstáculos
+    // Check Ball collision with obstacles
     check_all_obstacle_collisions(&state->ball.physics, level);
 }
 
@@ -427,11 +411,6 @@ uint8_t check_ball_in_hole(GameState *state)
     uint32_t dist_sq = (uint32_t)(dx * dx + dy * dy);
     int dist = (int)int_sqrt(dist_sq);  
 
-
-    //! REVISAR ESTO
-    //! Ball falls in when its center is close enough to hole center
-    //! The threshold should be positive - when ball center gets within 
-    //! (hole_radius - some_margin) of hole center
     int threshold = state->holeRadius - BALL_RADIUS;
 
     return dist <= threshold ? 1 : 0;
