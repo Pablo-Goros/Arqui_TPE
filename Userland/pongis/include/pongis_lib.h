@@ -7,20 +7,22 @@
 #include "pongis_types.h"
 
 // Physics constants
-#define ACCELERATION        0.05f   /* px/tick² */
-#define MAX_PLAYER_SPEED    5.0f   /* px/tick */
-#define MAX_BALL_SPEED      15.0f  /* px/tick */
-#define ACCELERATION_RATE   0.6f  
+#define ACCELERATION             0.05f   // px/tick² 
+#define MAX_PLAYER_SPEED         7.0f   // px/tick 
+#define MAX_BALL_SPEED           15.0f  // px/tick 
+#define ACCELERATION_RATE        0.6f  
 
-#define SLOW_ACCEL_RATE     0.3f   /* px/tick² */
-#define RELEASED_AXIS_FRICTION 0.99f /* friction when one axis is released */
-#define SNAP_SPEED_THRESHOLD 0.75
+#define BALL_BOUNE_FACTOR        2.0f  // bounce factor for ball when colliding with player */
+#define WALL_BOUNCE_FACTOR       0.75f  // bounce factor for ball when colliding with walls
+#define SLOW_ACCEL_RATE          0.3f   // px/tick² 
+#define RELEASED_AXIS_FRICTION   0.99f // friction when one axis is released 
+#define SNAP_SPEED_THRESHOLD     0.75
 
-#define PLAYER_FRICTION     0.99f  /* velocity scaling per frame */
-#define BALL_FRICTION       0.98f  /* ball velocity scaling per frame */
+#define PLAYER_FRICTION          0.97f  // velocity scaling per frame 
+#define BALL_FRICTION            0.995f  // ball velocity scaling per frame 
 
-#define IS_PLAYER           1
-#define IS_BALL             0
+#define IS_PLAYER                1
+#define IS_BALL                  0
 
 uint8_t startPongisMenu(ModeInfo mode);
 

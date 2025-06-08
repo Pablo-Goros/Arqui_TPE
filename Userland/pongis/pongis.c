@@ -246,7 +246,7 @@ static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point
         if (objects_overlap(prev_fp, state->hole, PLAYER_RADIUS, state->holeRadius) ||
             objects_overlap(prev_ball, state->hole, BALL_RADIUS, state->holeRadius) || 
             objects_overlap(prev_sp, state->hole, PLAYER_RADIUS, state->holeRadius)) {
-            clear_object(prev_sp, PLAYER_RADIUS);
+            draw_hole(state->hole, state->holeRadius); 
         }
 
         draw_player(state->players[SECOND_PLAYER_ID].physics.position, PLAYER_RADIUS, state->players[SECOND_PLAYER_ID].physics.color);

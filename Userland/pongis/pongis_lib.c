@@ -193,22 +193,22 @@ void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius)
     if (obj->position.x < radius)
     {
         obj->position.x = radius;
-        obj->vel_x = -obj->vel_x; // * BOUNCE_FACTOR;
+        obj->vel_x = -obj->vel_x * WALL_BOUNCE_FACTOR;
     }
     else if (obj->position.x > mode->width - radius)
     {
         obj->position.x = mode->width - radius;
-        obj->vel_x = -obj->vel_x; // * BOUNCE_FACTOR;
+        obj->vel_x = -obj->vel_x * WALL_BOUNCE_FACTOR;
     }
     if (obj->position.y < radius)
     {
         obj->position.y = radius;
-        obj->vel_y = -obj->vel_y; // * BOUNCE_FACTOR;
+        obj->vel_y = -obj->vel_y * WALL_BOUNCE_FACTOR;
     }
     else if (obj->position.y > mode->height - radius)
     {
         obj->position.y = mode->height - radius;
-        obj->vel_y = -obj->vel_y; // * BOUNCE_FACTOR;
+        obj->vel_y = -obj->vel_y * WALL_BOUNCE_FACTOR;
     }
 }
 

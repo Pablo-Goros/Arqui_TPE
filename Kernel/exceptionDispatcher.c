@@ -12,13 +12,15 @@ void exceptionDispatcher(uint64_t exception) {
 
 static void zero_division() {
     _sti();
-    vd_put_string("\nZero Division Exception\n", STDERR);
-    vd_show_registers(STDERR);
+    vd_put_string("\nZero Division Exception\n", STDOUT);
+    vd_put_string("This exception occurs when a division by zero is attempted.\n", STDOUT);
+    vd_show_registers(STDOUT);
 }
 
 
 static void invalid_opcode() {
     _sti();
-    vd_put_string("\nInvalid Opcode Exception\n", STDERR);
-    vd_show_registers(STDERR);
+    vd_put_string("\nInvalid Opcode Exception\n", STDOUT);
+    vd_put_string("This exception occurs when an invalid or undefined instruction is executed.\n", STDOUT);
+    vd_show_registers(STDOUT);
 }
