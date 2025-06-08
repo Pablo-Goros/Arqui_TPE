@@ -214,63 +214,98 @@ void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius)
 
 void check_collision(PhysicsObject *obj1, PhysicsObject *obj2)
 {
-    // Calculate positions in x and y
-    int  x1 = (int)obj1->position.x;
-    int  y1 = (int)obj1->position.y;
-    int  x2 = (int)obj2->position.x;
-    int  y2 = (int)obj2->position.y;
+    // 1) Vector from obj1 → obj2
+    float dx     = obj2->position.x - obj1->position.x;
+    float dy     = obj2->position.y - obj1->position.y;
+    float dist_sq = dx*dx + dy*dy;
+    float radius_sum    = (float)(obj1->radius + obj2->radius);
 
-    // Deltas
-    int  dx = x1 - x2;
-    int  dy = y1 - y2;
-
-    // Squared distance between centers
-    uint32_t  dist_sq = (uint32_t) ((uint32_t) dx * (uint32_t) dx + (uint32_t) dy * (uint32_t) dy);
-
-    // Minimum center‐to‐center to just touch (edge‐to‐edge)
-    int  min_dist = obj1->radius + obj2->radius;
-    uint32_t  min_dist_sq = min_dist * min_dist;
-
-    // Only run collision logic if edges overlap or touch
-    if (dist_sq > min_dist_sq) {
+    // 2) No overlap → nothing to do
+    if (dist_sq >= radius_sum*radius_sum) {
         return;
     }
-    //! REVISAR ESTO PARA EL CONTADOR DE TOQUES
-    //! if ((obj1->radius == PLAYER_RADIUS && obj2->radius == BALL_RADIUS) || ()) {
-    //! state->touch_counter++;
 
-    float dist_f = (dist_sq == 0) ? 1.0f : sqrtf((float)dist_sq);
-    
-    float nx = (float)dx / dist_f;
-    float ny = (float)dy / dist_f;
+    // 3) Prepare a robust normal: (nx,ny)
+    float dist = sqrtf(dist_sq);
+    if (dist < 1e-4f) {
+        // exactly on top → pick a default axis
+        dx = 1.0f; dy = 0.0f; dist = 1.0f;
+    }
+    float nx = dx / dist;
+    float ny = dy / dist;
 
-    // Push each object half of the overlap distance
-    float penetration = (float)min_dist - dist_f;
-    float push = penetration * 0.5f;
-    obj1->position.x += nx * push;
-    obj1->position.y += ny * push;
-    obj2->position.x -= nx * push;
-    obj2->position.y -= ny * push;
-    
-    // 5) Project both velocities onto the normal & tangent directions
-    //    Normal components:
-    float v1n = obj1->vel_x * nx + obj1->vel_y * ny;
-    float v2n = obj2->vel_x * nx + obj2->vel_y * ny;
-    //    Tangential components (remaining vector after removing normal part):
-    float v1t_x = obj1->vel_x - (v1n * nx);
-    float v1t_y = obj1->vel_y - (v1n * ny);
-    float v2t_x = obj2->vel_x - (v2n * nx);
-    float v2t_y = obj2->vel_y - (v2n * ny);
+    // 4) Detect types by radius
+    int obj1IsPlayer = (obj1->radius == PLAYER_RADIUS);
+    int obj2IsPlayer = (obj2->radius == PLAYER_RADIUS);
+    int obj1IsBall   = (obj1->radius == BALL_RADIUS);
+    int obj2IsBall   = (obj2->radius == BALL_RADIUS);
 
-    // 6) Swap normal components for an equal‐mass elastic collision
-    float new_v1n = v2n;
-    float new_v2n = v1n;
+    // ─── Ball ↔ Player: treat player as infinite mass ───
+    if ((obj1IsPlayer && obj2IsBall) || (obj2IsPlayer && obj1IsBall)) {
+        PhysicsObject *player = obj1IsPlayer ? obj1 : obj2;
+        PhysicsObject *ball   = (player == obj1) ? obj2 : obj1;
 
-    // 7) Reconstruct final velocities: tangential + swapped normal
-    obj1->vel_x = v1t_x + new_v1n * nx;
-    obj1->vel_y = v1t_y + new_v1n * ny;
-    obj2->vel_x = v2t_x + new_v2n * nx;
-    obj2->vel_y = v2t_y + new_v2n * ny;
+        // Recompute vector from player → ball
+        dx = ball->position.x - player->position.x;
+        dy = ball->position.y - player->position.y;
+        dist = sqrtf(dx*dx + dy*dy);
+        if (dist < 1e-4f) {
+            dx = 1.0f; dy = 0.0f; dist = 1.0f;
+        }
+        nx = dx / dist;  
+        ny = dy / dist;
+
+        // Relative velocity (player → ball) along the normal
+        float rel_vx = player->vel_x - ball->vel_x;
+        float rel_vy = player->vel_y - ball->vel_y;
+        float rel_dot = rel_vx*nx + rel_vy*ny;
+
+        // Only if moving into each other
+        if (rel_dot > 0.0f) {
+            // Impart that normal component onto the ball
+            //! BOUNCE FACTOR CAMBIALO DESP
+            ball->vel_x += rel_dot * nx * 1.5;
+            ball->vel_y += rel_dot * ny * 1.5;
+        }
+
+        // Push the ball fully out of the player
+        float overlap = radius_sum - dist;
+        ball->position.x += (int)roundf(nx * overlap);
+        ball->position.y += (int)roundf(ny * overlap);
+        return;
+    }
+
+    // ─── Player ↔ Player: equal-mass elastic collision ───
+    if (obj1IsPlayer && obj2IsPlayer) {
+         // Decompose each velocity into normal & tangential parts
+        float v1n    = obj1->vel_x*nx + obj1->vel_y*ny;
+        float v1t_x  = obj1->vel_x - v1n*nx;
+        float v1t_y  = obj1->vel_y - v1n*ny;
+        float v2n    = obj2->vel_x*nx + obj2->vel_y*ny;
+        float v2t_x  = obj2->vel_x - v2n*nx;
+        float v2t_y  = obj2->vel_y - v2n*ny;
+
+        // Swap the normal components
+        float new_v1n = v2n;
+        float new_v2n = v1n;
+
+        // Reconstruct final velocities
+        obj1->vel_x = v1t_x + new_v1n*nx;
+        obj1->vel_y = v1t_y + new_v1n*ny;
+        obj2->vel_x = v2t_x + new_v2n*nx;
+        obj2->vel_y = v2t_y + new_v2n*ny;
+
+        // Push each player half the overlap
+        float overlap = radius_sum - dist;
+        float half    = overlap * 0.5f;
+        obj1->position.x -= (int)roundf(nx * half);
+        obj1->position.y -= (int)roundf(ny * half);
+        obj2->position.x += (int)roundf(nx * half);
+        obj2->position.y += (int)roundf(ny * half);
+        return;
+    }
+
+    // ─── Other cases (e.g., ball ↔ ball) can be left untouched or handled similarly ───
 }
 
 uint8_t check_ball_in_hole(GameState *state)

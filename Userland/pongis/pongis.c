@@ -179,8 +179,9 @@ static void handle_input(int *running, GamePhase phase, GameState *state, int *l
 */
 static void update_physics(GameState *state, ModeInfo mode)
 {
-    ball_velocity_update(&state->ball.physics.vel_x, &state->ball.physics.vel_x);
-    
+    ball_velocity_update(&state->ball.physics.vel_x, &state->ball.physics.vel_y);
+    movement_update(&state->ball.physics, &mode, BALL_RADIUS);
+
     // First player checks
     int p1_dir_x = 0, p1_dir_y = 0;
 
@@ -199,6 +200,12 @@ static void update_physics(GameState *state, ModeInfo mode)
     if (state->numPlayers == TWO_PLAYER_MODE) {
         // Second player checks
         int p2_dir_x = 0, p2_dir_y = 0;
+
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'i', 0, 0, 0, 0)) p2_dir_y -= 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'k', 0, 0, 0, 0)) p2_dir_y += 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'j', 0, 0, 0, 0)) p2_dir_x -= 1;
+        if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)'l', 0, 0, 0, 0)) p2_dir_x += 1;
+        
         /*
         // Arrow keys check via sys_call 
         if (sys_call(SYS_IS_KEY_DOWN, (uint64_t)UP_ARROW, 0, 0, 0, 0)) p2_dir_y -= 1;

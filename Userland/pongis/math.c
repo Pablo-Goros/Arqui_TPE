@@ -84,3 +84,18 @@ uint32_t int_sqrt(uint32_t x) {
     }
     return res;
 }
+
+/**
+ * @brief Round a float to the nearest integer, halfway cases away from zero.
+ * @param x The float to round.
+ * @return The rounded value as a float.
+ */
+float roundf(float x) {
+    if (x >= 0.0f) {
+        // Add 0.5 then truncate
+        return (float)((int)(x + 0.5f));
+    } else {
+        // Subtract 0.5 then truncate (truncation goes toward zero)
+        return (float)((int)(x - 0.5f));
+    }
+}
