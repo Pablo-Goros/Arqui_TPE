@@ -40,6 +40,7 @@ void pongis_init(void)
                     case 3:
                         // Back to shell
                         clear_screen();
+                        set_zoom(2);
                         return;
 
                     default:
