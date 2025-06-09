@@ -317,53 +317,85 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
 
     // ─── Other cases (e.g., ball ↔ ball) can be left untouched or handled similarly ───
 }
+
 // Revised collision vs. a circular obstacle
 // Check & resolve collision between one circular object and one circular obstacle.
 // After this, obj’s center will sit exactly at (obs.center + normal*sumR), and
 // only the normal component of velocity is removed (players) or reflected (ball).
 void check_obstacle_collision(PhysicsObject *obj, const Obstacle *obs) {
-    if (!obs) return;
-
-    // 1) Vector from obstacle → object
-    int ox = obs->point.x;
-    int oy = obs->point.y;
-    int px = obj->position.x;
-    int py = obj->position.y;
-    int dx = px - ox;
-    int dy = py - oy;
-    float dist_sq = (dx*dx + dy*dy);
-
-    // 2) Only proceed if overlapping
+    if (!obs)
+        return;
+    
+    // Convert positions to floats for better precision
+    float px = (float)obj->position.x;
+    float py = (float)obj->position.y;
+    float ox = (float)obs->point.x;
+    float oy = (float)obs->point.y;
+    
+    // Compute vector from obstacle center to object center
+    float dx = px - ox;
+    float dy = py - oy;
+    float distSq = dx * dx + dy * dy;
     float sumR = (float)(obj->radius + obs->radius);
-    if (dist_sq < sumR * sumR) {
-        float dist = sqrtf(dist_sq);
-        // a) Compute robust normal (nx,ny)
-        float nx = (dist > 1e-4f ? dx/dist : 1.0f);
-        float ny = (dist > 1e-4f ? dy/dist : 0.0f);
-
-        // b) Snap center so that edges just touch (not centers)
-        // Distance between centers should be exactly sumR
-        obj->position.x = (int)roundf(ox + nx * sumR);
-        obj->position.y = (int)roundf(oy + ny * sumR);
-
-        // c) Remove or reflect only the normal component of velocity
+    
+    // Only act if penetration exists
+    if (distSq < sumR * sumR) {
+        float dist = sqrtf(distSq);
+        float nx, ny;
+        
+        // Compute the collision normal robustly
+        if (dist > 1e-4f) {
+            nx = dx / dist;
+            ny = dy / dist;
+        } else {
+            // If centers nearly coincide, pick a fallback.
+            // You might use the current velocity direction if nonzero.
+            float speed = sqrtf(obj->vel_x * obj->vel_x + obj->vel_y * obj->vel_y);
+            if (speed > 1e-4f) {
+                nx = obj->vel_x / speed;
+                ny = obj->vel_y / speed;
+            } else {
+                nx = 1.0f;
+                ny = 0.0f;
+            }
+        }
+        
+        // Compute the penetration depth
+        float penetration = sumR - dist;
+        // Use a small tolerance (slop) to ignore tiny overlaps from rounding.
+        float slop = 0.1f;  // Adjust based on your game scale.
+        if (penetration > slop) {
+            // Baumgarte stabilization: do not fully correct the penetration,
+            // but only a fraction (e.g. 80%) to prevent jitter.
+            float percent = 0.8f;
+            float correction = (penetration - slop) * percent;
+            px += nx * correction;
+            py += ny * correction;
+        }
+        
+        // Write the corrected position back (rounding only for rendering if necessary)
+        obj->position.x = (int)roundf(px);
+        obj->position.y = (int)roundf(py);
+        
+        // Adjust the velocity so that it’s no longer directed into the obstacle.
         float vDot = obj->vel_x * nx + obj->vel_y * ny;
         if (vDot < 0.0f) {
-            // Player: cancel normal component → can still slide tangentially
             if (obj->radius == PLAYER_RADIUS) {
-                obj->vel_x -= vDot * nx;
-                obj->vel_y -= vDot * ny;
-            }
-            // Ball: reflect normal component with restitution
-            else if (obj->radius == BALL_RADIUS) {
+                // Cancel the normal component but allow tangential sliding.
+                obj->vel_x -= vDot * nx * 2;
+                obj->vel_y -= vDot * ny * 2;
+            } else if (obj->radius == BALL_RADIUS) {
+                // Reflect the velocity’s normal component with restitution.
                 float e = WALL_BOUNCE_FACTOR;
-                // v' = v - (1 + e) * (v·n) * n
                 obj->vel_x -= (1.0f + e) * vDot * nx;
                 obj->vel_y -= (1.0f + e) * vDot * ny;
             }
         }
     }
 }
+
+
+
 
 
 // Función para verificar colisiones de un objeto con todos los obstáculos del nivel
