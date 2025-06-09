@@ -189,26 +189,27 @@ void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius)
     obj->position.x += (int)obj->vel_x;
     obj->position.y += (int)obj->vel_y;
 
+    float e = (obj->radius == PLAYER_RADIUS) ? PLAYER_WALL_BOUNCE_FACTOR : BALL_WALL_BOUNCE_FACTOR;
     // bounce ball off screen edges
     if (obj->position.x < radius)
     {
         obj->position.x = radius;
-        obj->vel_x = -obj->vel_x * WALL_BOUNCE_FACTOR;
+        obj->vel_x = -obj->vel_x * e;
     }
     else if (obj->position.x > mode->width - radius)
     {
         obj->position.x = mode->width - radius;
-        obj->vel_x = -obj->vel_x * WALL_BOUNCE_FACTOR;
+        obj->vel_x = -obj->vel_x * e;
     }
     if (obj->position.y < radius)
     {
         obj->position.y = radius;
-        obj->vel_y = -obj->vel_y * WALL_BOUNCE_FACTOR;
+        obj->vel_y = -obj->vel_y * e;
     }
     else if (obj->position.y > mode->height - radius)
     {
         obj->position.y = mode->height - radius;
-        obj->vel_y = -obj->vel_y * WALL_BOUNCE_FACTOR;
+        obj->vel_y = -obj->vel_y * e;
     }
 
 
@@ -382,13 +383,12 @@ void check_obstacle_collision(PhysicsObject *obj, const Obstacle *obs) {
         if (vDot < 0.0f) {
             if (obj->radius == PLAYER_RADIUS) {
                 // Cancel the normal component but allow tangential sliding.
-                obj->vel_x -= vDot * nx * 2;
-                obj->vel_y -= vDot * ny * 2;
+                obj->vel_x -= vDot * nx * (1.0 + PLAYER_WALL_BOUNCE_FACTOR);
+                obj->vel_y -= vDot * ny * (1.0 + PLAYER_WALL_BOUNCE_FACTOR);
             } else if (obj->radius == BALL_RADIUS) {
                 // Reflect the velocity’s normal component with restitution.
-                float e = WALL_BOUNCE_FACTOR;
-                obj->vel_x -= (1.0f + e) * vDot * nx;
-                obj->vel_y -= (1.0f + e) * vDot * ny;
+                obj->vel_x -= (1.0f + BALL_WALL_BOUNCE_FACTOR) * vDot * nx;
+                obj->vel_y -= (1.0f + BALL_WALL_BOUNCE_FACTOR) * vDot * ny;
             }
         }
     }
