@@ -22,16 +22,12 @@
 #define PLAYER_FRICTION             0.97f  // velocity scaling per frame 
 #define BALL_FRICTION               0.995f  // ball velocity scaling per frame 
 
-#define IS_PLAYER                   1
-#define IS_BALL                     0
 
 #define ARROW_UP                    0x80
 #define ARROW_DOWN                  0x81
 #define ARROW_LEFT                  0x82
 #define ARROW_RIGHT                 0x83
 
-// amarillo
-#define OBSTACLE_COLOR              0xFFFF00
 
 uint8_t startPongisMenu(ModeInfo mode);
 

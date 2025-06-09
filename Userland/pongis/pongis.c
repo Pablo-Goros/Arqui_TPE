@@ -1,7 +1,7 @@
 #include "pongis_lib.h"
 
 
-static void handle_input(int *running, GamePhase phase, GameState *state, int *level_complete_displayed);
+static void handle_input(int *running, GamePhase *phase, GameState *state, int *level_complete_displayed);
 static void update_physics(GameState *state, ModeInfo mode, int *counter);
 static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point prev_ball, ModeInfo mode, int *counter_flag);
 static void render_level_complete(void);
@@ -71,7 +71,7 @@ void pongis(ModeInfo mode, int player_count)
 
     while (running) {
         // Handle any keypress and (possibly) change running or phase 
-        handle_input(&running, phase, &state, &level_complete_displayed);
+        handle_input(&running, &phase, &state, &level_complete_displayed);
         Point prev_ball, prev_first_player;
         Point prev_second_player = {0, 0}; // Initalize here to avoid warnings...
 
@@ -129,13 +129,14 @@ void pongis(ModeInfo mode, int player_count)
                 if (!all_complete_displayed) {
                     render_all_levels_complete();
                     all_complete_displayed = 1;
+                    
                 }
                 break;
         }
 
         wait_next_tick();
     }
-
+    set_zoom(2);
     clear_screen();
 }
 
@@ -145,7 +146,7 @@ void pongis(ModeInfo mode, int player_count)
      - In GAME_LEVEL_COMPLETE: ENTER → load next level; 'c' → quit.
      - In GAME_ALL_COMPLETE: 'c' → quit.
 */
-static void handle_input(int *running, GamePhase phase, GameState *state, int *level_complete_displayed)
+static void handle_input(int *running, GamePhase *phase, GameState *state, int *level_complete_displayed)
 {
     if (!isCharReady()) {
         return;
@@ -153,7 +154,7 @@ static void handle_input(int *running, GamePhase phase, GameState *state, int *l
 
     char ch = getChar();
 
-    switch (phase) {
+    switch (*phase) {
         case GAME_PLAYING:
             if (ch == 'c') {
                 *running = 0;
@@ -163,9 +164,11 @@ static void handle_input(int *running, GamePhase phase, GameState *state, int *l
         case GAME_LEVEL_COMPLETE:
             state->touch_counter = 0;
             if (ch == '\n' || ch == '\r') {
-                // Load next level, reset flags 
                 load_level(state, state->currentLevel + 1);
+                clear_screen();               // Draw the hole for the newly loaded level               
+                draw_hole(state->hole, state->holeRadius);
                 *level_complete_displayed = 0;
+                *phase = GAME_PLAYING; // resume physics/rendering loop
             }
             else if (ch == 'c') {
                 *running = 0;
@@ -312,9 +315,9 @@ static void render_all_levels_complete()
 
     // Título principal en Zoom 6
     set_zoom(6);
-    putString("     All levels complete!\n\n");
+    putString("All levels complete!\n\n");
 
     // Instrucción en Zoom 4
     set_zoom(4);
-    putString("      Press 'c' to return to shell\n");
+    putString("Press 'c' to return to shell\n");
 }

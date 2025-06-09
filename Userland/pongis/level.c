@@ -1,76 +1,75 @@
 #include "level.h"
 
-
-const Level levels[2] = {
-    // Level 0: Simple level with no obstacles
+const Level levels[6] = {
+    // Level 0: A straight shot, no obstacles.
     {
-        .ball_start = {
-            .x = 500,
-            .y = 500
-        },
-
-        .player_start = {
-            { .x = 100, .y = 500 },
-            { .x = 200, .y = 700 }
-        },
-
-        .hole = {
-            .x = 800,
-            .y = 500
-        },
-        .holeRadius      = 50,
-        .numObstacles    =  1,
-        .obstacles       = (Obstacle[]) {
-            {
-                .point = { .x = 400, .y = 500 },
-                .radius = 50,
-                .color = 0x00FF0000 // Red obstacle
-            }
+        .ball_start    = { .x = 300, .y = 300 },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .hole          = { .x = 600, .y = 300 },
+        .holeRadius    = 30,
+        .numObstacles  = 0,
+        .obstacles     = (Obstacle[]){}
+    },
+    // Level 1: Hole tucked up in a corner.
+    {
+        .ball_start    = { .x = 300, .y = 300 },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .hole          = { .x = 550, .y = 100 },
+        .holeRadius    = 30,
+        .numObstacles  = 0,
+        .obstacles     = (Obstacle[]){}
+    },
+    // Level 2: Vertical “pinch” – two big red obstacles with just enough gap.
+    {
+        .ball_start    = { .x = 300, .y = 300 },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .hole          = { .x = 600, .y = 300 },
+        .holeRadius    = 30,
+        .numObstacles  = 2,
+        .obstacles     = (Obstacle[]){
+            { .point = { .x = 400, .y = 260 }, .radius = 40, .color = 0x00FF0000 },
+            { .point = { .x = 400, .y = 340 }, .radius = 40, .color = 0x00FF0000 }
         }
     },
-    // Level 1
+    // Level 3: Horizontal “barrier” – two green blocks forcing you around.
     {
-        .ball_start = {
-            .x = 500,
-            .y = 500
-        },
-
-        .player_start = {
-            { .x = 100, .y = 500 },
-            { .x = 200, .y = 700 }      
-        },
-
-        .hole = {
-            .x = 800,
-            .y = 500
-        },
-        .holeRadius      = 20,
-
-        .numObstacles    =  1,
-        .obstacles       = (Obstacle[]) {
-            {
-                .point = { .x = 400, .y = 500 },
-                .radius = 50,
-                .color = 0x00FF0000 // Red obstacle
-            }
+        .ball_start    = { .x = 300, .y = 300 },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .hole          = { .x = 650, .y = 300 },
+        .holeRadius    = 30,
+        .numObstacles  = 2,
+        .obstacles     = (Obstacle[]){
+            { .point = { .x = 450, .y = 300 }, .radius = 40, .color = 0x0000FF00 },
+            { .point = { .x = 550, .y = 300 }, .radius = 40, .color = 0x0000FF00 }
         }
-    } /*
-    // Level 2
-    {
-
     },
-    // Level 3
+    // Level 4: Zig-zag blue posts you have to thread between.
     {
-
+        .ball_start    = { .x = 300, .y = 300 },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .hole          = { .x = 650, .y = 100 },
+        .holeRadius    = 30,
+        .numObstacles  = 3,
+        .obstacles     = (Obstacle[]){
+            { .point = { .x = 450, .y = 270 }, .radius = 30, .color = 0x000000FF },
+            { .point = { .x = 500, .y = 300 }, .radius = 30, .color = 0x000000FF },
+            { .point = { .x = 450, .y = 330 }, .radius = 30, .color = 0x000000FF }
+        }
     },
-    // Level 4
+    // Level 5: Final magenta funnel – big blocker plus small exit posts.
     {
-
-    }, 
-    // Level 5
-    {
-
-    }, */
+        .ball_start    = { .x = 300, .y = 300 },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .hole          = { .x = 700, .y = 300 },
+        .holeRadius    = 30,
+        .numObstacles  = 4,
+        .obstacles     = (Obstacle[]){
+            { .point = { .x = 400, .y = 300 }, .radius = 60, .color = 0x00FF00FF },
+            { .point = { .x = 550, .y = 280 }, .radius = 30, .color = 0x00FF00FF },
+            { .point = { .x = 550, .y = 320 }, .radius = 30, .color = 0x00FF00FF },
+            { .point = { .x = 650, .y = 300 }, .radius = 20, .color = 0x00FF00FF }
+        }
+    }
 };
 
 
@@ -80,6 +79,9 @@ void load_level(GameState *state, int index) {
     if (index < 0 || index >= (int)level_count) return;
 
     state->currentLevel = index;
+
+    state->touch_counter = 0;
+    state->prev_touch_counter = 0;
 
     state->ball.physics.position.x =  levels[index].ball_start.x;
     state->ball.physics.position.y =  levels[index].ball_start.y;

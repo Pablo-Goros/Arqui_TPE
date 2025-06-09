@@ -11,6 +11,9 @@
 #define ONE_PLAYER_MODE       1
 #define TWO_PLAYER_MODE       2
 
+#define IS_PLAYER                   1
+#define IS_BALL                     0
+
 // Physics constants
 #define BALL_RADIUS         10      /* px */
 #define PLAYER_RADIUS       20     /* px */
@@ -25,6 +28,9 @@
 #define BALL_COLOR              0x000000FF  // Blue ball
 #define HOLE_COLOR              0x00808080  // Grey hole
 #define BLACK_COLOR             0x00000000  // Black color for background
+#define OBSTACLE_COLOR          0xFFFF00    // Yellow obstacles
+
+
 
 // Game phases
 typedef enum {
