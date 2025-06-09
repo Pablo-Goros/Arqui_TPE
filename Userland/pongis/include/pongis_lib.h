@@ -20,7 +20,7 @@
 #define SNAP_SPEED_THRESHOLD        0.75
 
 #define PLAYER_FRICTION             0.97f  // velocity scaling per frame 
-#define BALL_FRICTION               0.995f  // ball velocity scaling per frame 
+#define BALL_FRICTION               0.99f  // ball velocity scaling per frame 
 
 
 #define ARROW_UP                    0x80
