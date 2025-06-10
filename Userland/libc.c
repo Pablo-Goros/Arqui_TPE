@@ -265,6 +265,18 @@ void draw_welcome(){
     sys_call(SYS_DRAW_RECT, 10, 40, 1004, 10, 0x0020ff); // top border in blue
     sys_call(SYS_DRAW_RECT, 10, 718, 1004, 10, 0x0020ff); // bottom border in blue
 
+    for(int i = 10; i < 1004; i+=10){
+        if(i%20 == 0) {
+            sys_call(SYS_DRAW_RECT, i, 40, 10, 10, 0x0a00c7);
+            sys_call(SYS_DRAW_RECT, i, 718, 10, 10, 0x0a00c7);
+        }
+    }
+    for(int i = 0; i < 1024; i+=64){
+        if(i%128 == 0) {
+            sys_call(SYS_DRAW_RECT, i, 0, 64, 40, 0xff00ff);
+            sys_call(SYS_DRAW_RECT, i,728 , 64, 40, 0xff00ff);
+        }
+    }
 
     draw_smile(); // Draw smiley face in the center
     //message
