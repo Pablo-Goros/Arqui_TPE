@@ -16,7 +16,6 @@ void pongis_init(void)
         return;
     }
     mode.height -= UI; // Reserve space for UI
-    game_start_sound();
     while (1) {
         uint8_t selected = startPongisMenu(mode);
         switch (selected) {
@@ -121,6 +120,7 @@ void pongis(ModeInfo mode, int player_count)
                     render_level_complete(&state);
 
                     level_complete_displayed = 1;
+                    counter_displayed_flag = 0; // Reset counter display flag
                 }
                 break;
 
@@ -155,7 +155,7 @@ static void handle_input(int *running, GamePhase *phase, GameState *state, int *
 
     switch (*phase) {
         case GAME_PLAYING:
-            if (ch == 'c') {
+            if (ch == 'c' || ch == 'C') {
                 *running = 0;
             }
             break;
@@ -169,13 +169,13 @@ static void handle_input(int *running, GamePhase *phase, GameState *state, int *
                 *level_complete_displayed = 0;
                 *phase = GAME_PLAYING; // resume physics/rendering loop
             }
-            else if (ch == 'c') {
+            else if (ch == 'c' || ch == 'C') {
                 *running = 0;
             }
             break;
 
         case GAME_ALL_COMPLETE:
-            if (ch == 'c') {
+            if (ch == 'c' || ch == 'C') {
                 *running = 0;
             }
             break;

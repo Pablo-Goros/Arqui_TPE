@@ -81,5 +81,7 @@ uint64_t get_mode_info(ModeInfo *mode);
 void exception_sound();
 
 void system_start_sound();
+void draw_welcome();
+void draw_smile();
 
 #endif /* _LIBC_H_ */
