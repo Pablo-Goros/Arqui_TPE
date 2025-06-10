@@ -232,3 +232,52 @@ void system_start_sound() {
 // int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
 
 
+void draw_smile(void){
+
+    int width = 1024; // Width of the screen
+    int height = 768; // Height of the screen
+    // Draw a simple smiley face using sys_call
+    int centerX = width/2; // Center of the face
+    int centerY = height/2; // Center of the face
+    //FACE
+    sys_call(SYS_DRAW_CIRCLE, centerX, centerY, 200, 0xFF8700, 0); // Orange circle
+    sys_call(SYS_DRAW_CIRCLE,centerX, centerY, 175, 0xFFFF00, 0); // Yellow circle
+    //EYES
+    sys_call(SYS_DRAW_RECT, centerX-60, centerY-90, 20, 70, 0x000000); // Left eye
+    sys_call(SYS_DRAW_RECT, centerX+40, centerY-90, 20, 70, 0x00000); // Right eye
+    // MOUTH
+    sys_call(SYS_DRAW_RECT, centerX-90, centerY+55, 180,10, 0x000000); // Black mouth
+    sys_call(SYS_DRAW_RECT, centerX-110,centerY+35,10,10, 0x000000); // Left side of mouth
+    sys_call(SYS_DRAW_RECT, centerX-100,centerY+45,10,10, 0x000000); // left side of mouth
+    sys_call(SYS_DRAW_RECT, centerX+100,centerY+35,10,10, 0x000000); // Right side of mouth
+    sys_call(SYS_DRAW_RECT, centerX+90,centerY+45,10,10, 0x000000); // Right side of mouth
+}
+
+void draw_welcome(){
+    sys_call(SYS_DRAW_RECT, 0, 0,1024, 50,0x9300ff) ; // TOP BORDER in purple
+    sys_call(SYS_DRAW_RECT, 0, 718, 1024, 50, 0x9300ff); // BOTTOM BORDER in purple
+    //costados violetas
+    sys_call(SYS_DRAW_RECT, 0, 50, 10, 668, 0x9300ff); // LEFT BORDER in purple
+    sys_call(SYS_DRAW_RECT, 1014, 50, 10, 668, 0x9300ff); // RIGHT BORDER in purple
+    //bordes azul
+    sys_call(SYS_DRAW_RECT, 10, 50, 10, 668, 0x0020ff); // LEFT BORDER in blue
+    sys_call(SYS_DRAW_RECT, 1004, 50, 10, 668, 0x0020ff); // RIGHT BORDER in blue
+    sys_call(SYS_DRAW_RECT, 10, 40, 1004, 10, 0x0020ff); // top border in blue
+    sys_call(SYS_DRAW_RECT, 10, 718, 1004, 10, 0x0020ff); // bottom border in blue
+
+
+    draw_smile(); // Draw smiley face in the center
+    //message
+    set_zoom (3);
+    set_cursor(50, 50);
+    putString("ARQUITECTURA DE COMPUTADORAS - ITBA");
+    set_cursor(100, 100);
+    putString("Trabajo Practico Especial");
+
+    set_zoom(2);
+    set_cursor(40, 630);
+    putString("Creador por: Pablo Gorostiaga, Tiago Heras y Amador Vallejo\n");
+    set_cursor(40, 680);
+    putString("Presione 'c' para continuar...");
+}
+

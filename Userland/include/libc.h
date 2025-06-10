@@ -90,5 +90,7 @@ void wait_next_tick(void); /* block until next timer IRQ (60 fps target) */
 int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
 void exception_sound();
 void system_start_sound();
+void draw_welcome();
+void draw_smile();
 
 #endif /* _LIBC_H_ */
