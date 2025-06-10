@@ -2,7 +2,7 @@
 # compile.sh — arranca el contenedor, limpia y construye dentro de él, luego lo para
 
 # Nombre del contenedor que creaste con 'docker run --name'
-CONTAINER="contenedor"
+CONTAINER="TPE-Arqui"
 
 # Ruta dentro del contenedor donde está el Toolchain
 TOOLCHAIN_DIR="/root/Toolchain"
