@@ -31,25 +31,6 @@ uint64_t strlen(const char *s) {
     return len;
 }
 
-char    *strcpy(char *dest, const char *src) {
-    strncpy(dest, src, strlen(src) + 1); // +1 to include null terminator
-    return dest;
-}
-
-char   *strncpy(char *dest, const char *src, uint64_t n) {
-    uint64_t i;
-
-    // Copy up to n chars or until '\0'
-    for (i = 0; i < n && src[i] != '\0'; i++) {
-        dest[i] = src[i];
-    }
-    // If we hit end of src before n, pad with '\0'
-    for (; i < n; i++) {
-        dest[i] = '\0';
-    }
-    return dest;
-}
-
 // Compare two strings byte-wise
 int strcmp(const char *s1, const char *s2) {
     while (*s1 && (*s1 == *s2)) {
@@ -68,44 +49,6 @@ int strncmp(const char *s1, const char *s2, uint64_t n) {
     return (unsigned char)*s1 - (unsigned char)*s2;
 }
 
-
-// Case-insensitive compare 
-int strcasecmp(const char *s1, const char *s2) {
-    unsigned char a, b;
-    do {
-        a = (unsigned char)*s1++;
-        b = (unsigned char)*s2++;
-
-        // Convert to uppercase if lowercase
-        a = toupper(a);
-        b = toupper(b);
-    } while (a == b && a);
-    return a - b;
-}
-
-
-// Returns non-zero if c is A–Z or a–z
-int isalpha(int c) {
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-}
-
-// Convert lowercase ASCII to uppercase; leave others unchanged
-int toupper(int c) {
-    if (c >= 'a' && c <= 'z')
-        return c - ('a' - 'A');
-    return c;
-}
-
-// Convert uppercase ASCII to lowercase; leave others unchanged
-int tolower(int c) {
-    if (c >= 'A' && c <= 'Z')
-        return c + ('a' - 'A');
-    return c;
-}
-
-
-//void    *memset(void *s, int c, size_t n);
-//void    *memcpy(void *dest, const void *src, size_t n);
 
 /* ------------------------------------------------------------------------- */
 /* Numeric conversions                                                       */
@@ -226,9 +169,4 @@ void system_start_sound() {
         sys_call(SYS_BEEP, melody[i], duration[i], 0, 0, 0);
     }
 }
-
-
-//! LA VAMOS A USAR DESP SI IMPLEMENTAMOS DOS BUFFERS
-// int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
-
 

@@ -1,26 +1,71 @@
 #include "level.h"
 
-const Level levels[7] = {
-    // Level 0: A straight shot, no obstacles.
-        {
-        .ball_start    = { .x = 300, .y = 300 },
-        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 200 } },
-        .hole          = { .x = 650, .y = 100 },
-        .holeRadius    = 30,
-        .numObstacles  = 3,
-        .obstacles     = (Obstacle[]){
-            { .point = { .x = 400, .y = 400 }, .radius = 20, .color = OBSTACLE_COLOR },
-            { .point = { .x = 400, .y = 300 }, .radius = 20, .color = OBSTACLE_COLOR },
-            { .point = { .x = 400, .y = 200 }, .radius = 20, .color = OBSTACLE_COLOR },
-            { .point = { .x = 400, .y = 100 }, .radius = 20, .color = OBSTACLE_COLOR },
-            { .point = { .x = 500, .y = 500 }, .radius = 20, .color = OBSTACLE_COLOR },
-            { .point = { .x = 500, .y = 400 }, .radius = 20, .color = OBSTACLE_COLOR },
-            { .point = { .x = 500, .y = 300 }, .radius = 20, .color = OBSTACLE_COLOR },
-            { .point = { .x = 500, .y = 200 }, .radius = 20, .color = OBSTACLE_COLOR },
-            { .point = { .x = 500, .y = 100 }, .radius = 20, .color = OBSTACLE_COLOR }
+static const Obstacle level2_obstacles[] = {
+            { .point = { .x = 400, .y = 260 }, .radius = 40, .color = OBSTACLE_COLOR },
+            { .point = { .x = 400, .y = 340 }, .radius = 40, .color = OBSTACLE_COLOR }
+};
 
-        }
-    },
+static const Obstacle level3_obstacles[] = {
+    { .point = { .x = 450, .y = 300 }, .radius = 40, .color = OBSTACLE_COLOR },
+    { .point = { .x = 550, .y = 300 }, .radius = 40, .color = OBSTACLE_COLOR }
+};
+
+static const Obstacle level4_obstacles[] = {
+            { .point = { .x = 400, .y = 100 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 200, .y = 100 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 300, .y = 200 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 300, .y = 250 }, .radius = 15, .color = OBSTACLE_COLOR },
+            { .point = { .x = 300, .y = 300 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 200, .y = 400 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 500, .y = 100 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 600, .y = 100 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 400, .y = 400 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 500, .y = 400 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 600, .y = 400 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 700, .y = 300 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 700, .y = 200 }, .radius = 30, .color = OBSTACLE_COLOR },
+            { .point = { .x = 700, .y = 250 }, .radius = 15, .color = OBSTACLE_COLOR },
+};
+
+static const Obstacle level5_obstacles[] = {
+    { .point = { .x = 500, .y = 400 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 400, .y = 500 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 400, .y = 400 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 400, .y = 300 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 400, .y = 200 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 400, .y = 100 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 500, .y = 500 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 500, .y = 500 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 500, .y = 400 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 500, .y = 300 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 500, .y = 200 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 500, .y = 100 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 500 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 400 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 300 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 200 }, .radius = 20, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 100 }, .radius = 20, .color = OBSTACLE_COLOR }
+};
+
+static const Obstacle level6_obstacles[] = {
+    { .point = { .x = 600, .y = 400 }, .radius = 10, .color = OBSTACLE_COLOR },
+    { .point = { .x = 700, .y = 400 }, .radius = 10, .color = OBSTACLE_COLOR },
+    { .point = { .x = 650, .y = 350 }, .radius = 10, .color = OBSTACLE_COLOR },
+    { .point = { .x = 650, .y = 450 }, .radius = 10, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 450 }, .radius = 10, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 350 }, .radius = 10, .color = OBSTACLE_COLOR },
+    { .point = { .x = 700, .y = 350 }, .radius = 10, .color = OBSTACLE_COLOR },
+    { .point = { .x = 700, .y = 450 }, .radius = 10, .color = OBSTACLE_COLOR }
+};
+
+static const Obstacle level7_obstacles[] = {
+    { .point = { .x = 500, .y = 400 }, .radius = 65, .color = OBSTACLE_COLOR },
+    { .point = { .x = 700, .y = 400 }, .radius = 65, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 500 }, .radius = 65, .color = OBSTACLE_COLOR },
+    { .point = { .x = 600, .y = 300 }, .radius = 65, .color = OBSTACLE_COLOR }
+};
+const Level levels[8] = {
+    // Level 0: A straight shot, no obstacles.
     {
         .ball_start    = { .x = 300, .y = 300 },
         .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
@@ -38,57 +83,60 @@ const Level levels[7] = {
         .numObstacles  = 0,
         .obstacles     = (Obstacle[]){}
     },
-    // Level 2: Vertical “pinch” – two big red obstacles with just enough gap.
+    // Level 2
     {
         .ball_start    = { .x = 300, .y = 300 },
         .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
         .hole          = { .x = 600, .y = 300 },
         .holeRadius    = 30,
-        .numObstacles  = 2,
-        .obstacles     = (Obstacle[]){
-            { .point = { .x = 400, .y = 260 }, .radius = 40, .color = OBSTACLE_COLOR },
-            { .point = { .x = 400, .y = 340 }, .radius = 40, .color = OBSTACLE_COLOR }
-        }
+        .obstacles     = level2_obstacles,
+        .numObstacles = sizeof level2_obstacles / sizeof level2_obstacles[0]
     },
-    // Level 3: Horizontal “barrier” – two green blocks forcing you around.
+    // Level 3
     {
         .ball_start    = { .x = 300, .y = 300 },
         .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
         .hole          = { .x = 650, .y = 300 },
         .holeRadius    = 30,
-        .numObstacles  = 2,
-        .obstacles     = (Obstacle[]){
-            { .point = { .x = 450, .y = 300 }, .radius = 40, .color = OBSTACLE_COLOR },
-            { .point = { .x = 550, .y = 300 }, .radius = 40, .color = OBSTACLE_COLOR }
-        }
+        .obstacles     = level3_obstacles,
+        .numObstacles  = sizeof level3_obstacles / sizeof level3_obstacles[0]
     },
-    // Level 4: Zig-zag blue posts you have to thread between.
+    // Level 4
+    { 
+        .ball_start    = { .x = 100, .y = 250 },
+        .player_start  = { { .x = 100, .y = 200 }, { .x = 100, .y = 300 } },
+        .hole          = { .x = 500, .y = 250 },
+        .holeRadius    = 30,
+        .obstacles     = level4_obstacles,
+        .numObstacles = sizeof level4_obstacles / sizeof level4_obstacles[0]
+    },
+    // Level 5
     {
         .ball_start    = { .x = 300, .y = 300 },
         .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 200 } },
-        .hole          = { .x = 650, .y = 100 },
+        .hole          = { .x = 675, .y = 300 },
         .holeRadius    = 30,
-        .numObstacles  = 3,
-        .obstacles     = (Obstacle[]){
-            { .point = { .x = 450, .y = 270 }, .radius = 30, .color = OBSTACLE_COLOR },
-            { .point = { .x = 500, .y = 300 }, .radius = 30, .color = OBSTACLE_COLOR },
-            { .point = { .x = 450, .y = 330 }, .radius = 30, .color = OBSTACLE_COLOR }
-        }
+        .obstacles     = level5_obstacles,
+        .numObstacles = sizeof level5_obstacles / sizeof level5_obstacles[0]
     },
-    // Level 5 
-{
+    // Level 6
+    {
+        .ball_start    = { .x = 300, .y = 300 },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 200 } },
+        .hole          = { .x = 650, .y = 400 },
+        .holeRadius    = 30,
+        .obstacles     = level6_obstacles,
+        .numObstacles = sizeof level6_obstacles / sizeof level6_obstacles[0]
+    },
+    // Level 7
+    {
         .ball_start    = { .x = 300, .y = 400 },
         .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 200 } },
         .hole          = { .x = 600, .y = 400 },
         .holeRadius    = 30,
-        .numObstacles  = 4,
-        .obstacles     = (Obstacle[]){
-            { .point = { .x = 500, .y = 400 }, .radius = 65, .color = OBSTACLE_COLOR },
-            { .point = { .x = 700, .y = 400 }, .radius = 65, .color = OBSTACLE_COLOR },
-            { .point = { .x = 600, .y = 500 }, .radius = 65, .color = OBSTACLE_COLOR },
-            { .point = { .x = 600, .y = 300 }, .radius = 65, .color = OBSTACLE_COLOR }
-        }
-    }
+        .obstacles     = level7_obstacles,
+        .numObstacles  = sizeof level7_obstacles / sizeof level7_obstacles[0],
+    },
 };
 
 
