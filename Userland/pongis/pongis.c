@@ -4,7 +4,7 @@
 static void handle_input(int *running, GamePhase *phase, GameState *state, int *level_complete_displayed);
 static void update_physics(GameState *state, ModeInfo mode, int *counter);
 static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point prev_ball, ModeInfo mode, int *counter_flag);
-static void render_level_complete(void);
+static void render_level_complete(GameState *state);
 static void render_all_levels_complete(void);
 
 void pongis_init(void)
@@ -93,7 +93,7 @@ void pongis(ModeInfo mode, int player_count)
         
             if (check_ball_in_hole(&state)) {
                 clear_screen();
-
+                
                 while (isCharReady()) {
                     getChar(); // Clear input buffer
                 }
@@ -118,7 +118,7 @@ void pongis(ModeInfo mode, int player_count)
 
             case GAME_LEVEL_COMPLETE:
                 if (!level_complete_displayed) {
-                    render_level_complete();
+                    render_level_complete(&state);
 
                     level_complete_displayed = 1;
                 }
@@ -204,7 +204,7 @@ static void update_physics(GameState *state, ModeInfo mode, int *counter_display
     movement_update(&state->players[FIRST_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
 
     // Check collisions for first player - ball
-    check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter);
+    check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter) == 1 ? state->ball.last_touch_id = FIRST_PLAYER_ID : 0;
 
     if (state->numPlayers == TWO_PLAYER_MODE) {
         // Second player checks
@@ -220,8 +220,8 @@ static void update_physics(GameState *state, ModeInfo mode, int *counter_display
         player_velocity_update(p2_dir_x, p2_dir_y, &state->players[SECOND_PLAYER_ID].physics.vel_x, &state->players[SECOND_PLAYER_ID].physics.vel_y);
         movement_update(&state->players[SECOND_PLAYER_ID].physics, &mode, PLAYER_RADIUS);
         
-        // Check collisions for second player - ball
-        check_collision(&state->players[SECOND_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter);
+        // Check collisions for second player - ball  
+        check_collision(&state->players[SECOND_PLAYER_ID].physics, &state->ball.physics, &state->touch_counter) == 1 ? state->ball.last_touch_id = SECOND_PLAYER_ID : 0;
         
         // Check collisions between players
         check_collision(&state->players[FIRST_PLAYER_ID].physics, &state->players[SECOND_PLAYER_ID].physics, &state->touch_counter);
@@ -289,7 +289,7 @@ static void render_playing(GameState *state, Point prev_fp, Point prev_sp, Point
 /*
    render_level_complete: show “Level Complete!” only once per level.
 */
-static void render_level_complete()
+static void render_level_complete(GameState *state)
 {
     clear_screen();
     victory_sound();
@@ -303,6 +303,14 @@ static void render_level_complete()
     // Instrucciones en Zoom 4
     set_zoom(3);
     putString("Press ENTER for next level or 'c' to quit\n");
+    if (state->numPlayers == TWO_PLAYER_MODE)
+    {
+        putString("Player ");
+        char buff[3] = {0};
+        itoa(state->ball.last_touch_id + 1, buff, 10);
+        putString(buff); // Convert to string
+        putString(" wins!\n");
+    }
 }
 
 static void render_all_levels_complete()

@@ -106,7 +106,7 @@ void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y);
    @param obj1: Pointer to the first PhysicsObject.
    @param obj2: Pointer to the second PhysicsObject.
 **/
-void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter_displayed);
+uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter_displayed);
 
 void check_obstacle_collision(PhysicsObject *obj, const Obstacle *obs);
 

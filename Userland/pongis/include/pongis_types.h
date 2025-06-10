@@ -63,6 +63,7 @@ typedef struct Player {
 // Ball structure
 typedef struct Ball {
     PhysicsObject physics;
+    int last_touch_id;
 } Ball;
 
 typedef struct {

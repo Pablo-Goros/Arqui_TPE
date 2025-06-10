@@ -215,7 +215,7 @@ void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius)
 
 }
 
-void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
+uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
 {
     // 1) Vector from obj1 → obj2
     float dx     = obj2->position.x - obj1->position.x;
@@ -247,7 +247,6 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
     if ((obj1IsPlayer && obj2IsBall) || (obj2IsPlayer && obj1IsBall)) {
         PhysicsObject *player = obj1IsPlayer ? obj1 : obj2;
         PhysicsObject *ball   = (player == obj1) ? obj2 : obj1;
-
         (*counter)++;
         // Recompute vector from player → ball
         dx = ball->position.x - player->position.x;
@@ -275,7 +274,7 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
         float overlap = radius_sum - dist;
         ball->position.x += (int)roundf(nx * overlap);
         ball->position.y += (int)roundf(ny * overlap);
-        return;
+        return 1;
     }
 
     // ─── Player ↔ Player: equal-mass elastic collision ───
@@ -313,7 +312,7 @@ void check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
             obj2->position.x += (int)roundf(nx * half);
             obj2->position.y += (int)roundf(ny * half);
         }
-        return;
+        return 0;
     }
 
     // ─── Other cases (e.g., ball ↔ ball) can be left untouched or handled similarly ───
