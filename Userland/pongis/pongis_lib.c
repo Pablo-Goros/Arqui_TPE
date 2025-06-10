@@ -13,6 +13,7 @@ uint8_t startPongisMenu(ModeInfo mode) {
 
     int selected = 0;
     drawMainMenu(selected);
+    game_start_sound();
     while (1) {
         if (!isCharReady()) { // Wait for next char
             _hlt();  
