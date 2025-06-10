@@ -225,7 +225,7 @@ uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
 
     // 2) No overlap → nothing to do
     if (dist_sq >= radius_sum*radius_sum) {
-        return;
+        return 0;
     }
 
     // 3) Prepare a robust normal: (nx,ny)
@@ -315,7 +315,7 @@ uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
         return 0;
     }
 
-    // ─── Other cases (e.g., ball ↔ ball) can be left untouched or handled similarly ───
+    return 0;
 }
 
 // Revised collision vs. a circular obstacle
