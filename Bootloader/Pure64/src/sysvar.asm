@@ -7,9 +7,9 @@
 
 
 ;CONFIG
-cfg_smpinit:	db 1	; By default SMP is enabled. Set to 0 to disable.
+cfg_smpinit:		db 1	; By default SMP is enabled. Set to 0 to disable.
 cfg_vesa:		db 1	; By default VESA is disabled. Set to 1 to enable.
-cfg_default:	db 0	; By default we don't need a config file so set to 0. If a config file is found set to 1.
+cfg_default:		db 0	; By default we don't need a config file so set to 0. If a config file is found set to 1.
 cfg_e820:		db 1	; By default E820 should be present. Pure64 will set this to 0 if not found/usable.
 cfg_mbr:		db 0	; Did we boot off of a disk with a proper MBR
 cfg_hdd:		db 0	; Was a bootable drive detected
@@ -65,7 +65,17 @@ msg_MEM:		db ']  [MEM: ', 0
 msg_mb:			db ' MiB]', 0
 msg_startingkernel:	db 'Starting kernel...', 13, 13, 0
 msg_no64:		db 'ERROR: This computer does not support 64-bit mode.', 0
-msg_novesa:		db 'VESA error', 0
+msg_novesa:		db 'VESA error. EDID agotados.', 0
+
+msg_edid_bpp_fail:		db ' bpp fail', 0
+msg_edid_found:		db ' EDID 0', 0
+
+resoluciones_preferidas:		;; En orden de preferencia y asÃ­: resx, resy, bpp, 0x0000 (el cero requerido para indexar [8*edx])
+						dw 1024, 768, 24, 0x0000
+						dw 1024, 768, 32, 0x0000
+						dw 1366, 768, 32, 0x0000
+						dw 1024, 600, 32, 0x0000
+resol_prefs_vctor_cant		equ ($-resoluciones_preferidas)/8
 
 ; VESA
 ; Mandatory information for all VBE revisions
