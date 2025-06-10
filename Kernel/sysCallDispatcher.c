@@ -16,6 +16,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = sys_read(fd, buf, count);
             break;
         }
+        
         case SYS_WRITE: {
             FileDescriptor fd = va_arg(args, FileDescriptor);
             const char *buf   = va_arg(args, const char *);
@@ -24,6 +25,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
+
         case SYS_REGISTERS:
             vd_show_registers(STDOUT);
             break;
@@ -34,6 +36,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
+
         case SYS_SET_CURSOR: {
             int x = (int)va_arg(args, uint64_t);
             int y = (int)va_arg(args, uint64_t);
@@ -41,14 +44,10 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
+
         case SYS_CLEAR_SCREEN: {
             vd_clear_screen();
             ret = 0;
-            break;
-        }
-
-        case SYS_GET_TICKS: {
-            ret = get_ticks();
             break;
         }
 
@@ -58,6 +57,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
                 ret = 0;
                 break;
         }
+
         case SYS_RESET_KBD_BUFFER: {
             kbd_reset_buff();
             break;
@@ -100,6 +100,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = 0;
             break;
         }
+
         case SYS_KEY_READY: {
             ret = kbd_has_char() ? 1 : 0; // Return 1 if a key is ready, 0 if not
             break;
@@ -109,6 +110,7 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             ret = kbd_is_key_down(key);
             break;
         }
+
         case SYS_BEEP: {
             unsigned int frequency = (unsigned int) va_arg(args, uint64_t);
             unsigned int duration_ms = (unsigned int) va_arg(args, uint64_t);

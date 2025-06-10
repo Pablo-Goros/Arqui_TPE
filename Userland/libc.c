@@ -160,10 +160,6 @@ void getTime() {
 	sys_call(SYS_GET_TIME, 0, 0, 0, 0, 0);
 }
 
-uint64_t get_ticks(){
-    return sys_call(SYS_GET_TICKS, 0, 0, 0, 0, 0);
-}
-
 void wait_next_tick(void) {
     _hlt(); // Halt the CPU until the next tick
 }

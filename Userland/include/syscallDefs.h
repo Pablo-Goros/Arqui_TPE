@@ -10,7 +10,6 @@ typedef enum {
 
 #define SYS_READ            0
 #define SYS_WRITE           1
-#define SYS_GET_TICKS       3
 #define SYS_REGISTERS       2
 #define SYS_GET_TIME        4
 #define SYS_SET_CURSOR      5
