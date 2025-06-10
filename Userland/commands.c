@@ -2,7 +2,7 @@
 
 void cmd_help() {
     clear_screen(); //funcion para limpiar pantalla
-
+    int prev_zoom = get_zoom();
     set_zoom(2);
     set_cursor(0, 0);
     putString("Available commands:\n");
@@ -17,6 +17,8 @@ void cmd_help() {
     putChar('\n');
     putString("\t Press 'c' to exit window");
     hltUntil_c();
+    set_zoom(prev_zoom);
+    set_cursor(0,0);
 }
 
 void cmd_time() {

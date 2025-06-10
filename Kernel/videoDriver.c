@@ -92,6 +92,10 @@ static void scroll_screen(void) {
     _memset(fb + move_bytes, 0, (uint64_t)lines * pitch);
 }
 
+int vd_get_zoom(void) {
+    return zoom;
+}
+
 void vd_put_char(unsigned char c, FileDescriptor fd) {
     text_color = (fd == STDOUT) ? COLOR_WHITE : COLOR_RED;
 

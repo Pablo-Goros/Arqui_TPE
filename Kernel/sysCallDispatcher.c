@@ -62,7 +62,10 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             kbd_reset_buff();
             break;
         }
-
+        case SYS_GET_ZOOM: {
+            ret = vd_get_zoom();
+            break;
+        }
         case SYS_SET_ZOOM: {
             int zoom_level = (int)va_arg(args, uint64_t);
             vd_set_zoom(zoom_level);

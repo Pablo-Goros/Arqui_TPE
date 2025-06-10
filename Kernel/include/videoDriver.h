@@ -47,6 +47,7 @@ void vd_put_char(unsigned char c, FileDescriptor fd);
  */
 void vd_put_string(const char *str, FileDescriptor fd);
 
+int vd_get_zoom(void);
 /**
  * @brief Clear the entire screen and reset the cursor to the top‐left.
  */

@@ -27,7 +27,7 @@ typedef enum {
 #define SYS_DRAW_BITMAP     18
 #define SYS_RESET_KBD_BUFFER   19
 #define SYS_BEEP            20
-
+#define SYS_GET_ZOOM        21
 
 
 #endif // _SYSCALLS_H_

@@ -37,7 +37,7 @@ void     putString(const char *s);
 uint64_t   strlen(const char *s);
 int      strcmp(const char *s1, const char *s2);
 int      strncmp(const char *s1, const char *s2, uint64_t n);
-
+int     get_zoom(void);
 /* ------------------------------------------------------------------------- */
 /* Numeric conversions                                                       */
 /* ------------------------------------------------------------------------- */
