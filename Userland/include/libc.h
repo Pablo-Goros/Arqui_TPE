@@ -35,17 +35,8 @@ void     putString(const char *s);
 /* String and memory routines                                                */
 /* ------------------------------------------------------------------------- */
 uint64_t   strlen(const char *s);
-char    *strcpy(char *dest, const char *src);
-char    *strncpy(char *dest, const char *src, uint64_t n);
 int      strcmp(const char *s1, const char *s2);
 int      strncmp(const char *s1, const char *s2, uint64_t n);
-int      strcasecmp(const char *s1, const char *s2);
-int      isalpha(int c);
-int      toupper(int c);
-int      tolower(int c);
-
-void    *memset(void *s, int c, uint64_t n);
-void    *memcpy(void *dest, const void *src, uint64_t n);
 
 /* ------------------------------------------------------------------------- */
 /* Numeric conversions                                                       */
@@ -56,9 +47,9 @@ int      atoi(const char *s);
 /* ------------------------------------------------------------------------- */
 /* Timing and delays                                                         */
 /* ------------------------------------------------------------------------- */
-void     getTime(void);            /* fetch system time */ 
-uint64_t getTicks(void);           /* ticks since boot */ 
-void     sleep(uint64_t seconds);
+void     getTime(void);            // fetch system time 
+
+void    wait_next_tick(void); /* block until next timer IRQ (60 fps target) */
 
 /* ------------------------------------------------------------------------- */
 /* Cursor control & screen clearing                                          */
@@ -75,7 +66,7 @@ void hltUntil_c();
 /* ------------------------------------------------------------------------- */
 /* CPU register inspection                                                   */
 /* ------------------------------------------------------------------------- */
-uint64_t *getRegisters(void);
+
 void      showRegisters(void);    /* print regs to stdout */ 
 
 /* ------------------------------------------------------------------------- */
@@ -83,12 +74,14 @@ void      showRegisters(void);    /* print regs to stdout */
 /* ------------------------------------------------------------------------- */
 uint64_t get_mode_info(ModeInfo *mode);
 
-void draw_bitmap(int x, int y, int w, int h, const uint32_t *pixels);
 
-void wait_next_tick(void); /* block until next timer IRQ (60 fps target) */
-
-int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
+/* ------------------------------------------------------------------------- */
+/* Sound                                                                     */
+/* ------------------------------------------------------------------------- */
 void exception_sound();
+
 void system_start_sound();
+void draw_welcome();
+void draw_smile();
 
 #endif /* _LIBC_H_ */

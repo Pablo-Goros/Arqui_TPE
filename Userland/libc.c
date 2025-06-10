@@ -31,25 +31,6 @@ uint64_t strlen(const char *s) {
     return len;
 }
 
-char    *strcpy(char *dest, const char *src) {
-    strncpy(dest, src, strlen(src) + 1); // +1 to include null terminator
-    return dest;
-}
-
-char   *strncpy(char *dest, const char *src, uint64_t n) {
-    uint64_t i;
-
-    // Copy up to n chars or until '\0'
-    for (i = 0; i < n && src[i] != '\0'; i++) {
-        dest[i] = src[i];
-    }
-    // If we hit end of src before n, pad with '\0'
-    for (; i < n; i++) {
-        dest[i] = '\0';
-    }
-    return dest;
-}
-
 // Compare two strings byte-wise
 int strcmp(const char *s1, const char *s2) {
     while (*s1 && (*s1 == *s2)) {
@@ -68,44 +49,6 @@ int strncmp(const char *s1, const char *s2, uint64_t n) {
     return (unsigned char)*s1 - (unsigned char)*s2;
 }
 
-
-// Case-insensitive compare 
-int strcasecmp(const char *s1, const char *s2) {
-    unsigned char a, b;
-    do {
-        a = (unsigned char)*s1++;
-        b = (unsigned char)*s2++;
-
-        // Convert to uppercase if lowercase
-        a = toupper(a);
-        b = toupper(b);
-    } while (a == b && a);
-    return a - b;
-}
-
-
-// Returns non-zero if c is A–Z or a–z
-int isalpha(int c) {
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-}
-
-// Convert lowercase ASCII to uppercase; leave others unchanged
-int toupper(int c) {
-    if (c >= 'a' && c <= 'z')
-        return c - ('a' - 'A');
-    return c;
-}
-
-// Convert uppercase ASCII to lowercase; leave others unchanged
-int tolower(int c) {
-    if (c >= 'A' && c <= 'Z')
-        return c + ('a' - 'A');
-    return c;
-}
-
-
-//void    *memset(void *s, int c, size_t n);
-//void    *memcpy(void *dest, const void *src, size_t n);
 
 /* ------------------------------------------------------------------------- */
 /* Numeric conversions                                                       */
@@ -228,7 +171,65 @@ void system_start_sound() {
 }
 
 
-//! LA VAMOS A USAR DESP SI IMPLEMENTAMOS DOS BUFFERS
-// int  blit(const void *user_buffer, uint64_t size); /* copy `size` bytes from user‐buffer into VRAM */
 
 
+void draw_smile(void){
+
+    int width = 1024; // Width of the screen
+    int height = 768; // Height of the screen
+    // Draw a simple smiley face using sys_call
+    int centerX = width/2; // Center of the face
+    int centerY = height/2; // Center of the face
+    //FACE
+    sys_call(SYS_DRAW_CIRCLE, centerX, centerY, 200, 0xFF8700, 0); // Orange circle
+    sys_call(SYS_DRAW_CIRCLE,centerX, centerY, 175, 0xFFFF00, 0); // Yellow circle
+    //EYES
+    sys_call(SYS_DRAW_RECT, centerX-60, centerY-90, 20, 70, 0x000000); // Left eye
+    sys_call(SYS_DRAW_RECT, centerX+40, centerY-90, 20, 70, 0x00000); // Right eye
+    // MOUTH
+    sys_call(SYS_DRAW_RECT, centerX-90, centerY+55, 180,10, 0x000000); // Black mouth
+    sys_call(SYS_DRAW_RECT, centerX-110,centerY+35,10,10, 0x000000); // Left side of mouth
+    sys_call(SYS_DRAW_RECT, centerX-100,centerY+45,10,10, 0x000000); // left side of mouth
+    sys_call(SYS_DRAW_RECT, centerX+100,centerY+35,10,10, 0x000000); // Right side of mouth
+    sys_call(SYS_DRAW_RECT, centerX+90,centerY+45,10,10, 0x000000); // Right side of mouth
+}
+
+void draw_welcome(){
+    sys_call(SYS_DRAW_RECT, 0, 0,1024, 50,0x9300ff) ; // TOP BORDER in purple
+    sys_call(SYS_DRAW_RECT, 0, 718, 1024, 50, 0x9300ff); // BOTTOM BORDER in purple
+    //costados violetas
+    sys_call(SYS_DRAW_RECT, 0, 50, 10, 668, 0x9300ff); // LEFT BORDER in purple
+    sys_call(SYS_DRAW_RECT, 1014, 50, 10, 668, 0x9300ff); // RIGHT BORDER in purple
+    //bordes azul
+    sys_call(SYS_DRAW_RECT, 10, 50, 10, 668, 0x0020ff); // LEFT BORDER in blue
+    sys_call(SYS_DRAW_RECT, 1004, 50, 10, 668, 0x0020ff); // RIGHT BORDER in blue
+    sys_call(SYS_DRAW_RECT, 10, 40, 1004, 10, 0x0020ff); // top border in blue
+    sys_call(SYS_DRAW_RECT, 10, 718, 1004, 10, 0x0020ff); // bottom border in blue
+
+    for(int i = 10; i < 1004; i+=10){
+        if(i%20 == 0) {
+            sys_call(SYS_DRAW_RECT, i, 40, 10, 10, 0x0a00c7);
+            sys_call(SYS_DRAW_RECT, i, 718, 10, 10, 0x0a00c7);
+        }
+    }
+    for(int i = 0; i < 1024; i+=64){
+        if(i%128 == 0) {
+            sys_call(SYS_DRAW_RECT, i, 0, 64, 40, 0xff00ff);
+            sys_call(SYS_DRAW_RECT, i,728 , 64, 40, 0xff00ff);
+        }
+    }
+
+    draw_smile(); // Draw smiley face in the center
+    //message
+    set_zoom (3);
+    set_cursor(50, 50);
+    putString("ARQUITECTURA DE COMPUTADORAS - ITBA");
+    set_cursor(100, 100);
+    putString("Trabajo Practico Especial");
+
+    set_zoom(2);
+    set_cursor(40, 630);
+    putString("Creador por: Pablo Gorostiaga, Tiago Heras y Amador Vallejo\n");
+    set_cursor(40, 680);
+    putString("Presione 'c' para continuar...");
+}

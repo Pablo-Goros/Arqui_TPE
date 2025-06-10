@@ -3,9 +3,9 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
-  <component name="CMakePresetLoader"><![CDATA[{
-  "useNewFormat": true
-}]]></component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
   <component name="CMakeProjectFlavorService">
     <option name="flavorId" value="CMakePlainProjectFlavor" />
   </component>
@@ -25,13 +25,6 @@
   <component name="ChangeListManager">
     <list default="true" id="aa133387-e917-4afd-ba56-156a61112bd0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Kernel/asm/interrupts.asm" beforeDir="false" afterPath="$PROJECT_DIR$/Kernel/asm/interrupts.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Kernel/include/interrupts.h" beforeDir="false" afterPath="$PROJECT_DIR$/Kernel/include/interrupts.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Kernel/include/sysCallDispatcher.h" beforeDir="false" afterPath="$PROJECT_DIR$/Kernel/include/sysCallDispatcher.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Kernel/sysCallDispatcher.c" beforeDir="false" afterPath="$PROJECT_DIR$/Kernel/sysCallDispatcher.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Userland/commands.c" beforeDir="false" afterPath="$PROJECT_DIR$/Userland/commands.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Userland/include/libc.h" beforeDir="false" afterPath="$PROJECT_DIR$/Userland/include/libc.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Userland/libc.c" beforeDir="false" afterPath="$PROJECT_DIR$/Userland/libc.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,27 +38,27 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "AmadorCVT"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;AmadorCVT&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Pablo-Goros/Arqui_TPE.git",
-    "accountId": "1d7d17d4-4f6c-43df-92e8-0b35696772f9"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Pablo-Goros/Arqui_TPE.git&quot;,
+    &quot;accountId&quot;: &quot;1d7d17d4-4f6c-43df-92e8-0b35696772f9&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectApplicationVersion">
     <option name="ide" value="CLion" />
     <option name="majorVersion" value="2025" />
     <option name="minorVersion" value="1.1" />
     <option name="productBranch" value="Classic" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 1
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
   <component name="ProjectId" id="2xhpE75TUFUBEoPRghaCW62QIdj" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -91,11 +84,6 @@
   }
 }]]></component>
   <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="dummy" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Arqui_TPE" TARGET_NAME="dummy" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Arqui_TPE" RUN_TARGET_NAME="dummy">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -110,6 +98,9 @@
       <option name="presentableId" value="Default" />
       <updated>1748400045476</updated>
       <workItem from="1748400048450" duration="4364000" />
+      <workItem from="1749305136783" duration="6144000" />
+      <workItem from="1749557246853" duration="15171000" />
+      <workItem from="1749578207642" duration="4000" />
     </task>
     <servers />
   </component>
