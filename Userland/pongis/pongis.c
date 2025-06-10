@@ -17,13 +17,12 @@ void pongis_init(void)
     }
     mode.height -= UI; // Reserve space for UI
     game_start_sound();
-    
     while (1) {
         uint8_t selected = startPongisMenu(mode);
         switch (selected) {
                     case 0:
                         // One player
-                        pongis(mode, ONE_PLAYER_MODE);        
+                        pongis(mode, ONE_PLAYER_MODE);
                         return;
 
                     case 1:

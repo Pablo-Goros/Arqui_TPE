@@ -2,7 +2,7 @@
 #define SOUND_DRIVER_H
 
 #include <stdint.h>
-
+#include "time.h"
 // Hardware constants
 #define PIT_FREQUENCY 1193180      // Base frequency of the PIT in Hz
 #define PIT_COMMAND_PORT 0x43      // PIT command register

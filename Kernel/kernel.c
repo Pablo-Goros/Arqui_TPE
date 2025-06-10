@@ -52,7 +52,6 @@ int main()
 {	
 	load_idt();
 	//play_sound(440); // Play a sound at 440Hz
-    //beep(440, 500); // Beep at 440Hz for 500ms
 	((EntryPoint)sampleCodeModuleAddress)();
 	return 0;
 }

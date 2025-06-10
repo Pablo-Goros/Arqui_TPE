@@ -44,7 +44,8 @@ void beep(unsigned int frequency, unsigned int duration_ms) {
     outb(SPEAKER_CONTROL_PORT, tmp | 0x03);
 
     // Esperar el tiempo indicado (QEMU necesita delay real)
-    for (volatile uint64_t i = 0; i < duration_ms * 50000; i++); // puede requerir ajuste
+    int ticks_to_wait = (duration_ms * 18) / 1000; // Convertir ms a ticks (18.2 ticks/segundo)
+    sleep(ticks_to_wait); // puede requerir ajuste
 
     // Desactivar solo bit 0 (mantener 1 para dejar en modo "activo")
     tmp = inb(SPEAKER_CONTROL_PORT);
