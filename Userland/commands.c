@@ -11,7 +11,7 @@ void cmd_help() {
     putString("  regs          - Show CPU registers\n");
     putString("  pongis        - Launch the Pong-Golf mini-game\n");
     putString("  div0          - Trigger a divide-by-zero exception\n");
-    putString("  ud2           - Trigger an invalid-opcode exception\n");
+    putString("  invalidOp     - Trigger an invalid-opcode exception\n");
     putString("  zoom <NUMBER> - Set text zoom level (1-10)\n");
     putString("  exit          - Exit the shell\n");
     putChar('\n');
@@ -33,9 +33,6 @@ void cmd_registers() {
     hltUntil_c();
 }
 
-void cmd_pong() {
-
-}
 
 void cmd_div0() {
     exception_sound();

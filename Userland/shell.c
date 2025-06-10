@@ -46,7 +46,7 @@ void shell(void) {
         else if (strcmp(command, "clear")==0)           cmd_clear();
         else if (strcmp(command, "regs")==0)            cmd_registers();
         else if (strcmp(command, "div0")==0)            cmd_div0();
-        else if (strcmp(command, "ud2")==0)             cmd_invalid_opcode();
+        else if (strcmp(command, "invalidOp")==0)       cmd_invalid_opcode();
         else if (strcmp(command, "exit")==0)            cmd_exit();
         else if (strcmp(command, "pongis")==0)          pongis_init();
         else if (strncmp(command, "zoom ", 5)==0) {     // Check if command starts with "zoom "

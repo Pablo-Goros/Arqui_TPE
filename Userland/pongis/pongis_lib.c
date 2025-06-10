@@ -4,7 +4,7 @@ const char* menuOptions[] = {
     "Jugar (1 jugador)      ",
     "Jugar (2 jugadores)    ",
     "Instrucciones          ",
-    "Volver al Shell        "
+    "Volver a la Shell      "
 };
 const int menuCount = sizeof(menuOptions) / sizeof(menuOptions[0]);
 
@@ -88,7 +88,7 @@ void drawInstructions(void) {
     putString("   Flecha Izquierda -> Izquierda\n");
     putString("   Flecha Derecha   -> Derecha\n\n");
 
-    putString(" Presiona 'c' para volver al menú principal.\n");
+    putString(" Presiona 'c' para volver al menu principal.\n");
 
     sys_call(SYS_RESET_KBD_BUFFER, 0, 0, 0, 0, 0);
 
