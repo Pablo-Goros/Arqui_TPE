@@ -6,12 +6,11 @@ static int first_run = 1;
 void shell(void) {
     if(first_run){
         first_run = 0;
-        system_start_sound();
         clear_screen();
-        set_zoom(2);
-        set_cursor(0, 0);
-        putString("Welcome to the Shell!\n");
-        putString("Type 'help' for a list of commands.\n");
+        draw_welcome();
+        system_start_sound();
+        hltUntil_c();
+        putString("Write help for a list of commands (CAPS Sensitive)\n");
     }
 
     while (1) {
@@ -80,5 +79,4 @@ void shell(void) {
             putString("\nUnknown command\n");
         }
     }
-    return;
 }
