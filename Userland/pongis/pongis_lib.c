@@ -121,20 +121,20 @@ void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y) {
         float ux = dir_x / length;
         float uy = dir_y / length;
 
-        // Calculate ±MAX_PLAYER_SPEED for each axis
+        // Calculate +-MAX_PLAYER_SPEED for each axis
         float target_vx = ux * MAX_PLAYER_SPEED;
         float target_vy = uy * MAX_PLAYER_SPEED;
 
         // Detect diagonal to straight shift 
         int shifting_to_cardinal = ((dir_x == 0 && dir_y != 0) || (dir_x != 0 && dir_y == 0));
 
-        // Check if current speed ≥ SNAP_SPEED_THRESHOLD% of max_sq
+        // Check if current speed >= SNAP_SPEED_THRESHOLD % of max_sq
         float speed_sq = (*vel_x) * (*vel_x) + (*vel_y) * (*vel_y);
         float max_sq   = MAX_PLAYER_SPEED * MAX_PLAYER_SPEED;
         int   already_fast = (speed_sq >= SNAP_SPEED_THRESHOLD * max_sq);
 
         if (shifting_to_cardinal && already_fast) {
-            // ─── Snap the held axis, gently decay the released axis ───
+            // Snap the held axis, gently decay speed of released axis
             if (dir_x != 0 && dir_y == 0) {
                 *vel_x = target_vx;
                 *vel_y *= RELEASED_AXIS_FRICTION;
@@ -145,7 +145,7 @@ void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y) {
             }
         }
         else {
-            // ─── Slow “ease‐toward” to the target (using SLOW_ACCEL_RATE) ───
+            // Slowly to the target (using SLOW_ACCEL_RATE)
             float dvx = target_vx - *vel_x;
             float dvy = target_vy - *vel_y;
             *vel_x += dvx * SLOW_ACCEL_RATE;
@@ -153,7 +153,7 @@ void player_velocity_update(int dir_x, int dir_y, float *vel_x, float *vel_y) {
         }
     }
     else {
-        // ─── No key pressed → standard friction coast ───
+        // No key pressed -> standard friction 
         *vel_x *= PLAYER_FRICTION;
         *vel_y *= PLAYER_FRICTION;
     }
@@ -217,38 +217,39 @@ void movement_update(PhysicsObject *obj, ModeInfo *mode, int radius)
 
 uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
 {
-    // 1) Vector from obj1 → obj2
+    //  Vector from obj1 to obj2
     float dx     = obj2->position.x - obj1->position.x;
     float dy     = obj2->position.y - obj1->position.y;
     float dist_sq = dx*dx + dy*dy;
     float radius_sum    = (float)(obj1->radius + obj2->radius);
 
-    // 2) No overlap → nothing to do
+    // No overlap 
     if (dist_sq >= radius_sum*radius_sum) {
         return 0;
     }
 
-    // 3) Prepare a robust normal: (nx,ny)
+    // Prepare normals (nx, ny)
     float dist = sqrtf(dist_sq);
     if (dist < 1e-4f) {
-        // exactly on top → pick a default axis
+        // exactly on top pick a default values
         dx = 1.0f; dy = 0.0f; dist = 1.0f;
     }
     float nx = dx / dist;
     float ny = dy / dist;
 
-    // 4) Detect types by radius
+    // Detect types by radius
     int obj1IsPlayer = (obj1->radius == PLAYER_RADIUS);
     int obj2IsPlayer = (obj2->radius == PLAYER_RADIUS);
     int obj1IsBall   = (obj1->radius == BALL_RADIUS);
     int obj2IsBall   = (obj2->radius == BALL_RADIUS);
 
-    // ─── Ball ↔ Player: treat player as infinite mass ───
+    // Ball & Player (player is infinte mass)
     if ((obj1IsPlayer && obj2IsBall) || (obj2IsPlayer && obj1IsBall)) {
         PhysicsObject *player = obj1IsPlayer ? obj1 : obj2;
         PhysicsObject *ball   = (player == obj1) ? obj2 : obj1;
         (*counter)++;
-        // Recompute vector from player → ball
+
+        // Recompute vector from player to ball
         dx = ball->position.x - player->position.x;
         dy = ball->position.y - player->position.y;
         dist = sqrtf(dx*dx + dy*dy);
@@ -258,7 +259,7 @@ uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
         nx = dx / dist;  
         ny = dy / dist;
 
-        // Relative velocity (player → ball) along the normal
+        // Relative velocity (player to ball) along the normal
         float rel_vx = player->vel_x - ball->vel_x;
         float rel_vy = player->vel_y - ball->vel_y;
         float rel_dot = rel_vx*nx + rel_vy*ny;
@@ -277,14 +278,13 @@ uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
         return 1;
     }
 
-    // ─── Player ↔ Player: equal-mass elastic collision ───
+    // Player & Player: equal-mass elastic collision
     if (obj1IsPlayer && obj2IsPlayer) {
-        // Calcular velocidades normales antes de la colisión
+        // Caclulate normal speeds
         float v1n = obj1->vel_x*nx + obj1->vel_y*ny;
         float v2n = obj2->vel_x*nx + obj2->vel_y*ny;
         
-        // Verificar si se están aproximando: obj1 debe moverse hacia obj2 y viceversa
-        // v1n > v2n significa que obj1 se mueve más rápido hacia obj2 que obj2 hacia obj1
+        // Check velocity differences 
         if (v1n > v2n) {
             // Decompose each velocity into normal & tangential parts
             float v1t_x  = obj1->vel_x - v1n*nx;
@@ -303,7 +303,7 @@ uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
             obj2->vel_y = v2t_y + new_v2n*ny;
         }
 
-        // Separar objetos SIEMPRE para evitar superposición
+        // Always seperate objects
         float overlap = radius_sum - dist;
         if (overlap > 0) {
             float half = overlap * 0.5f;
@@ -318,10 +318,7 @@ uint8_t check_collision(PhysicsObject *obj1, PhysicsObject *obj2, int *counter)
     return 0;
 }
 
-// Revised collision vs. a circular obstacle
-// Check & resolve collision between one circular object and one circular obstacle.
-// After this, obj’s center will sit exactly at (obs.center + normal*sumR), and
-// only the normal component of velocity is removed (players) or reflected (ball).
+// Collisions between obstacles and ball/player
 void check_obstacle_collision(PhysicsObject *obj, const Obstacle *obs) {
     if (!obs)
         return;
@@ -365,14 +362,12 @@ void check_obstacle_collision(PhysicsObject *obj, const Obstacle *obs) {
         // Use a small tolerance (slop) to ignore tiny overlaps from rounding.
         float slop = 0.1f;  // Adjust based on your game scale.
         if (penetration > slop) {
-            // Baumgarte stabilization: do not fully correct the penetration,
-            // but only a fraction (e.g. 80%) to prevent jitter.
-            float percent = 0.8f;
-            float correction = (penetration - slop) * percent;
+            // only move out by the overlap amount
+            float correction = penetration - slop;  
             px += nx * correction;
             py += ny * correction;
         }
-        
+
         // Write the corrected position back (rounding only for rendering if necessary)
         obj->position.x = (int)roundf(px);
         obj->position.y = (int)roundf(py);
