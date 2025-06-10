@@ -68,7 +68,7 @@ const Level levels[8] = {
     // Level 0: A straight shot, no obstacles.
     {
         .ball_start    = { .x = 300, .y = 300 },
-        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 400 } },
         .hole          = { .x = 600, .y = 300 },
         .holeRadius    = 30,
         .numObstacles  = 0,
@@ -77,7 +77,7 @@ const Level levels[8] = {
     // Level 1: Hole tucked up in a corner.
     {
         .ball_start    = { .x = 300, .y = 300 },
-        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 400 } },
         .hole          = { .x = 550, .y = 100 },
         .holeRadius    = 30,
         .numObstacles  = 0,
@@ -86,7 +86,7 @@ const Level levels[8] = {
     // Level 2
     {
         .ball_start    = { .x = 300, .y = 300 },
-        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 400 } },
         .hole          = { .x = 600, .y = 300 },
         .holeRadius    = 30,
         .obstacles     = level2_obstacles,
@@ -95,7 +95,7 @@ const Level levels[8] = {
     // Level 3
     {
         .ball_start    = { .x = 300, .y = 300 },
-        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 300 } },
+        .player_start  = { { .x = 150, .y = 300 }, { .x = 150, .y = 400 } },
         .hole          = { .x = 650, .y = 300 },
         .holeRadius    = 30,
         .obstacles     = level3_obstacles,
