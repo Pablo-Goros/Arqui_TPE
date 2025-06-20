@@ -82,6 +82,6 @@ void exception_sound();
 
 void system_start_sound();
 void draw_welcome();
-void draw_smile();
+void draw_smile(ModeInfo mode);
 
 #endif /* _LIBC_H_ */

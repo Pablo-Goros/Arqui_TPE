@@ -176,63 +176,89 @@ void system_start_sound() {
 
 
 
-void draw_smile(void){
+void draw_smile(ModeInfo mode) {
+    int width = mode.width;
+    int height = mode.height;
 
-    int width = 1024; // Width of the screen
-    int height = 768; // Height of the screen
-    // Draw a simple smiley face using sys_call
-    int centerX = width/2; // Center of the face
-    int centerY = height/2; // Center of the face
-    //FACE
-    sys_call(SYS_DRAW_CIRCLE, centerX, centerY, 200, 0xFF8700, 0); // Orange circle
-    sys_call(SYS_DRAW_CIRCLE,centerX, centerY, 175, 0xFFFF00, 0); // Yellow circle
-    //EYES
-    sys_call(SYS_DRAW_RECT, centerX-60, centerY-90, 20, 70, 0x000000); // Left eye
-    sys_call(SYS_DRAW_RECT, centerX+40, centerY-90, 20, 70, 0x00000); // Right eye
+
+    int centerX = width / 2;
+    int centerY = height / 2;
+    int radius = height / 4; // proporcional a la altura
+
+    // FACE
+    sys_call(SYS_DRAW_CIRCLE, centerX, centerY, radius, 0xFF8700, 0); // Orange circle
+    sys_call(SYS_DRAW_CIRCLE, centerX, centerY, radius - 15, 0xFFFF00, 0); // Yellow circle
+
+    // EYES
+    int eyeHeight = radius / 3;
+    int eyeWidth = radius / 10;
+    sys_call(SYS_DRAW_RECT, centerX - eyeWidth*3, centerY - eyeHeight, eyeWidth, eyeHeight, 0x000000); // Left eye
+    sys_call(SYS_DRAW_RECT, centerX + eyeWidth*2, centerY - eyeHeight, eyeWidth, eyeHeight, 0x000000); // Right eye
+
     // MOUTH
-    sys_call(SYS_DRAW_RECT, centerX-90, centerY+55, 180,10, 0x000000); // Black mouth
-    sys_call(SYS_DRAW_RECT, centerX-110,centerY+35,10,10, 0x000000); // Left side of mouth
-    sys_call(SYS_DRAW_RECT, centerX-100,centerY+45,10,10, 0x000000); // left side of mouth
-    sys_call(SYS_DRAW_RECT, centerX+100,centerY+35,10,10, 0x000000); // Right side of mouth
-    sys_call(SYS_DRAW_RECT, centerX+90,centerY+45,10,10, 0x000000); // Right side of mouth
+    int mouthWidth = radius;
+    int mouthHeight = radius / 15;
+    sys_call(SYS_DRAW_RECT, centerX - mouthWidth/2, centerY + mouthHeight*5, mouthWidth, mouthHeight, 0x000000); // Mouth bar
+
+    // Mouth corners
+    sys_call(SYS_DRAW_RECT, centerX - mouthWidth/2 - mouthHeight*2, centerY + mouthHeight*5-mouthHeight*2, mouthHeight, mouthHeight, 0x000000); // Left corner 1
+    sys_call(SYS_DRAW_RECT, centerX - mouthWidth/2 - mouthHeight, centerY + mouthHeight*5-mouthHeight, mouthHeight, mouthHeight, 0x000000); // Left corner 2
+    sys_call(SYS_DRAW_RECT, centerX + mouthWidth/2 + mouthHeight, centerY + mouthHeight*5-mouthHeight*2, mouthHeight, mouthHeight, 0x000000); // Right corner 1
+    sys_call(SYS_DRAW_RECT, centerX + mouthWidth/2, centerY + mouthHeight*5-mouthHeight, mouthHeight, mouthHeight, 0x000000); // Right corner 2
+
 }
 
 void draw_welcome(){
-    sys_call(SYS_DRAW_RECT, 0, 0,1024, 50,0x9300ff) ; // TOP BORDER in purple
-    sys_call(SYS_DRAW_RECT, 0, 718, 1024, 50, 0x9300ff); // BOTTOM BORDER in purple
-    //costados violetas
-    sys_call(SYS_DRAW_RECT, 0, 50, 10, 668, 0x9300ff); // LEFT BORDER in purple
-    sys_call(SYS_DRAW_RECT, 1014, 50, 10, 668, 0x9300ff); // RIGHT BORDER in purple
-    //bordes azul
-    sys_call(SYS_DRAW_RECT, 10, 50, 10, 668, 0x0020ff); // LEFT BORDER in blue
-    sys_call(SYS_DRAW_RECT, 1004, 50, 10, 668, 0x0020ff); // RIGHT BORDER in blue
-    sys_call(SYS_DRAW_RECT, 10, 40, 1004, 10, 0x0020ff); // top border in blue
-    sys_call(SYS_DRAW_RECT, 10, 718, 1004, 10, 0x0020ff); // bottom border in blue
+    ModeInfo mode;
+    sys_call(SYS_GET_MODE_INFO, (uint64_t)&mode, 0, 0, 0, 0);
 
-    for(int i = 10; i < 1004; i+=10){
-        if(i%20 == 0) {
-            sys_call(SYS_DRAW_RECT, i, 40, 10, 10, 0x0a00c7);
-            sys_call(SYS_DRAW_RECT, i, 718, 10, 10, 0x0a00c7);
+    int width = mode.width;
+    int height = mode.height;
+
+    int border_thick = 10;
+    int border_height = 50;
+
+    // BORDES PRINCIPALES
+    sys_call(SYS_DRAW_RECT, 0, 0, width, border_height, 0x9300ff); // Top purple
+    sys_call(SYS_DRAW_RECT, 0, height - border_height, width, border_height, 0x9300ff); // Bottom purple
+    sys_call(SYS_DRAW_RECT, 0, border_height, border_thick, height - 2 * border_height, 0x9300ff); // Left purple
+    sys_call(SYS_DRAW_RECT, width - border_thick, border_height, border_thick, height - 2 * border_height, 0x9300ff); // Right purple
+
+    // BORDES AZULES
+    sys_call(SYS_DRAW_RECT, border_thick, border_height, border_thick, height - 2 * border_height, 0x0020ff); // Left blue
+    sys_call(SYS_DRAW_RECT, width - 2 * border_thick, border_height, border_thick, height - 2 * border_height, 0x0020ff); // Right blue
+    sys_call(SYS_DRAW_RECT, border_thick, border_height - border_thick, width - 2 * border_thick, border_thick, 0x0020ff); // Top blue
+    sys_call(SYS_DRAW_RECT, border_thick, height - border_height, width - 2 * border_thick, border_thick, 0x0020ff); // Bottom blue
+
+    // DIBUJITOS DEL BORDE
+    for(int i = border_thick; i < width - border_thick; i += 10){
+        if(i % 20 == 0){
+            sys_call(SYS_DRAW_RECT, i, border_height - border_thick, 10, 10, 0x0a00c7);//color azul
+            sys_call(SYS_DRAW_RECT, i, height - border_height, 10, 10, 0x0a00c7);
         }
     }
-    for(int i = 0; i < 1024; i+=64){
-        if(i%128 == 0) {
-            sys_call(SYS_DRAW_RECT, i, 0, 64, 40, 0xff00ff);
-            sys_call(SYS_DRAW_RECT, i,728 , 64, 40, 0xff00ff);
+
+    for(int i = 0; i < width; i += 64){
+        if(i % 128 == 0){
+            sys_call(SYS_DRAW_RECT, i, 0, 64, border_height - border_thick, 0xff00ff);//color
+            sys_call(SYS_DRAW_RECT, i, height - border_height + border_thick, 64, border_height - border_thick, 0xff00ff);
         }
     }
 
-    draw_smile(); // Draw smiley face in the center
+    draw_smile(mode); // Draw smiley face in the center
     //message
-    set_zoom (3);
-    set_cursor(50, 50);
+    // TEXTOS
+    set_zoom(3);
+    set_cursor(width / 12, height / 14);
     putString("ARQUITECTURA DE COMPUTADORAS - ITBA");
-    set_cursor(100, 100);
+
+    set_cursor(width / 6, height / 8);
     putString("Trabajo Practico Especial");
 
     set_zoom(2);
-    set_cursor(40, 630);
-    putString("Creador por: Pablo Gorostiaga, Tiago Heras y Amador Vallejo\n");
-    set_cursor(40, 680);
+    set_cursor(width / 20, height * 0.82);
+    putString("Creado por: Pablo Gorostiaga, Tiago Heras y Amador Vallejo\n");
+
+    set_cursor(width / 20, height * 0.89);
     putString("Presione 'c' para continuar...");
 }
