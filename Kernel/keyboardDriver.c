@@ -1,6 +1,6 @@
 #include "keyboardDriver.h"
 #include "interrupts.h"        
-
+#include "videoDriver.h"
 
 static char           buf[BUF_SIZE];
 static volatile int   head = 0;
@@ -98,6 +98,13 @@ void kbd_get_key(void) {
     uint8_t make_flag = !(sc & 0x80);
     uint8_t code = sc & 0x7F;
 
+    if (code == 0x58 && make_flag)
+    {
+        extern uint64_t last_context_regs[NUMBER_OF_REGISTERS];
+        extern uint64_t snapshot_regs[NUMBER_OF_REGISTERS];
+        _memcpy(snapshot_regs, last_context_regs, sizeof(last_context_regs));
+    }
+    
     // Check for arrows 
     if (extended) {
         extended = 0;

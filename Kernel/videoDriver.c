@@ -2,6 +2,9 @@
 #include <videoDriver.h>
 #include "sysCallDispatcher.h"
 
+uint64_t last_context_regs[NUMBER_OF_REGISTERS];
+uint64_t snapshot_regs[NUMBER_OF_REGISTERS];
+
 struct vbe_mode_info_structure {
     uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
     uint8_t window_a;			// deprecated
@@ -189,15 +192,11 @@ void vd_show_registers(FileDescriptor fd){
             "R12","R13","R14","R15",
             "RIP", "RFLAGS"
     };
-    uint64_t regs[NUMBER_OF_REGISTERS];
-    get_registers(regs);
-
-
     char buf[NUMBER_OF_REGISTERS *2]; // Enough space for 18 registers in hex + ": 0x" + '\n'
     for (int i = 0; i < NUMBER_OF_REGISTERS; i++) {
         vd_put_string(names[i], fd);
         vd_put_string(": 0x",fd);
-        itoa(regs[i], buf, 16);
+        itoa(snapshot_regs[i], buf, 16);
         vd_put_string(buf,fd);
         vd_put_string("\n", fd);
     }

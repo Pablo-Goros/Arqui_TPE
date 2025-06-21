@@ -30,6 +30,8 @@ EXTERN exceptionDispatcher
 EXTERN sysCallDispatcher
 EXTERN getStackBase  
 
+EXTERN last_context_regs
+
 SECTION .text
 
 %macro pushState 0
@@ -170,6 +172,10 @@ _irq05Handler:
 
 _int80Handler:
 	pushState
+	mov rdi, last_context_regs ; guarda en rdi la direccion del arreglo para copiar el contexto
+	mov rsi, rsp ; rsi apunta a la pila actual (contexto de la interrupcion)
+	call get_registers_from_context
+
 	mov r9, r8
 	mov r8, r10
 	mov rcx, rdx
@@ -201,34 +207,77 @@ haltcpu:
 	hlt
 	ret
 
-get_registers:
-    mov [rdi],rax
-    mov [rdi + 8], rbx
-    mov [rdi + 16], rcx
-    mov [rdi + 24], rdx
-    mov [rdi + 32], rsi
-    mov [rdi + 40], rdi
-    mov [rdi + 48], rbp
-    mov [rdi + 56], rsp
-    mov [rdi + 64], r8
-    mov [rdi + 72], r9
-    mov [rdi + 80], r10
-    mov [rdi + 88], r11
-    mov [rdi + 96], r12
-    mov [rdi + 104], r13
-    mov [rdi + 112], r14
-    mov [rdi + 120], r15
+; get_registers:
+;     mov [rdi],rax
+;     mov [rdi + 8], rbx
+;     mov [rdi + 16], rcx
+;     mov [rdi + 24], rdx
+;     mov [rdi + 32], rsi
+;     mov [rdi + 40], rdi
+;     mov [rdi + 48], rbp
+;     mov [rdi + 56], rsp
+;     mov [rdi + 64], r8
+;     mov [rdi + 72], r9
+;     mov [rdi + 80], r10
+;     mov [rdi + 88], r11
+;     mov [rdi + 96], r12
+;     mov [rdi + 104], r13
+;     mov [rdi + 112], r14
+;     mov [rdi + 120], r15
 
-    call .get_rip
+;     call .get_rip
 
-.get_rip:
-    pop rax ; get return address (RIP)
-    mov [rdi + 128], rax ; store it in the registers structure
-    pushfq
-    pop rax
-    mov [rdi + 136], rax ; store RFLAGS in the registers structure
+; .get_rip:
+;     pop rax ; get return address (RIP)
+;     mov [rdi + 128], rax ; store it in the registers structure
+;     pushfq
+;     pop rax
+;     mov [rdi + 136], rax ; store RFLAGS in the registers structure
+;     ret
+
+get_registers_from_context:
+    mov rdx, rsi         ; rdx = context (puntero a la pila)
+
+    ; Copiar los registros en el mismo orden que los pusheaste
+    mov rax, [rdx + 0]      ; RAX
+    mov [rdi + 0], rax		; guarda lo que hay en rax en 
+    mov rax, [rdx + 8]      ; RBX
+    mov [rdi + 8], rax
+    mov rax, [rdx + 16]     ; RCX
+    mov [rdi + 16], rax
+    mov rax, [rdx + 24]     ; RDX
+    mov [rdi + 24], rax
+    mov rax, [rdx + 32]     ; RBP
+    mov [rdi + 32], rax
+    mov rax, [rdx + 40]     ; RDI
+    mov [rdi + 40], rax
+    mov rax, [rdx + 48]     ; RSI
+    mov [rdi + 48], rax
+    mov rax, [rdx + 56]     ; R8
+    mov [rdi + 56], rax
+    mov rax, [rdx + 64]     ; R9
+    mov [rdi + 64], rax
+    mov rax, [rdx + 72]     ; R10
+    mov [rdi + 72], rax
+    mov rax, [rdx + 80]     ; R11
+    mov [rdi + 80], rax
+    mov rax, [rdx + 88]     ; R12
+    mov [rdi + 88], rax
+    mov rax, [rdx + 96]     ; R13
+    mov [rdi + 96], rax
+    mov rax, [rdx + 104]    ; R14
+    mov [rdi + 104], rax
+    mov rax, [rdx + 112]    ; R15
+    mov [rdi + 112], rax
+
+    ; Si tu contexto guardado en la pila incluye RIP y RFLAGS, también podés copiarlos:
+    ; Por ejemplo, si después de pushState se guardan RIP y RFLAGS:
+    mov rax, [rdx + 120]    ; RIP
+    mov [rdi + 120], rax
+    mov rax, [rdx + 128]    ; RFLAGS
+    mov [rdi + 128], rax
+
     ret
-
 
 section .bss
 	aux resq 1

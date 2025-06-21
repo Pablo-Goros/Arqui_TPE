@@ -21,6 +21,9 @@
 
 #define NUMBER_OF_REGISTERS 18 // Number of CPU registers we want to inspect
 
+extern uint64_t last_context_regs[NUMBER_OF_REGISTERS];
+extern uint64_t snapshot_regs[NUMBER_OF_REGISTERS];
+
 void vd_put_pixel( uint32_t color, uint64_t x, uint64_t y);
 
 void vd_put_multpixel(uint32_t hexColor, uint64_t x, uint64_t y, int mult);
