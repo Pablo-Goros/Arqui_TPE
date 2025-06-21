@@ -2,6 +2,7 @@
 #define EXCEPTION_DISPATCHER_H
 
 #include "videoDriver.h"
+#include "keyboardDriver.h"
 #include <stdint.h>
 
 #define ZERO_EXCEPTION_ID 0

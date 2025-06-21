@@ -88,6 +88,14 @@ static const char tbl_shift[128] = {
     /* others left as 0 */
 };
 
+static const char * reg_labels[] = {
+        "RAX:    0x", "RBX:    0x", "RCX:    0x", "RDX:    0x", 
+        "RBP:    0x", "RDI:    0x", "RSI:    0x", "R8:     0x", 
+        "R9:     0x", "R10:    0x", "R11:    0x", "R12:    0x", 
+        "R13:    0x", "R14:    0x", "R15:    0x", "RIP:    0x",
+        "CS:     0x", "RFLAGS: 0x", "RSP:    0x", "SS:     0x"
+    };
+    
 void kbd_get_key(void) {
     uint8_t sc = getPressedKey();
 
@@ -174,13 +182,6 @@ uint64_t kbd_is_key_down(char key) {
 }
 
 void format_registers() {
-    char * reg_labels[] = {
-        "RAX:    0x", "RBX:    0x", "RCX:    0x", "RDX:    0x", 
-        "RBP:    0x", "RDI:    0x", "RSI:    0x", "R8:     0x", 
-        "R9:     0x", "R10:    0x", "R11:    0x", "R12:    0x", 
-        "R13:    0x", "R14:    0x", "R15:    0x", "RIP:    0x",
-        "CS:     0x", "RFLAGS: 0x", "RSP:    0x", "SS:     0x"
-    };
     
     uint32_t k = 0; // Index for buff_reg
 

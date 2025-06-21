@@ -87,7 +87,8 @@ SECTION .text
 %endmacro
 
 %macro exceptionHandler 1
-    pushState
+    saveRegisters
+	mov byte [escPressedFlag], 1 ; Hardcode ESC pressed flag so that it can be printed in the exception handler
 
     mov rdi, %1 ; pasaje de parametro
     call exceptionDispatcher
@@ -246,13 +247,13 @@ _int80Handler:
 
 	;Zero Division Exception
 _exception0Handler:
-	mov rdi, 0
+	;mov rdi, 0
 	exceptionHandler 0
 	iretq
 
 	; Invalid Opcode Exception
 _exception6Handler:
-    mov   rdi, 6
+    ;mov   rdi, 6
     exceptionHandler 6
     iretq
 
