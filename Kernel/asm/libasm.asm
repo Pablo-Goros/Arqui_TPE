@@ -1,6 +1,4 @@
 GLOBAL cpuVendor
-GLOBAL get_key_asm
-
 GLOBAL outb
 GLOBAL outw
 GLOBAL inb
@@ -30,25 +28,7 @@ cpuVendor:
 
 	mov rsp, rbp
 	pop rbp
-	ret
 
-get_key_asm:
-	push rbp
-    mov rbp, rsp
-
-.wait:
-    in al, 0x64 ; read from keyboard controller
-    test al, 0x01    ; ¿OBF = 1?    (al & 0x01)
-    jz .wait ; if OB = 0, keep waiting
-    ; else, get char
-
-    xor rax, rax ; clear rax
-
-    in al, 0x60 ; read from keyboard controller
-
-    mov rsp, rbp
-    pop rbp
-    ret
 
 ; void outb(uint16_t port, uint8_t val)
 ; Writes a byte to an I/O port

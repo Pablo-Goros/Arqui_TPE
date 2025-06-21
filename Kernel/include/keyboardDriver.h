@@ -11,7 +11,9 @@
 #define BUF_SIZE        128
 #define KEY_STATE_SIZE  256
 
-extern unsigned int get_key_asm(void);
+extern uint8_t getPressedKey();
+extern uint8_t getEscPressed();
+extern uint64_t reg_array[20]; 
 
 void kbd_get_key(void);
 
@@ -24,5 +26,11 @@ char kbd_get_char(void);
 void kbd_reset_buff();
 
 uint64_t kbd_is_key_down(char key);
+
+void format_registers();
+
+uint32_t uint64ToRegisterFormat(uint64_t value, char *dest);
+
+uint64_t copy_regs(char *copy);
 
 #endif // KEYBOARD_DRIVER_H

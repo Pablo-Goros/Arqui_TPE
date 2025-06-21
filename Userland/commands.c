@@ -29,10 +29,17 @@ void cmd_time() {
 
 void cmd_registers() {
     clear_screen();
-    showRegisters();
-    putChar('\n');
-    putString("\t Press 'c' to quit");
-    hltUntil_c();
+    char buff[1000];
+    uint8_t flag = sys_call(SYS_REGS, (uint64_t)buff, 0, 0, 0, 0);
+    if (flag == 0) {
+        putString(buff);
+        putChar('\n');
+        putString("\t Press 'c' to quit");
+        hltUntil_c();
+    } else {
+        putString("Registers not available, they need to be saved first.\n");
+        putString("Press ESC key to capture registers, then try again.\n");
+    }
 }
 
 

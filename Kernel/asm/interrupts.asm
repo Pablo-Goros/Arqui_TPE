@@ -24,6 +24,10 @@ GLOBAL get_registers
 GLOBAL _exception0Handler ; Zero Division Exception
 GLOBAL _exception6Handler ; Invalid Opcode Exception
 
+GLOBAL reg_array
+GLOBAL getEscPressed
+GLOBAL getPressedKey
+
 EXTERN int_write
 EXTERN irqDispatcher
 EXTERN exceptionDispatcher
@@ -82,8 +86,6 @@ SECTION .text
 	iretq
 %endmacro
 
-
-
 %macro exceptionHandler 1
     pushState
 
@@ -102,6 +104,37 @@ SECTION .text
     push rax            ; RIP - return to userland/shell entry point
     
     iretq
+%endmacro
+
+%macro saveRegisters 0
+    ; Save all registers to reg_array
+    mov [reg_array + 0*8],  rax
+    mov [reg_array + 1*8],  rbx
+    mov [reg_array + 2*8],  rcx
+    mov [reg_array + 3*8],  rdx
+    mov [reg_array + 4*8],  rbp
+    mov [reg_array + 5*8],  rdi
+    mov [reg_array + 6*8],  rsi
+    mov [reg_array + 7*8],  r8
+    mov [reg_array + 8*8],  r9
+    mov [reg_array + 9*8],  r10
+    mov [reg_array + 10*8], r11
+    mov [reg_array + 11*8], r12
+    mov [reg_array + 12*8], r13
+    mov [reg_array + 13*8], r14
+    mov [reg_array + 14*8], r15
+    
+    ; Save interrupt frame
+    mov rax, [rsp+0] ; RIP
+    mov [reg_array + 15*8], rax
+    mov rax, [rsp+8] ; CS
+    mov [reg_array + 16*8], rax
+    mov rax, [rsp+16] ; RFLAGS
+    mov [reg_array + 17*8], rax
+    mov rax, [rsp+24] ; RSP
+    mov [reg_array + 18*8], rax
+    mov rax, [rsp+32] ; SS
+    mov [reg_array + 19*8], rax
 %endmacro
 
 
@@ -147,9 +180,37 @@ load_idtr:
 _irq00Handler:
 	irqHandlerMaster 0
 
+
+	
 ;Keyboard
 _irq01Handler:
+	push rax
+	xor rax, rax
+	in al, 60h ; Read from keyboard data port
+	mov [pressedKey], al ; Store the pressed key
+	cmp al, REGS_SNAPSHOT
+	jne .dontCapture
+
+	pop rax
+	saveRegisters ; macro to save all registers to reg_array
+	mov byte [escPressedFlag], 1 ; Set the ESC pressed flag
+	jmp .continue
+
+.dontCapture:
+	pop rax
+
+.continue:
 	irqHandlerMaster 1
+
+getPressedKey:
+	mov rax, [pressedKey] ; Return the pressed key
+	ret
+	
+getEscPressed:
+    xor rax, rax
+    mov al, [escPressedFlag]
+    ret
+
 
 ;Cascade pic never called
 _irq02Handler:
@@ -232,6 +293,12 @@ get_registers:
 
 section .bss
 	aux resq 1
+	reg_array resq 20 ; 20 registers * 8 bytes each = 160 bytes 
+	pressedKey resb 1
+	escPressedFlag resb 1 ; Flag to indicate if ESC key was pressed
 
 section .rodata
     userland equ 0x400000
+	REGS_SNAPSHOT equ 0x01 ; ESC key scancode
+
+	

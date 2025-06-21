@@ -26,10 +26,6 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             break;
         }
 
-        case SYS_REGISTERS:
-            vd_show_registers(STDOUT);
-            break;
-
         case SYS_GET_TIME: {
             char* time_str = getTime();
             vd_put_string(time_str, STDOUT);
@@ -119,6 +115,12 @@ uint64_t sysCallDispatcher(uint64_t rax, ...) {
             unsigned int duration_ms = (unsigned int) va_arg(args, uint64_t);
             beep(frequency, duration_ms);
             ret = 0;
+            break;
+        }
+
+        case SYS_REGS: {
+            char* regs_str = va_arg(args, char*);
+            ret = copy_regs(regs_str);
             break;
         }
 

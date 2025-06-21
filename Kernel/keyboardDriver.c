@@ -9,6 +9,8 @@ static uint8_t        shift = 0;
 static uint8_t        caps = 0;
 static uint8_t        extended;              // for 0xE0 prefix
 
+static char           buff_reg[1000]; 
+static uint8_t registers_formatted = 0; // Flag to track if registers are formatted
 static volatile uint8_t key_state[KEY_STATE_SIZE] = {0};
 
 static inline char to_lower(char c) {
@@ -87,8 +89,7 @@ static const char tbl_shift[128] = {
 };
 
 void kbd_get_key(void) {
-    
-    uint8_t sc = get_key_asm();
+    uint8_t sc = getPressedKey();
 
     if (sc == 0xE0) {
         extended = 1;
@@ -170,4 +171,74 @@ void kbd_reset_buff() {
 
 uint64_t kbd_is_key_down(char key) {
     return key_state[(uint8_t) key];
+}
+
+void format_registers() {
+    char * reg_labels[] = {
+        "RAX:    0x", "RBX:    0x", "RCX:    0x", "RDX:    0x", 
+        "RBP:    0x", "RDI:    0x", "RSI:    0x", "R8:     0x", 
+        "R9:     0x", "R10:    0x", "R11:    0x", "R12:    0x", 
+        "R13:    0x", "R14:    0x", "R15:    0x", "RIP:    0x",
+        "CS:     0x", "RFLAGS: 0x", "RSP:    0x", "SS:     0x"
+    };
+    
+    uint32_t k = 0; // Index for buff_reg
+
+    for (int i = 0; i < 20; i++) {
+        // Copy the label (e.g., "RAX:    0x")
+        int j = 0;
+        while(reg_labels[i][j] != 0) {
+            buff_reg[k++] = reg_labels[i][j++];
+        }
+
+        // Add the register value in hex format
+        k += uint64ToRegisterFormat(reg_array[i], buff_reg + k);
+        
+        // Add newline
+        buff_reg[k++] = '\n';
+    } 
+    buff_reg[k] = 0; // Fixed: buff_reg instead of reg_buff
+    registers_formatted = 1; // Mark as formatted
+}
+
+uint32_t uint64ToRegisterFormat(uint64_t value, char *dest) {
+    // We want exactly 16 hex digits (64 bits = 16 hex chars)
+    const char hex_chars[] = "0123456789ABCDEF";
+    uint32_t chars_written = 0;
+    
+    // Write 16 hex digits, starting from most significant
+    for (int i = 15; i >= 0; i--) {
+        uint8_t hex_digit = (value >> (i * 4)) & 0xF;
+        dest[chars_written++] = hex_chars[hex_digit];
+    }
+    
+    return chars_written; // Always returns 16
+}
+
+
+uint64_t copy_regs(char *copy) {
+    // Check if ESC was pressed (registers were saved)
+    if (!getEscPressed()) {
+        return 1; // No registers available
+    }
+
+    // Format registers only when we need to print them
+    if (!registers_formatted) {
+        format_registers();
+    }
+
+    // Copy the formatted string
+    int i = 0;
+    while (buff_reg[i] != 0 && i < 999) { // Prevent buffer overflow
+        copy[i] = buff_reg[i];
+        i++;
+    }
+    copy[i] = 0; // null terminate
+
+    // Reset flags for next use
+    registers_formatted = 0;
+
+    // We might consider resetting the ESC flag here... it depends
+    
+    return 0; // Success
 }
