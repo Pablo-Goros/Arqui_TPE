@@ -180,30 +180,6 @@ int itoa(int64_t value, char *buf, int base) {
     return len;
 }
 
-
-void vd_show_registers(FileDescriptor fd){
-    static const char *names[NUMBER_OF_REGISTERS] = {
-            "RAX","RBX","RCX","RDX",
-            "RSI","RDI","RBP","RSP",
-            "R8 ", "R9 ", "R10","R11",
-            "R12","R13","R14","R15",
-            "RIP", "RFLAGS"
-    };
-    uint64_t regs[NUMBER_OF_REGISTERS];
-    get_registers(regs);
-
-
-    char buf[NUMBER_OF_REGISTERS *2]; // Enough space for 18 registers in hex + ": 0x" + '\n'
-    for (int i = 0; i < NUMBER_OF_REGISTERS; i++) {
-        vd_put_string(names[i], fd);
-        vd_put_string(": 0x",fd);
-        itoa(regs[i], buf, 16);
-        vd_put_string(buf,fd);
-        vd_put_string("\n", fd);
-    }
-}
-
-
 void vd_init(void) {
     cursorX = cursorY = 0;
     vd_clear_screen();
